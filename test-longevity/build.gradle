@@ -1,0 +1,21 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+}
+
+apply plugin: 'application'
+mainClassName = "LongevityMain"
+
+task longevityTest(type: JavaExec) {
+    main = 'longevity.LongevityMain'
+    classpath = sourceSets.main.runtimeClasspath
+    setWorkingDir("$rootDir/")
+
+    args getEthPasswordsArgs()
+}
+
+dependencies {
+    compile project(":notary-eth-integration-test")
+}
