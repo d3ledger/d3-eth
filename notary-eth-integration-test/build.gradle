@@ -1,0 +1,49 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+}
+
+sourceSets {
+    integrationTest {
+        kotlin {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDirs += 'src/integration-test/kotlin'
+        }
+        resources {
+            srcDirs = ["src/integration-test/resources"]
+        }
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+task integrationTest(type: Test) {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = 'Runs the integration tests.'
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    setWorkingDir("$rootDir/")
+    // Enable JUnit5 tests
+    useJUnitPlatform {
+    }
+
+    mustRunAfter test
+}
+check.dependsOn integrationTest
+
+dependencies {
+    compile project(":eth-erc20-registration")
+    compile project(":eth-registration")
+    compile project(":eth-withdrawal")
+
+    compile "com.github.d3ledger.notary:notary-registration:$notary_version"
+    compile "com.github.d3ledger.notary:notary-iroha-integration-test:$notary_version"
+}

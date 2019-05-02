@@ -1,0 +1,13 @@
+dependencies {
+    compile project(":eth")
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+task runVacuumRelay(type: JavaExec) {
+    main = 'com.d3.eth.vacuum.VacuumRelayMain'
+    classpath = sourceSets.main.runtimeClasspath
+
+    args getEthPasswordsArgs()
+    setWorkingDir("$rootDir/")
+}

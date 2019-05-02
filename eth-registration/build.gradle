@@ -1,0 +1,21 @@
+dependencies {
+    compile project(":eth")
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+task runEthRegistration(type: JavaExec) {
+    main = 'com.d3.eth.registration.EthRegistrationMain'
+    classpath = sourceSets.main.runtimeClasspath
+
+    args getEthPasswordsArgs()
+    setWorkingDir("$rootDir/")
+}
+
+task runDeployRelay(type: JavaExec) {
+    main = 'com.d3.eth.registration.relay.DeployRelayMain'
+    classpath = sourceSets.main.runtimeClasspath
+
+    args getEthPasswordsArgs()
+    setWorkingDir("$rootDir/")
+}

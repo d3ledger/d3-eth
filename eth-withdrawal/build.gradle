@@ -1,0 +1,13 @@
+dependencies {
+    compile project(":eth-vacuum")
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+task runWithdrawal(type: JavaExec) {
+    main = 'com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceMain'
+    classpath = sourceSets.main.runtimeClasspath
+
+    args getEthPasswordsArgs()
+    setWorkingDir("$rootDir/")
+}
