@@ -33,7 +33,7 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class IRelayRegistry extends Contract {
     private static final String BINARY = "";
@@ -44,10 +44,8 @@ public class IRelayRegistry extends Contract {
 
     public static final String FUNC_ISWHITELISTED = "isWhiteListed";
 
-    public static final Event ADDNEWRELAY_EVENT = new Event("AddNewRelay",
-            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {
-            }, new TypeReference<DynamicArray<Address>>(true) {
-            }));
+    public static final Event ADDNEWRELAY_EVENT = new Event("AddNewRelay", 
+            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<DynamicArray<Address>>(true) {}));
     ;
 
     @Deprecated
@@ -70,19 +68,19 @@ public class IRelayRegistry extends Contract {
 
     public RemoteCall<TransactionReceipt> addNewRelayAddress(String relay, List<String> whiteList) {
         final Function function = new Function(
-                FUNC_ADDNEWRELAYADDRESS,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(relay),
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
-                                org.web3j.abi.Utils.typeMap(whiteList, org.web3j.abi.datatypes.Address.class))),
+                FUNC_ADDNEWRELAYADDRESS, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(relay), 
+                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.Address>(
+                        org.web3j.abi.datatypes.Address.class,
+                        org.web3j.abi.Utils.typeMap(whiteList, org.web3j.abi.datatypes.Address.class))), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     public RemoteCall<List> getWhiteListByRelay(String relay) {
-        final Function function = new Function(FUNC_GETWHITELISTBYRELAY,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(relay)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Address>>() {
-                }));
+        final Function function = new Function(FUNC_GETWHITELISTBYRELAY, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(relay)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<DynamicArray<Address>>() {}));
         return new RemoteCall<List>(
                 new Callable<List>() {
                     @Override
@@ -95,11 +93,10 @@ public class IRelayRegistry extends Contract {
     }
 
     public RemoteCall<Boolean> isWhiteListed(String relay, String who) {
-        final Function function = new Function(FUNC_ISWHITELISTED,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(relay),
-                        new org.web3j.abi.datatypes.Address(who)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {
-                }));
+        final Function function = new Function(FUNC_ISWHITELISTED, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(relay), 
+                new org.web3j.abi.datatypes.Address(who)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {}));
         return executeRemoteCallSingleValueReturn(function, Boolean.class);
     }
 

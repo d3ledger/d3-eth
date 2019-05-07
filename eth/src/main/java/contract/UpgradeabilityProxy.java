@@ -29,16 +29,15 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class UpgradeabilityProxy extends Contract {
-    private static final String BINARY = "608060405234801561001057600080fd5b5061013b806100206000396000f3fe60806040526004361061003a577c010000000000000000000000000000000000000000000000000000000060003504635c60da1b811461008d575b60006100446100cb565b905073ffffffffffffffffffffffffffffffffffffffff8116151561006857600080fd5b60405136600082376000803683855af43d806000843e818015610089578184f35b8184fd5b34801561009957600080fd5b506100a26100cb565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b60008060405180806100ef6021913960405190819003602101902054939250505056fe636f6d2e64336c65646765722e70726f78792e696d706c656d656e746174696f6ea165627a7a7230582087759b068f48d9bfa4ee38ad8e24579ad278ea1f83923114df0309a3405ca36a0029";
+    private static final String BINARY = "608060405234801561001057600080fd5b5060f98061001f6000396000f3fe608060405260043610601c5760003560e01c80635c60da1b14605c575b60006024608a565b90506001600160a01b038116603857600080fd5b60405136600082376000803683855af43d806000843e8180156058578184f35b8184fd5b348015606757600080fd5b50606e608a565b604080516001600160a01b039092168252519081900360200190f35b600080604051808060ad6021913960405190819003602101902054939250505056fe636f6d2e64336c65646765722e70726f78792e696d706c656d656e746174696f6ea165627a7a72305820bd021b33c3be004e0e0ce30593cc1c52fc58b2961a98e3df97fb585be53f817a0029";
 
     public static final String FUNC_IMPLEMENTATION = "implementation";
 
-    public static final Event UPGRADED_EVENT = new Event("Upgraded",
-            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {
-            }));
+    public static final Event UPGRADED_EVENT = new Event("Upgraded", 
+            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}));
     ;
 
     @Deprecated
@@ -60,10 +59,9 @@ public class UpgradeabilityProxy extends Contract {
     }
 
     public RemoteCall<String> implementation() {
-        final Function function = new Function(FUNC_IMPLEMENTATION,
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {
-                }));
+        final Function function = new Function(FUNC_IMPLEMENTATION, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 

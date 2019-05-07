@@ -1,4 +1,4 @@
-pragma solidity 0.5.4;
+pragma solidity ^0.5.8;
 
 /**
  * Contract that sends Ether with internal transaction for testing purposes.
