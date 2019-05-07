@@ -22,4 +22,7 @@ interface EthTokensProvider {
 
     /** Return token precision by asset id */
     fun getTokenAddress(assetId: String): Result<String, Exception>
+
+    /** Return true if asset is Iroha anchored. */
+    fun isIrohaAnchored(assetId: String): Result<Boolean, Exception>
 }

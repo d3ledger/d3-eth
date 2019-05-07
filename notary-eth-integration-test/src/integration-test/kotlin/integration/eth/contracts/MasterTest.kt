@@ -86,7 +86,10 @@ class MasterTest {
             master.addToken(token.contractAddress).send()
             cth.transferTokensToMaster(BigInteger.valueOf(5))
             cth.withdraw(BigInteger.valueOf(1))
-            Assertions.assertEquals(BigInteger.valueOf(4), token.balanceOf(master.contractAddress).send())
+            Assertions.assertEquals(
+                BigInteger.valueOf(4),
+                token.balanceOf(master.contractAddress).send()
+            )
         }
     }
 
@@ -100,7 +103,13 @@ class MasterTest {
     fun singleNotEnoughSignaturesTokenTest() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             cth.transferTokensToMaster(BigInteger.valueOf(5))
-            Assertions.assertThrows(TransactionException::class.java) { cth.withdraw(BigInteger.valueOf(1)) }
+            Assertions.assertThrows(TransactionException::class.java) {
+                cth.withdraw(
+                    BigInteger.valueOf(
+                        1
+                    )
+                )
+            }
         }
     }
 
@@ -139,7 +148,13 @@ class MasterTest {
     fun notEnoughTokensTest() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             cth.transferTokensToMaster(BigInteger.valueOf(5))
-            Assertions.assertThrows(TransactionException::class.java) { cth.withdraw(BigInteger.valueOf(10)) }
+            Assertions.assertThrows(TransactionException::class.java) {
+                cth.withdraw(
+                    BigInteger.valueOf(
+                        10
+                    )
+                )
+            }
         }
     }
 
@@ -223,7 +238,13 @@ class MasterTest {
     fun noPeersWithdraw() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             cth.transferTokensToMaster(BigInteger.valueOf(5))
-            Assertions.assertThrows(TransactionException::class.java) { cth.withdraw(BigInteger.valueOf(1)) }
+            Assertions.assertThrows(TransactionException::class.java) {
+                cth.withdraw(
+                    BigInteger.valueOf(
+                        1
+                    )
+                )
+            }
         }
     }
 
@@ -392,8 +413,17 @@ class MasterTest {
             master.addToken(token.contractAddress).send()
             cth.transferTokensToMaster(BigInteger.valueOf(5))
             cth.withdraw(BigInteger.valueOf(1))
-            Assertions.assertEquals(BigInteger.valueOf(4), token.balanceOf(master.contractAddress).send())
-            Assertions.assertThrows(TransactionException::class.java) { cth.withdraw(BigInteger.valueOf(1)) }
+            Assertions.assertEquals(
+                BigInteger.valueOf(4),
+                token.balanceOf(master.contractAddress).send()
+            )
+            Assertions.assertThrows(TransactionException::class.java) {
+                cth.withdraw(
+                    BigInteger.valueOf(
+                        1
+                    )
+                )
+            }
         }
     }
 
@@ -424,7 +454,9 @@ class MasterTest {
     fun addSameTokensTest() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             master.addToken(token.contractAddress).send()
-            Assertions.assertThrows(TransactionException::class.java) { master.addToken(token.contractAddress).send() }
+            Assertions.assertThrows(TransactionException::class.java) {
+                master.addToken(token.contractAddress).send()
+            }
         }
     }
 
@@ -471,8 +503,14 @@ class MasterTest {
                 master.contractAddress
             ).send()
 
-            Assertions.assertEquals(BigInteger.valueOf(4000), cth.getETHBalance(master.contractAddress))
-            Assertions.assertEquals(initialBalance + BigInteger.valueOf(1000), cth.getETHBalance(accGreen))
+            Assertions.assertEquals(
+                BigInteger.valueOf(4000),
+                cth.getETHBalance(master.contractAddress)
+            )
+            Assertions.assertEquals(
+                initialBalance + BigInteger.valueOf(1000),
+                cth.getETHBalance(accGreen)
+            )
         }
     }
 
@@ -519,8 +557,14 @@ class MasterTest {
                 master.contractAddress
             ).send()
 
-            Assertions.assertEquals(BigInteger.valueOf(4000), cth.getETHBalance(master.contractAddress))
-            Assertions.assertEquals(initialBalance + BigInteger.valueOf(1000), cth.getETHBalance(accGreen))
+            Assertions.assertEquals(
+                BigInteger.valueOf(4000),
+                cth.getETHBalance(master.contractAddress)
+            )
+            Assertions.assertEquals(
+                initialBalance + BigInteger.valueOf(1000),
+                cth.getETHBalance(accGreen)
+            )
         }
     }
 
@@ -556,7 +600,8 @@ class MasterTest {
                     master.contractAddress
                 )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             master.withdraw(
                 tokenAddress,
@@ -569,8 +614,14 @@ class MasterTest {
                 master.contractAddress
             ).send()
 
-            Assertions.assertEquals(BigInteger.valueOf(4000), cth.getETHBalance(master.contractAddress))
-            Assertions.assertEquals(initialBalance + BigInteger.valueOf(1000), cth.getETHBalance(accGreen))
+            Assertions.assertEquals(
+                BigInteger.valueOf(4000),
+                cth.getETHBalance(master.contractAddress)
+            )
+            Assertions.assertEquals(
+                initialBalance + BigInteger.valueOf(1000),
+                cth.getETHBalance(accGreen)
+            )
         }
     }
 
@@ -604,7 +655,8 @@ class MasterTest {
                     master.contractAddress
                 )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             Assertions.assertThrows(TransactionException::class.java) {
                 master.withdraw(
@@ -665,8 +717,14 @@ class MasterTest {
                 master.contractAddress
             ).send()
 
-            Assertions.assertEquals(BigInteger.valueOf(4000), cth.getETHBalance(master.contractAddress))
-            Assertions.assertEquals(initialBalance + BigInteger.valueOf(1000), cth.getETHBalance(accGreen))
+            Assertions.assertEquals(
+                BigInteger.valueOf(4000),
+                cth.getETHBalance(master.contractAddress)
+            )
+            Assertions.assertEquals(
+                initialBalance + BigInteger.valueOf(1000),
+                cth.getETHBalance(accGreen)
+            )
         }
     }
 
@@ -701,7 +759,8 @@ class MasterTest {
                     master.contractAddress
                 )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             master.withdraw(
                 tokenAddress,
@@ -714,8 +773,14 @@ class MasterTest {
                 master.contractAddress
             ).send()
 
-            Assertions.assertEquals(BigInteger.valueOf(4000), cth.getETHBalance(master.contractAddress))
-            Assertions.assertEquals(initialBalance + BigInteger.valueOf(1000), cth.getETHBalance(accGreen))
+            Assertions.assertEquals(
+                BigInteger.valueOf(4000),
+                cth.getETHBalance(master.contractAddress)
+            )
+            Assertions.assertEquals(
+                initialBalance + BigInteger.valueOf(1000),
+                cth.getETHBalance(accGreen)
+            )
         }
     }
 
@@ -749,7 +814,8 @@ class MasterTest {
                     master.contractAddress
                 )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             Assertions.assertThrows(TransactionException::class.java) {
                 master.withdraw(
@@ -805,7 +871,8 @@ class MasterTest {
                 peers
             )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             val result = master.addPeerByPeer(
                 newPeer,
@@ -844,7 +911,8 @@ class MasterTest {
                 peers
             )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             val result = master.addPeerByPeer(
                 newPeer,
@@ -883,7 +951,8 @@ class MasterTest {
                 peers
             )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             // first call
             val resultAdd = master.addPeerByPeer(
@@ -903,7 +972,8 @@ class MasterTest {
                 removeIrohaHash
             )
             val removeByteHash = cth.irohaHashToByteHash(removeIrohaHash)
-            val removeSigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), removeHash)
+            val removeSigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), removeHash)
 
             // remove peer
             val resultRemove = master.removePeerByPeer(
@@ -956,7 +1026,8 @@ class MasterTest {
                 peers
             )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             Assertions.assertThrows(TransactionException::class.java) {
                 master.addPeerByPeer(
@@ -1001,7 +1072,8 @@ class MasterTest {
                     cth.defaultIrohaHash
                 )
 
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             Assertions.assertTrue(master.peers(peerToRemove).send())
             Assertions.assertTrue(
@@ -1045,7 +1117,8 @@ class MasterTest {
                 cth.relayRegistry.contractAddress,
                 peers
             )
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             Assertions.assertTrue(
                 master.mintTokensByPeers(
@@ -1092,7 +1165,8 @@ class MasterTest {
                 cth.relayRegistry.contractAddress,
                 peers.dropLast(1)
             )
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             Assertions.assertTrue(
                 master.mintTokensByPeers(
@@ -1184,7 +1258,8 @@ class MasterTest {
                 cth.relayRegistry.contractAddress,
                 peers
             )
-            val sigs = cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
+            val sigs =
+                cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
             Assertions.assertThrows(TransactionException::class.java) {
                 master.mintTokensByPeers(

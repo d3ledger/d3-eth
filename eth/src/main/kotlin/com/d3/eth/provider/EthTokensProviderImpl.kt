@@ -96,6 +96,29 @@ class EthTokensProviderImpl(
     }
 
     /**
+     * @inheritdoc
+     */
+    override fun isIrohaAnchored(assetId: String): Result<Boolean, Exception> {
+        if (assetId == "$ETH_NAME#$ETH_DOMAIN")
+            return Result.of { false }
+        return irohaQueryHelper.getAccountDetails(
+            ethAnchoredTokenStorageAccount,
+            ethAnchoredTokenSetterAccount
+        ).fanout {
+            irohaQueryHelper.getAccountDetails(
+                irohaAnchoredTokenStorageAccount,
+                irohaAnchoredTokenSetterAccount
+            )
+        }.map { (ethAnchored, irohaAnchored) ->
+            if (irohaAnchored.containsValue(assetId))
+                return@map true
+            if (!ethAnchored.containsValue(assetId))
+                throw IllegalArgumentException("Token $assetId not found")
+            false
+        }
+    }
+
+    /**
      * Logger
      */
     companion object : KLogging()

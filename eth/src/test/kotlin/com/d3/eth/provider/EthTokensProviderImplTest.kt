@@ -13,6 +13,8 @@ import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class EthTokensProviderImplTest {
 
@@ -29,6 +31,7 @@ class EthTokensProviderImplTest {
     )
 
     private val wrongAssetId = "wrong#asset"
+    private val ethAssetId = "$ETH_NAME#$ETH_DOMAIN"
 
     private val ethAnchoredTokenStorageAccount = "eth_anchored_token_storage@notary"
     private val ethAnchoredTokenSetterAccount = "eth_anchored_token_setter@notary"
@@ -84,6 +87,52 @@ class EthTokensProviderImplTest {
     fun getWrongAssetIdTest() {
         assertThrows<IllegalArgumentException> {
             ethTokenProvider.getTokenAddress(wrongAssetId).get()
+        }
+    }
+
+    /**
+     * @given ethTokenProvider is initialized with Iroha anchored tokens
+     * @when function isIrohaAnchored called with Iroha anchored tokens
+     * @then returns true
+     */
+    @Test
+    fun isIrohaAnchoredTest() {
+        irohaAnchored.forEach { (_, assetId) ->
+            assertTrue { ethTokenProvider.isIrohaAnchored(assetId).get() }
+        }
+    }
+
+    /**
+     * @given ethTokenProvider is initialized with Ethereum anchored tokens
+     * @when function isIrohaAnchored called with Ethereum anchored tokens
+     * @then returns false
+     */
+    @Test
+    fun isNotIrohaAnchoredTest() {
+        ethAnchored.forEach { (_, assetId) ->
+            assertFalse { ethTokenProvider.isIrohaAnchored(assetId).get() }
+        }
+    }
+
+    /**
+     * @given ethTokenProvider is initialized with tokens
+     * @when function isIrohaAnchored called with Ether
+     * @then returns false
+     */
+    @Test
+    fun isEthIrohaAnchoredTest() {
+        assertFalse { ethTokenProvider.isIrohaAnchored(ethAssetId).get() }
+    }
+
+    /**
+     * @given ethTokenProvider is initialized with tokens
+     * @when function isIrohaAnchored called with wrong asset id
+     * @then Exception is thrown
+     */
+    @Test
+    fun wrongAssetIsIrohaAnchoredTest() {
+        assertThrows<IllegalArgumentException> {
+            ethTokenProvider.isIrohaAnchored(wrongAssetId).get()
         }
     }
 }
