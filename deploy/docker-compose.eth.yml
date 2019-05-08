@@ -1,1 +1,82 @@
-TODO add eth containers
+version: '3.5'
+
+services:
+
+  d3-eth-registration:
+    image: nexus.iroha.tech:19002/d3-deploy/eth-registration:develop
+    container_name: d3-eth-registration
+    ports:
+      - 8083:8083
+    environment:
+      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051
+      WAIT_BEFORE_HOSTS: 10
+      WAIT_HOSTS_TIMEOUT: 60
+      IROHA_HOST: d3-iroha
+      IROHA_PORT: 50051
+      JAR_NAME: eth-registration.jar
+      CLASS: com.d3.eth.registration.EthRegistrationMain
+    volumes:
+      - ../configs:/opt/notary/configs
+      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
+      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+    networks:
+      - d3-network
+
+  d3-eth-deploy-relay:
+    image: nexus.iroha.tech:19002/d3-deploy/eth-relay:develop
+    container_name: d3-eth-deploy-relay
+    environment:
+      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
+      WAIT_BEFORE_HOSTS: 10
+      WAIT_HOSTS_TIMEOUT: 60
+      IROHA_HOST: d3-iroha
+      IROHA_PORT: 50051
+      JAR_NAME: eth-registration.jar
+      CLASS: com.d3.eth.registration.relay.DeployRelayMain
+    volumes:
+      - ../configs:/opt/notary/configs
+      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
+      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+    networks:
+      - d3-network
+
+  d3-eth-deposit:
+    image: nexus.iroha.tech:19002/d3-deploy/notary:develop
+    container_name: d3-eth-deposit
+    environment:
+      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
+      WAIT_BEFORE_HOSTS: 10
+      WAIT_HOSTS_TIMEOUT: 60
+      IROHA_HOST: d3-iroha
+      IROHA_PORT: 50051
+      JAR_NAME: eth-deposit.jar
+      CLASS: com.d3.eth.deposit.EthDepositMain
+    volumes:
+      - ../configs:/opt/notary/configs
+      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
+      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+    networks:
+      - d3-network
+
+  d3-eth-withdrawal:
+    image: nexus.iroha.tech:19002/d3-deploy/eth-withdrawal:develop
+    container_name: d3-eth-withdrawal
+    ports:
+      - 8084:8084
+    environment:
+      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
+      WAIT_BEFORE_HOSTS: 10
+      WAIT_HOSTS_TIMEOUT: 60
+      IROHA_HOST: d3-iroha
+      IROHA_PORT: 50051
+      JAR_NAME: eth-withdrawal.jar
+      CLASS: com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceMain
+    volumes:
+      - ../configs:/opt/notary/configs
+      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
+      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+    networks:
+      - d3-network
+
+networks:
+  d3-network:
