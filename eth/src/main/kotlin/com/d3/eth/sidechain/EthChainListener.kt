@@ -41,6 +41,7 @@ class EthChainListener(
                             it.block.number - confirmationPeriod
                         ), true
                     ).send()
+                    logger.info { "Ethereum chain listener got block ${block.block.number}" }
                     block
                 }
         }

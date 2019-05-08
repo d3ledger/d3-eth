@@ -130,7 +130,7 @@ class EthChainHandler(
      * @return List of transation we are interested in
      */
     override fun parseBlock(block: EthBlock): List<SideChainEvent.PrimaryBlockChainEvent> {
-        logger.info { "Eth chain handler for block ${block.block.number}" }
+        logger.info { "Ethereum chain handler for block ${block.block.number}" }
 
         return ethRelayProvider.getRelays().fanout {
             ethTokensProvider.getEthAnchoredTokens()
