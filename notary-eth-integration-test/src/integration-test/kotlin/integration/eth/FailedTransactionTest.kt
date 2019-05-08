@@ -71,7 +71,10 @@ class FailedTransactionTest {
 
             assertEquals(BigInteger.ZERO, integrationHelper.getEthBalance(failerAddress))
             val irohaBalance =
-                integrationHelper.getIrohaAccountBalance("$clientAccount@$CLIENT_DOMAIN", "ether#ethereum")
+                integrationHelper.getIrohaAccountBalance(
+                    "$clientAccount@$CLIENT_DOMAIN",
+                    "ether#ethereum"
+                )
             assertEquals(BigDecimal.ZERO, BigDecimal(irohaBalance))
         }
     }
@@ -109,7 +112,11 @@ class FailedTransactionTest {
             // web3j throws exception in case of contract function call revert
             // so let's catch and ignore it
             try {
-                integrationHelper.sendERC20Token(anotherFailerAddress, BigInteger.valueOf(1), failerAddress)
+                integrationHelper.sendERC20Token(
+                    anotherFailerAddress,
+                    BigInteger.valueOf(1),
+                    failerAddress
+                )
             } catch (e: TransactionException) {
             }
 
@@ -118,7 +125,10 @@ class FailedTransactionTest {
             // because logs are empty for reverted transactions
             // but let's leave it for a rainy day
             val irohaBalance =
-                integrationHelper.getIrohaAccountBalance("$clientAccount@$CLIENT_DOMAIN", "$coinName#ethereum")
+                integrationHelper.getIrohaAccountBalance(
+                    "$clientAccount@$CLIENT_DOMAIN",
+                    "$coinName#ethereum"
+                )
             assertEquals(BigDecimal.ZERO, BigDecimal(irohaBalance))
         }
     }
