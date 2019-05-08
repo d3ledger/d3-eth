@@ -2,6 +2,18 @@ version: '3.5'
 
 services:
 
+  d3-eth-node0:
+    build:
+      context: ./ethereum
+      dockerfile: ganache.dockerfile
+    container_name: d3-eth-node0
+    volumes:
+      - ./ethereum:/eth
+    environment:
+      - NODE=0
+    networks:
+      - d3-network
+
   d3-eth-registration:
     image: nexus.iroha.tech:19002/d3-deploy/eth-registration:develop
     container_name: d3-eth-registration
