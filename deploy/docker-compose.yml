@@ -41,6 +41,7 @@ services:
       - NODE=0
     networks:
       - d3-network
+
   d3-rmq:
     image: rabbitmq:3-management
     container_name: d3-rmq

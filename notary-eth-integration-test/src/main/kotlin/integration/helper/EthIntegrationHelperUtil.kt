@@ -182,7 +182,9 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      * @return contract address
      */
     fun deployFailer(): String {
-        return contractTestHelper.deployFailer()
+        val address = contractTestHelper.deployFailer()
+        logger.info { "Created Failer contract at $address" }
+        return address
     }
 
     /**
@@ -302,7 +304,11 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      * Waits for exactly one Ethereum block
      */
     fun waitOneEtherBlock() {
-        runBlocking { ethListener.getBlock() }
+        runBlocking {
+            logger.info { "Waiting for Ethereum block. Last block ${ethListener.lastBlock}" }
+            val block = ethListener.getBlock()
+            logger.info { "Waiting for Ethereum block ${block.block.number} is over." }
+        }
     }
 
     /**
