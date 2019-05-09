@@ -107,13 +107,17 @@ pipeline {
                 sh "./gradlew eth-registration:shadowJar"
                 sh "./gradlew eth-vacuum:shadowJar"
     	        }
-              ethRelay = docker.build("nexus.iroha.tech:19002/${login}/eth-relay:${TAG}", "-f docker/eth-relay.dockerfile .")
-              ethRegistration = docker.build("nexus.iroha.tech:19002/${login}/eth-registration:${TAG}", "-f docker/eth-registration.dockerfile .")
-              ethNotary = docker.build("nexus.iroha.tech:19002/${login}/notary:${TAG}", "-f docker/eth-deposit.dockerfile .")
-              ethWithdrawal = docker.build("nexus.iroha.tech:19002/${login}/eth-withdrawal:${TAG}", "-f docker/eth-withdrawal.dockerfile .")
+
+              def nexusRepository="nexus.iroha.tech:19002/${login}"
+
+              ethRelay = docker.build("${nexusRepository}/eth-relay:${TAG}", "-f docker/dockerfile --build-arg JAR_FILE=${eth-relay} .")
+              ethRegistration = docker.build("${nexusRepository}/eth-registration:${TAG}", "-f docker/dockerfile --build-arg JAR_FILE=${eth-registration} .")
+              ethDeposit = docker.build("${nexusRepository}/eth-deposit:${TAG}", "-f docker/dockerfile --build-arg JAR_FILE=${eth-deposit} .")
+              ethWithdrawal = docker.build("${nexusRepository}/eth-withdrawal:${TAG}", "-f docker/dockerfile --build-arg JAR_FILE=${eth-withdrawal} .")
+
               ethRelay.push("${TAG}")
               ethRegistration.push("${TAG}")
-              ethNotary.push("${TAG}")
+              ethDeposit.push("${TAG}")
               ethWithdrawal.push("${TAG}")
             }
           }

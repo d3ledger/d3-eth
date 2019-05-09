@@ -1,19 +1,18 @@
 dependencies {
     compile project(":eth")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
+apply plugin: 'application'
+apply plugin: 'kotlin'
 apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = "com.d3.eth.registration.EthRegistrationMain"
+shadowDistZip.classifier = 'shadow'
+shadowDistTar.classifier = 'shadow'
 
 task runEthRegistration(type: JavaExec) {
     main = 'com.d3.eth.registration.EthRegistrationMain'
-    classpath = sourceSets.main.runtimeClasspath
-
-    args getEthPasswordsArgs()
-    setWorkingDir("$rootDir/")
-}
-
-task runDeployRelay(type: JavaExec) {
-    main = 'com.d3.eth.registration.relay.DeployRelayMain'
     classpath = sourceSets.main.runtimeClasspath
 
     args getEthPasswordsArgs()

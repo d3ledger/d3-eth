@@ -9,6 +9,9 @@ project(':eth-erc20-registration').projectDir = 'eth-erc20-registration' as File
 include 'eth-registration'
 project(':eth-registration').projectDir = 'eth-registration' as File
 
+include 'eth-relay'
+project(':eth-relay').projectDir = 'eth-relay' as File
+
 include 'eth-vacuum'
 project(':eth-vacuum').projectDir = 'eth-vacuum' as File
 

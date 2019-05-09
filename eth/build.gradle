@@ -6,9 +6,13 @@ dependencies {
 
     // Waves library
     compile 'com.wavesplatform:wavesj:0.4'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 
+apply plugin: 'application'
+apply plugin: 'kotlin'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 task runSendEther(type: JavaExec) {

@@ -23,10 +23,6 @@ services:
       WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051
       WAIT_BEFORE_HOSTS: 10
       WAIT_HOSTS_TIMEOUT: 60
-      IROHA_HOST: d3-iroha
-      IROHA_PORT: 50051
-      JAR_NAME: eth-registration.jar
-      CLASS: com.d3.eth.registration.EthRegistrationMain
     volumes:
       - ../configs:/opt/notary/configs
       - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
@@ -41,10 +37,6 @@ services:
       WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
       WAIT_BEFORE_HOSTS: 10
       WAIT_HOSTS_TIMEOUT: 60
-      IROHA_HOST: d3-iroha
-      IROHA_PORT: 50051
-      JAR_NAME: eth-registration.jar
-      CLASS: com.d3.eth.registration.relay.DeployRelayMain
     volumes:
       - ../configs:/opt/notary/configs
       - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
@@ -59,10 +51,6 @@ services:
       WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
       WAIT_BEFORE_HOSTS: 10
       WAIT_HOSTS_TIMEOUT: 60
-      IROHA_HOST: d3-iroha
-      IROHA_PORT: 50051
-      JAR_NAME: eth-deposit.jar
-      CLASS: com.d3.eth.deposit.EthDepositMain
     volumes:
       - ../configs:/opt/notary/configs
       - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
@@ -79,10 +67,6 @@ services:
       WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
       WAIT_BEFORE_HOSTS: 10
       WAIT_HOSTS_TIMEOUT: 60
-      IROHA_HOST: d3-iroha
-      IROHA_PORT: 50051
-      JAR_NAME: eth-withdrawal.jar
-      CLASS: com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceMain
     volumes:
       - ../configs:/opt/notary/configs
       - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
