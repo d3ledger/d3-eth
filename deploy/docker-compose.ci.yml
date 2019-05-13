@@ -20,9 +20,16 @@ services:
 
   # ethereum
   d3-eth-node0:
+    build:
+      context: ./ethereum
+      dockerfile: ganache.dockerfile
     container_name: d3-eth-node0-${SUBNET}
     expose:
     - 8545
+    volumes:
+      - ./ethereum:/eth
+    environment:
+      - NODE=0
     networks:
     - d3-notary
 
