@@ -1,7 +1,7 @@
 package com.d3.eth.registration
 
 import com.d3.commons.config.EthereumPasswords
-import com.d3.commons.registration.IrohaEthAccountRegistrator
+import com.d3.commons.registration.IrohaAccountRegistrator
 import com.d3.commons.registration.RegistrationStrategy
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.eth.provider.EthFreeRelayProvider
@@ -18,7 +18,7 @@ import mu.KLogging
 class EthRegistrationStrategyImpl(
     private val ethFreeRelayProvider: EthFreeRelayProvider,
     private val ethRelayProvider: EthRelayProvider,
-    private val ethRegistrationConfig: EthRegistrationConfig,
+    ethRegistrationConfig: EthRegistrationConfig,
     ethPasswordConfig: EthereumPasswords,
     private val irohaConsumer: IrohaConsumer,
     private val notaryIrohaAccount: String
@@ -28,8 +28,14 @@ class EthRegistrationStrategyImpl(
         logger.info { "Init EthRegistrationStrategyImpl with irohaCreator=${irohaConsumer.creator}, notaryIrohaAccount=$notaryIrohaAccount" }
     }
 
+    private val CURRENCY_WALLET = "ethereum_wallet"
+
     private val ethereumAccountRegistrator =
-        IrohaEthAccountRegistrator(irohaConsumer, notaryIrohaAccount)
+        IrohaAccountRegistrator(
+            irohaConsumer,
+            notaryIrohaAccount,
+            CURRENCY_WALLET
+        )
 
     private val deployHelper = DeployHelper(ethRegistrationConfig.ethereum, ethPasswordConfig)
 
@@ -60,7 +66,7 @@ class EthRegistrationStrategyImpl(
                             accountName,
                             domainId,
                             publicKey
-                        )
+                        ) { "$accountName@$domainId" }
                     }
             }
     }
