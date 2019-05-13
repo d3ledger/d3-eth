@@ -28,6 +28,7 @@ class ContractTestHelper {
             listOf(accMain)
         )
     }
+    val xorAddress = master.xorTokenInstance().send()
     val relayImplementation by lazy { deployHelper.deployRelaySmartContract(master.contractAddress) }
     val relay by lazy {
         deployHelper.deployUpgradableRelaySmartContract(
@@ -241,8 +242,9 @@ class ContractTestHelper {
         val sigs = prepareSignatures(1, listOf(keypair), finalHash)
 
         return master.mintTokensByPeers(
-            beneficiary,
+            xorAddress,
             BigInteger.valueOf(amount),
+            beneficiary,
             defaultByteHash,
             sigs.vv,
             sigs.rr,
