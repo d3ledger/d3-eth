@@ -23,7 +23,7 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class IMaster extends Contract {
     private static final String BINARY = "";
@@ -51,27 +51,29 @@ public class IMaster extends Contract {
     }
 
     public RemoteCall<Boolean> checkTokenAddress(String token) {
-        final Function function = new Function(FUNC_CHECKTOKENADDRESS,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(token)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {
-                }));
+        final Function function = new Function(FUNC_CHECKTOKENADDRESS, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(token)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {}));
         return executeRemoteCallSingleValueReturn(function, Boolean.class);
     }
 
     public RemoteCall<TransactionReceipt> withdraw(String tokenAddress, BigInteger amount, String to, byte[] txHash, List<BigInteger> v, List<byte[]> r, List<byte[]> s, String from) {
         final Function function = new Function(
-                FUNC_WITHDRAW,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(tokenAddress),
-                        new org.web3j.abi.datatypes.generated.Uint256(amount),
-                        new org.web3j.abi.datatypes.Address(to),
-                        new org.web3j.abi.datatypes.generated.Bytes32(txHash),
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Uint8>(
-                                org.web3j.abi.Utils.typeMap(v, org.web3j.abi.datatypes.generated.Uint8.class)),
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Bytes32>(
-                                org.web3j.abi.Utils.typeMap(r, org.web3j.abi.datatypes.generated.Bytes32.class)),
-                        new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Bytes32>(
-                                org.web3j.abi.Utils.typeMap(s, org.web3j.abi.datatypes.generated.Bytes32.class)),
-                        new org.web3j.abi.datatypes.Address(from)),
+                FUNC_WITHDRAW, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(tokenAddress), 
+                new org.web3j.abi.datatypes.generated.Uint256(amount), 
+                new org.web3j.abi.datatypes.Address(to), 
+                new org.web3j.abi.datatypes.generated.Bytes32(txHash), 
+                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Uint8>(
+                        org.web3j.abi.datatypes.generated.Uint8.class,
+                        org.web3j.abi.Utils.typeMap(v, org.web3j.abi.datatypes.generated.Uint8.class)), 
+                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Bytes32>(
+                        org.web3j.abi.datatypes.generated.Bytes32.class,
+                        org.web3j.abi.Utils.typeMap(r, org.web3j.abi.datatypes.generated.Bytes32.class)), 
+                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Bytes32>(
+                        org.web3j.abi.datatypes.generated.Bytes32.class,
+                        org.web3j.abi.Utils.typeMap(s, org.web3j.abi.datatypes.generated.Bytes32.class)), 
+                new org.web3j.abi.datatypes.Address(from)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }

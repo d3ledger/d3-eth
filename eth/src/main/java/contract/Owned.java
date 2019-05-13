@@ -30,19 +30,17 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class Owned extends Contract {
-    private static final String BINARY = "608060405260008054600160a060020a0319163317905534801561002257600080fd5b506101ab806100326000396000f3fe608060405234801561001057600080fd5b5060043610610052577c0100000000000000000000000000000000000000000000000000000000600035046313af403581146100575780638da5cb5b1461008c575b600080fd5b61008a6004803603602081101561006d57600080fd5b503573ffffffffffffffffffffffffffffffffffffffff166100bd565b005b610094610163565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b60005473ffffffffffffffffffffffffffffffffffffffff1633146100e157600080fd5b6000805460405173ffffffffffffffffffffffffffffffffffffffff808516939216917f70aea8d848e8a90fb7661b227dc522eb6395c3dac71b63cb59edd5c9899b236491a36000805473ffffffffffffffffffffffffffffffffffffffff191673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b60005473ffffffffffffffffffffffffffffffffffffffff168156fea165627a7a72305820f32d46853e4aaeec69d2975ec9d4e37973771d1575548bdbcd89cae46ee5cbb80029";
+    private static final String BINARY = "6080604052600080546001600160a01b0319163317905534801561002257600080fd5b5061012a806100326000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c806313af40351460375780638da5cb5b14605c575b600080fd5b605a60048036036020811015604b57600080fd5b50356001600160a01b0316607e565b005b606260ef565b604080516001600160a01b039092168252519081900360200190f35b6000546001600160a01b03163314609457600080fd5b600080546040516001600160a01b03808516939216917f70aea8d848e8a90fb7661b227dc522eb6395c3dac71b63cb59edd5c9899b236491a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b6000546001600160a01b03168156fea165627a7a72305820ba78fffdc3b5bf0f2ee521635dead7f574e3b8682554c515fc3453f7b36432b50029";
 
     public static final String FUNC_SETOWNER = "setOwner";
 
     public static final String FUNC_OWNER = "owner";
 
-    public static final Event NEWOWNER_EVENT = new Event("NewOwner",
-            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {
-            }, new TypeReference<Address>(true) {
-            }));
+    public static final Event NEWOWNER_EVENT = new Event("NewOwner", 
+            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Address>(true) {}));
     ;
 
     @Deprecated
@@ -72,10 +70,9 @@ public class Owned extends Contract {
     }
 
     public RemoteCall<String> owner() {
-        final Function function = new Function(FUNC_OWNER,
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {
-                }));
+        final Function function = new Function(FUNC_OWNER, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
