@@ -87,4 +87,30 @@ contract Relay {
         // trusted call
         masterInstance.withdraw(tokenAddress, amount, to, tx_hash, v, r, s, from);
     }
+
+    /**
+     * Mint specified amount of ether or one of ERC-20 tokens to provided address
+     * @param tokenAddress address to mint
+     * @param amount how much to mint
+     * @param beneficiary destination address
+     * @param txHash hash of transaction from Iroha
+     * @param v array of signatures of tx_hash (v-component)
+     * @param r array of signatures of tx_hash (r-component)
+     * @param s array of signatures of tx_hash (s-component)
+     */
+    function mintTokensByPeers(
+        address tokenAddress,
+        uint256 amount,
+        address beneficiary,
+        bytes32 txHash,
+        uint8[] memory v,
+        bytes32[] memory r,
+        bytes32[] memory s
+    )
+    public
+    {
+        emit AddressEvent(masterAddress);
+        // trusted call
+        masterInstance.mintTokensByPeers(tokenAddress, amount, beneficiary, txHash, v, r, s);
+    }
 }

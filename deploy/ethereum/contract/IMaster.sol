@@ -15,5 +15,17 @@ contract IMaster {
         address from
     )
     public;
+
+    function mintTokensByPeers(
+        address tokenAddress,
+        uint256 amount,
+        address beneficiary,
+        bytes32 txHash,
+        uint8[] memory v,
+        bytes32[] memory r,
+        bytes32[] memory s
+    )
+    public;
+
     function checkTokenAddress(address token) public view returns (bool);
 }

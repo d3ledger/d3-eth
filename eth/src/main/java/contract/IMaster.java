@@ -32,6 +32,8 @@ public class IMaster extends Contract {
 
     public static final String FUNC_WITHDRAW = "withdraw";
 
+    public static final String FUNC_MINTTOKENSBYPEERS = "mintTokensByPeers";
+
     @Deprecated
     protected IMaster(String contractAddress, Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
         super(BINARY, contractAddress, web3j, credentials, gasPrice, gasLimit);
@@ -74,6 +76,26 @@ public class IMaster extends Contract {
                         org.web3j.abi.datatypes.generated.Bytes32.class,
                         org.web3j.abi.Utils.typeMap(s, org.web3j.abi.datatypes.generated.Bytes32.class)), 
                 new org.web3j.abi.datatypes.Address(from)), 
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function);
+    }
+
+    public RemoteCall<TransactionReceipt> mintTokensByPeers(String tokenAddress, BigInteger amount, String beneficiary, byte[] txHash, List<BigInteger> v, List<byte[]> r, List<byte[]> s) {
+        final Function function = new Function(
+                FUNC_MINTTOKENSBYPEERS, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(tokenAddress), 
+                new org.web3j.abi.datatypes.generated.Uint256(amount), 
+                new org.web3j.abi.datatypes.Address(beneficiary), 
+                new org.web3j.abi.datatypes.generated.Bytes32(txHash), 
+                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Uint8>(
+                        org.web3j.abi.datatypes.generated.Uint8.class,
+                        org.web3j.abi.Utils.typeMap(v, org.web3j.abi.datatypes.generated.Uint8.class)), 
+                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Bytes32>(
+                        org.web3j.abi.datatypes.generated.Bytes32.class,
+                        org.web3j.abi.Utils.typeMap(r, org.web3j.abi.datatypes.generated.Bytes32.class)), 
+                new org.web3j.abi.datatypes.DynamicArray<org.web3j.abi.datatypes.generated.Bytes32>(
+                        org.web3j.abi.datatypes.generated.Bytes32.class,
+                        org.web3j.abi.Utils.typeMap(s, org.web3j.abi.datatypes.generated.Bytes32.class))), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }

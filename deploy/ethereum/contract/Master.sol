@@ -291,16 +291,18 @@ contract Master {
 
     /**
      * Mint new XORToken
-     * @param beneficiary destination address
+     * @param tokenAddress address to mint
      * @param amount how much to mint
+     * @param beneficiary destination address
      * @param txHash hash of transaction from Iroha
      * @param v array of signatures of tx_hash (v-component)
      * @param r array of signatures of tx_hash (r-component)
      * @param s array of signatures of tx_hash (s-component)
      */
     function mintTokensByPeers(
-        address beneficiary,
+        address tokenAddress,
         uint256 amount,
+        address beneficiary,
         bytes32 txHash,
         uint8[] memory v,
         bytes32[] memory r,
@@ -309,6 +311,7 @@ contract Master {
     public
     {
         require(address(xorTokenInstance) != address(0));
+        require(address(xorTokenInstance) == tokenAddress);
         require(used[txHash] == false);
         require(checkSignatures(
             keccak256(abi.encodePacked(beneficiary, amount, txHash)),

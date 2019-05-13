@@ -34,8 +34,52 @@ class EthConsumer(
                     "relay ${event.proof.relay}\n"
         }
 
+        val relay = Relay.load(
+            event.proof.relay,
+            deployHelper.web3,
+            deployHelper.credentials,
+            StaticGasProvider(deployHelper.gasPrice, deployHelper.gasLimit)
+        )
+
+        return if (event.isIrohaAnchored) {
+            withdrawIrohaAnchored(relay, event)
+        } else {
+            withdrawEthereumAnchored(relay, event)
+        }
+    }
+
+    /**
+     * Mint in Ethereum tokens that should be withdrawen.
+     */
+    fun withdrawIrohaAnchored(
+        relay: Relay,
+        event: WithdrawalServiceOutputEvent.EthRefund
+    ): TransactionReceipt? {
+        try {
+            return relay.mintTokensByPeers(
+                event.proof.tokenContractAddress,
+                BigInteger(event.proof.amount),
+                event.proof.account,
+                Numeric.hexStringToByteArray(event.proof.irohaHash),
+                event.proof.v,
+                event.proof.r,
+                event.proof.s
+            ).send()
+        } catch (ex: Exception) {
+            logger.error("Web3j exception encountered", ex)
+            return null
+        }
+    }
+
+    /**
+     * Call Relay method withdraw and preform vacuum if needed.
+     */
+    fun withdrawEthereumAnchored(
+        relay: Relay,
+        event: WithdrawalServiceOutputEvent.EthRefund
+    ): TransactionReceipt? {
         // The first withdraw call
-        val call = withdraw(event)
+        val call = withdraw(relay, event)
         // Here works next logic:
         // If the first call returns logs with size 2 then check if a destination address is equal to the address
         // from the second log
@@ -44,11 +88,14 @@ class EthConsumer(
         if (logs != null) {
             for (log in logs) {
                 if (log.topics.contains("0x33d1e0301846de1496df73b1da3d17c85b7266dd832d21e10ff21a1f143ef293")
-                    && event.proof.account.toLowerCase() == "0x" + log.data.toLowerCase().subSequence(90, 130)
+                    && event.proof.account.toLowerCase() == "0x" + log.data.toLowerCase().subSequence(
+                        90,
+                        130
+                    )
                 ) {
                     executeVacuum(relayVacuumConfig).fold(
                         {
-                            return withdraw(event)
+                            return withdraw(relay, event)
                         },
                         { ex ->
                             throw ex
@@ -60,15 +107,11 @@ class EthConsumer(
         return call
     }
 
-    fun withdraw(event: WithdrawalServiceOutputEvent.EthRefund): TransactionReceipt? {
+    /**
+     * Call relay method to withdraw
+     */
+    fun withdraw(relay: Relay, event: WithdrawalServiceOutputEvent.EthRefund): TransactionReceipt? {
         try {
-            val relay = Relay.load(
-                event.proof.relay,
-                deployHelper.web3,
-                deployHelper.credentials,
-                StaticGasProvider(deployHelper.gasPrice, deployHelper.gasLimit)
-            )
-
             return relay.withdraw(
                 event.proof.tokenContractAddress,
                 BigInteger(event.proof.amount),
