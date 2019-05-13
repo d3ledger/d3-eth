@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.d3.eth.notary.endpoint
 
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
@@ -59,7 +64,10 @@ class RefundServerEndpointTest {
         val result = server.onCallEthRefund(request)
 
         assertEquals(HttpStatusCode.OK, result.code)
-        assertEquals(successResponse, moshi.adapter(EthNotaryResponse::class.java).fromJson(result.message))
+        assertEquals(
+            successResponse,
+            moshi.adapter(EthNotaryResponse::class.java).fromJson(result.message)
+        )
     }
 
     /**

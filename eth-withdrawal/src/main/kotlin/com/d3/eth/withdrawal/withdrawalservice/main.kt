@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 @file:JvmName("WithdrawalServiceMain")
 
 package com.d3.eth.withdrawal.withdrawalservice
@@ -26,10 +31,23 @@ fun main(args: Array<String>) {
     loadConfigs("withdrawal", WithdrawalServiceConfig::class.java, "/eth/withdrawal.properties")
         .fanout { loadEthPasswords("withdrawal", "/eth/ethereum_password.properties", args) }
         .map { (withdrawalConfig, passwordConfig) ->
-            loadConfigs(RELAY_VACUUM_PREFIX, RelayVacuumConfig::class.java, "/eth/vacuum.properties")
+            loadConfigs(
+                RELAY_VACUUM_PREFIX,
+                RelayVacuumConfig::class.java,
+                "/eth/vacuum.properties"
+            )
                 .map { relayVacuumConfig ->
-                    val rmqConfig = loadRawConfigs("rmq", RMQConfig::class.java, "${getConfigFolder()}/rmq.properties")
-                    executeWithdrawal(withdrawalConfig, passwordConfig, relayVacuumConfig, rmqConfig)
+                    val rmqConfig = loadRawConfigs(
+                        "rmq",
+                        RMQConfig::class.java,
+                        "${getConfigFolder()}/rmq.properties"
+                    )
+                    executeWithdrawal(
+                        withdrawalConfig,
+                        passwordConfig,
+                        relayVacuumConfig,
+                        rmqConfig
+                    )
                 }
         }
         .failure { ex ->
@@ -51,7 +69,12 @@ fun executeWithdrawal(
         withdrawalConfig.withdrawalCredential.pubkeyPath,
         withdrawalConfig.withdrawalCredential.privkeyPath
     )
-        .map { keypair -> IrohaCredential(withdrawalConfig.withdrawalCredential.accountId, keypair) }
+        .map { keypair ->
+            IrohaCredential(
+                withdrawalConfig.withdrawalCredential.accountId,
+                keypair
+            )
+        }
         .flatMap { credential ->
             WithdrawalServiceInitialization(
                 withdrawalConfig,

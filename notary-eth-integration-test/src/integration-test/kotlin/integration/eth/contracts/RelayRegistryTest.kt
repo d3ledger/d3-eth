@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package integration.eth.contracts
 
 import contract.RelayRegistry
@@ -36,7 +41,10 @@ class RelayRegistryTest {
     @Test
     fun addSameWhiteListTwice() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
-            cth.addWhiteListToRelayRegistry(Keys.getAddress(keypair), listOf(accGreen)) // first call
+            cth.addWhiteListToRelayRegistry(
+                Keys.getAddress(keypair),
+                listOf(accGreen)
+            ) // first call
             Assertions.assertThrows(TransactionException::class.java) {
                 cth.addWhiteListToRelayRegistry(
                     Keys.getAddress(keypair),
@@ -55,7 +63,12 @@ class RelayRegistryTest {
     fun addWhiteListAndCheckAddress() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             cth.addWhiteListToRelayRegistry(Keys.getAddress(keypair), listOf(accGreen))
-            Assertions.assertTrue(relayRegistry.isWhiteListed(Keys.getAddress(keypair), accGreen).send())
+            Assertions.assertTrue(
+                relayRegistry.isWhiteListed(
+                    Keys.getAddress(keypair),
+                    accGreen
+                ).send()
+            )
         }
     }
 
@@ -89,7 +102,10 @@ class RelayRegistryTest {
                 }
             }
 
-            assertEquals(equalAddressesSize, relayRegistry.getWhiteListByRelay(Keys.getAddress(keypair)).send().size)
+            assertEquals(
+                equalAddressesSize,
+                relayRegistry.getWhiteListByRelay(Keys.getAddress(keypair)).send().size
+            )
         }
     }
 
