@@ -13,7 +13,7 @@ sourceSets {
             srcDirs += 'src/integration-test/kotlin'
         }
         resources {
-            srcDirs = ["src/integration-test/resources"]
+            srcDirs += ["src/integration-test/resources"]
         }
     }
 }
