@@ -31,10 +31,10 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class ERC20Burnable extends Contract {
-    private static final String BINARY = "608060405234801561001057600080fd5b5061066d806100206000396000f3fe608060405234801561001057600080fd5b50600436106100bb576000357c01000000000000000000000000000000000000000000000000000000009004806370a082311161008357806370a082311461019b57806379cc6790146101c1578063a457c2d7146101ed578063a9059cbb14610219578063dd62ed3e14610245576100bb565b8063095ea7b3146100c057806318160ddd1461010057806323b872dd1461011a578063395093511461015057806342966c681461017c575b600080fd5b6100ec600480360360408110156100d657600080fd5b50600160a060020a038135169060200135610273565b604080519115158252519081900360200190f35b610108610289565b60408051918252519081900360200190f35b6100ec6004803603606081101561013057600080fd5b50600160a060020a0381358116916020810135909116906040013561028f565b6100ec6004803603604081101561016657600080fd5b50600160a060020a0381351690602001356102e6565b6101996004803603602081101561019257600080fd5b5035610322565b005b610108600480360360208110156101b157600080fd5b5035600160a060020a031661032f565b610199600480360360408110156101d757600080fd5b50600160a060020a03813516906020013561034a565b6100ec6004803603604081101561020357600080fd5b50600160a060020a038135169060200135610358565b6100ec6004803603604081101561022f57600080fd5b50600160a060020a038135169060200135610394565b6101086004803603604081101561025b57600080fd5b50600160a060020a03813581169160200135166103a1565b60006102803384846103cc565b50600192915050565b60025490565b600061029c848484610458565b600160a060020a0384166000908152600160209081526040808320338085529252909120546102dc9186916102d7908663ffffffff61052516565b6103cc565b5060019392505050565b336000818152600160209081526040808320600160a060020a038716845290915281205490916102809185906102d7908663ffffffff61053a16565b61032c3382610553565b50565b600160a060020a031660009081526020819052604090205490565b61035482826105fc565b5050565b336000818152600160209081526040808320600160a060020a038716845290915281205490916102809185906102d7908663ffffffff61052516565b6000610280338484610458565b600160a060020a03918216600090815260016020908152604080832093909416825291909152205490565b600160a060020a03821615156103e157600080fd5b600160a060020a03831615156103f657600080fd5b600160a060020a03808416600081815260016020908152604080832094871680845294825291829020859055815185815291517f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259281900390910190a3505050565b600160a060020a038216151561046d57600080fd5b600160a060020a038316600090815260208190526040902054610496908263ffffffff61052516565b600160a060020a0380851660009081526020819052604080822093909355908416815220546104cb908263ffffffff61053a16565b600160a060020a038084166000818152602081815260409182902094909455805185815290519193928716927fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef92918290030190a3505050565b60008282111561053457600080fd5b50900390565b60008282018381101561054c57600080fd5b9392505050565b600160a060020a038216151561056857600080fd5b60025461057b908263ffffffff61052516565b600255600160a060020a0382166000908152602081905260409020546105a7908263ffffffff61052516565b600160a060020a038316600081815260208181526040808320949094558351858152935191937fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef929081900390910190a35050565b6106068282610553565b600160a060020a0382166000908152600160209081526040808320338085529252909120546103549184916102d7908563ffffffff6105251656fea165627a7a72305820a148087618bde5d093c85168e5dd4e48ae047e1a104246fdabc756f0138ec18d0029";
+    private static final String BINARY = "608060405234801561001057600080fd5b50610648806100206000396000f3fe608060405234801561001057600080fd5b506004361061009e5760003560e01c806370a082311161006657806370a082311461017e57806379cc6790146101a4578063a457c2d7146101d0578063a9059cbb146101fc578063dd62ed3e146102285761009e565b8063095ea7b3146100a357806318160ddd146100e357806323b872dd146100fd578063395093511461013357806342966c681461015f575b600080fd5b6100cf600480360360408110156100b957600080fd5b506001600160a01b038135169060200135610256565b604080519115158252519081900360200190f35b6100eb61026c565b60408051918252519081900360200190f35b6100cf6004803603606081101561011357600080fd5b506001600160a01b03813581169160208101359091169060400135610272565b6100cf6004803603604081101561014957600080fd5b506001600160a01b0381351690602001356102c9565b61017c6004803603602081101561017557600080fd5b5035610305565b005b6100eb6004803603602081101561019457600080fd5b50356001600160a01b0316610312565b61017c600480360360408110156101ba57600080fd5b506001600160a01b03813516906020013561032d565b6100cf600480360360408110156101e657600080fd5b506001600160a01b03813516906020013561033b565b6100cf6004803603604081101561021257600080fd5b506001600160a01b038135169060200135610377565b6100eb6004803603604081101561023e57600080fd5b506001600160a01b0381358116916020013516610384565b60006102633384846103af565b50600192915050565b60025490565b600061027f848484610437565b6001600160a01b0384166000908152600160209081526040808320338085529252909120546102bf9186916102ba908663ffffffff61050216565b6103af565b5060019392505050565b3360008181526001602090815260408083206001600160a01b038716845290915281205490916102639185906102ba908663ffffffff61051716565b61030f3382610530565b50565b6001600160a01b031660009081526020819052604090205490565b61033782826105d7565b5050565b3360008181526001602090815260408083206001600160a01b038716845290915281205490916102639185906102ba908663ffffffff61050216565b6000610263338484610437565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6001600160a01b0382166103c257600080fd5b6001600160a01b0383166103d557600080fd5b6001600160a01b03808416600081815260016020908152604080832094871680845294825291829020859055815185815291517f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259281900390910190a3505050565b6001600160a01b03821661044a57600080fd5b6001600160a01b038316600090815260208190526040902054610473908263ffffffff61050216565b6001600160a01b0380851660009081526020819052604080822093909355908416815220546104a8908263ffffffff61051716565b6001600160a01b038084166000818152602081815260409182902094909455805185815290519193928716927fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef92918290030190a3505050565b60008282111561051157600080fd5b50900390565b60008282018381101561052957600080fd5b9392505050565b6001600160a01b03821661054357600080fd5b600254610556908263ffffffff61050216565b6002556001600160a01b038216600090815260208190526040902054610582908263ffffffff61050216565b6001600160a01b038316600081815260208181526040808320949094558351858152935191937fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef929081900390910190a35050565b6105e18282610530565b6001600160a01b0382166000908152600160209081526040808320338085529252909120546103379184916102ba908563ffffffff6105021656fea165627a7a723058206ecda908d61d5b359bb8f0317b7487460b70fb952bd54dda5c31a7f1b9d8bef00029";
 
     public static final String FUNC_APPROVE = "approve";
 
@@ -56,18 +56,12 @@ public class ERC20Burnable extends Contract {
 
     public static final String FUNC_ALLOWANCE = "allowance";
 
-    public static final Event TRANSFER_EVENT = new Event("Transfer",
-            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {
-            }, new TypeReference<Address>(true) {
-            }, new TypeReference<Uint256>() {
-            }));
+    public static final Event TRANSFER_EVENT = new Event("Transfer", 
+            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Address>(true) {}, new TypeReference<Uint256>() {}));
     ;
 
-    public static final Event APPROVAL_EVENT = new Event("Approval",
-            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {
-            }, new TypeReference<Address>(true) {
-            }, new TypeReference<Uint256>() {
-            }));
+    public static final Event APPROVAL_EVENT = new Event("Approval", 
+            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Address>(true) {}, new TypeReference<Uint256>() {}));
     ;
 
     @Deprecated
@@ -90,36 +84,35 @@ public class ERC20Burnable extends Contract {
 
     public RemoteCall<TransactionReceipt> approve(String spender, BigInteger value) {
         final Function function = new Function(
-                FUNC_APPROVE,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(spender),
-                        new org.web3j.abi.datatypes.generated.Uint256(value)),
+                FUNC_APPROVE, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(spender), 
+                new org.web3j.abi.datatypes.generated.Uint256(value)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     public RemoteCall<BigInteger> totalSupply() {
-        final Function function = new Function(FUNC_TOTALSUPPLY,
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+        final Function function = new Function(FUNC_TOTALSUPPLY, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
     public RemoteCall<TransactionReceipt> transferFrom(String from, String to, BigInteger value) {
         final Function function = new Function(
-                FUNC_TRANSFERFROM,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(from),
-                        new org.web3j.abi.datatypes.Address(to),
-                        new org.web3j.abi.datatypes.generated.Uint256(value)),
+                FUNC_TRANSFERFROM, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(from), 
+                new org.web3j.abi.datatypes.Address(to), 
+                new org.web3j.abi.datatypes.generated.Uint256(value)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     public RemoteCall<TransactionReceipt> increaseAllowance(String spender, BigInteger addedValue) {
         final Function function = new Function(
-                FUNC_INCREASEALLOWANCE,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(spender),
-                        new org.web3j.abi.datatypes.generated.Uint256(addedValue)),
+                FUNC_INCREASEALLOWANCE, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(spender), 
+                new org.web3j.abi.datatypes.generated.Uint256(addedValue)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
@@ -133,46 +126,44 @@ public class ERC20Burnable extends Contract {
     }
 
     public RemoteCall<BigInteger> balanceOf(String owner) {
-        final Function function = new Function(FUNC_BALANCEOF,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(owner)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+        final Function function = new Function(FUNC_BALANCEOF, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(owner)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
     public RemoteCall<TransactionReceipt> burnFrom(String from, BigInteger value) {
         final Function function = new Function(
-                FUNC_BURNFROM,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(from),
-                        new org.web3j.abi.datatypes.generated.Uint256(value)),
+                FUNC_BURNFROM, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(from), 
+                new org.web3j.abi.datatypes.generated.Uint256(value)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     public RemoteCall<TransactionReceipt> decreaseAllowance(String spender, BigInteger subtractedValue) {
         final Function function = new Function(
-                FUNC_DECREASEALLOWANCE,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(spender),
-                        new org.web3j.abi.datatypes.generated.Uint256(subtractedValue)),
+                FUNC_DECREASEALLOWANCE, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(spender), 
+                new org.web3j.abi.datatypes.generated.Uint256(subtractedValue)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     public RemoteCall<TransactionReceipt> transfer(String to, BigInteger value) {
         final Function function = new Function(
-                FUNC_TRANSFER,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(to),
-                        new org.web3j.abi.datatypes.generated.Uint256(value)),
+                FUNC_TRANSFER, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(to), 
+                new org.web3j.abi.datatypes.generated.Uint256(value)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     public RemoteCall<BigInteger> allowance(String owner, String spender) {
-        final Function function = new Function(FUNC_ALLOWANCE,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(owner),
-                        new org.web3j.abi.datatypes.Address(spender)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+        final Function function = new Function(FUNC_ALLOWANCE, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(owner), 
+                new org.web3j.abi.datatypes.Address(spender)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 

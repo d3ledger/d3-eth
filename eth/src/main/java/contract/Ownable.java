@@ -31,7 +31,7 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class Ownable extends Contract {
     private static final String BINARY = "";
@@ -44,10 +44,8 @@ public class Ownable extends Contract {
 
     public static final String FUNC_TRANSFEROWNERSHIP = "transferOwnership";
 
-    public static final Event OWNERSHIPTRANSFERRED_EVENT = new Event("OwnershipTransferred",
-            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {
-            }, new TypeReference<Address>(true) {
-            }));
+    public static final Event OWNERSHIPTRANSFERRED_EVENT = new Event("OwnershipTransferred", 
+            Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Address>(true) {}));
     ;
 
     @Deprecated
@@ -77,18 +75,16 @@ public class Ownable extends Contract {
     }
 
     public RemoteCall<String> owner() {
-        final Function function = new Function(FUNC_OWNER,
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {
-                }));
+        final Function function = new Function(FUNC_OWNER, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
     public RemoteCall<Boolean> isOwner() {
-        final Function function = new Function(FUNC_ISOWNER,
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {
-                }));
+        final Function function = new Function(FUNC_ISOWNER, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Bool>() {}));
         return executeRemoteCallSingleValueReturn(function, Boolean.class);
     }
 

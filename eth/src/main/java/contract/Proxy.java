@@ -20,7 +20,7 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class Proxy extends Contract {
     private static final String BINARY = "";
@@ -46,10 +46,9 @@ public class Proxy extends Contract {
     }
 
     public RemoteCall<String> implementation() {
-        final Function function = new Function(FUNC_IMPLEMENTATION,
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {
-                }));
+        final Function function = new Function(FUNC_IMPLEMENTATION, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}));
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 

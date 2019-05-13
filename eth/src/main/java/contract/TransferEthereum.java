@@ -21,10 +21,10 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class TransferEthereum extends Contract {
-    private static final String BINARY = "608060405234801561001057600080fd5b5060f98061001f6000396000f3fe6080604052600436106038577c01000000000000000000000000000000000000000000000000000000006000350463a9059cbb81146044575b3615604257600080fd5b005b348015604f57600080fd5b50604260048036036040811015606457600080fd5b50604051813573ffffffffffffffffffffffffffffffffffffffff1691602001359082908290600081818185875af1925050503d806000811460c1576040519150601f19603f3d011682016040523d82523d6000602084013e60c6565b606091505b505050505056fea165627a7a7230582086dca0bf20c099d245f499ae2be3a2afc1be7f4abd312efbb5c09d51be5d56560029";
+    private static final String BINARY = "608060405234801561001057600080fd5b5060d08061001f6000396000f3fe608060405260043610601c5760003560e01c8063a9059cbb146028575b3615602657600080fd5b005b348015603357600080fd5b50602660048036036040811015604857600080fd5b5060405181356001600160a01b031691602001359082908290600081818185875af1925050503d80600081146098576040519150601f19603f3d011682016040523d82523d6000602084013e609d565b606091505b505050505056fea165627a7a72305820ad981187486aa81550c46f068af105333ee95fb81cb6579c78d8a2b60e64ae9b0029";
 
     public static final String FUNC_TRANSFER = "transfer";
 
@@ -48,9 +48,9 @@ public class TransferEthereum extends Contract {
 
     public RemoteCall<TransactionReceipt> transfer(String to, BigInteger amount) {
         final Function function = new Function(
-                FUNC_TRANSFER,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(to),
-                        new org.web3j.abi.datatypes.generated.Uint256(amount)),
+                FUNC_TRANSFER, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(to), 
+                new org.web3j.abi.datatypes.generated.Uint256(amount)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }

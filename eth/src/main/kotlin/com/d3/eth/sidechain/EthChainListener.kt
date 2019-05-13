@@ -1,12 +1,12 @@
 package com.d3.eth.sidechain
 
+import com.d3.commons.sidechain.ChainListener
 import com.github.kittinunf.result.Result
 import io.reactivex.Observable
 import mu.KLogging
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.methods.response.EthBlock
-import com.d3.commons.sidechain.ChainListener
 import java.math.BigInteger
 
 /**
@@ -26,7 +26,8 @@ class EthChainListener(
     }
 
     /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
-    private var lastBlock = confirmationPeriod
+    var lastBlock = confirmationPeriod
+        private set
 
     override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
         return Result.of {
@@ -40,6 +41,7 @@ class EthChainListener(
                             it.block.number - confirmationPeriod
                         ), true
                     ).send()
+                    logger.info { "Ethereum chain listener got block ${block.block.number}" }
                     block
                 }
         }
