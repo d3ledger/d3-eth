@@ -1,13 +1,18 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.d3.eth.sidechain
 
+import com.d3.commons.sidechain.ChainHandler
+import com.d3.commons.sidechain.SideChainEvent
+import com.d3.eth.provider.*
 import com.github.kittinunf.result.fanout
 import mu.KLogging
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.methods.response.EthBlock
 import org.web3j.protocol.core.methods.response.Transaction
-import com.d3.commons.sidechain.ChainHandler
-import com.d3.commons.sidechain.SideChainEvent
-import com.d3.eth.provider.*
 import java.math.BigDecimal
 import java.math.BigInteger
 
