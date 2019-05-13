@@ -1120,10 +1120,13 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
+            val xorAddress = master.xorTokenInstance().send()
+
             Assertions.assertTrue(
                 master.mintTokensByPeers(
-                    beneficiary,
+                    xorAddress,
                     BigInteger.valueOf(amountToSend.toLong()),
+                    beneficiary,
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
@@ -1168,10 +1171,13 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
+            val xorAddress = master.xorTokenInstance().send()
+
             Assertions.assertTrue(
                 master.mintTokensByPeers(
-                    beneficiary,
+                    xorAddress,
                     BigInteger.valueOf(amountToSend.toLong()),
+                    beneficiary,
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
@@ -1261,10 +1267,13 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
+            val xorAddress = master.xorTokenInstance().send()
+
             Assertions.assertThrows(TransactionException::class.java) {
                 master.mintTokensByPeers(
-                    beneficiary,
+                    xorAddress,
                     BigInteger.valueOf(amountToSend.toLong()),
+                    beneficiary,
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
