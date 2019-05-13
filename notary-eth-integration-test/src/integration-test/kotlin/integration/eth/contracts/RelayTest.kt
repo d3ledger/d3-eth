@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package integration.eth.contracts
 
 import contract.BasicCoin
@@ -51,8 +56,14 @@ class RelayTest {
                 accGreen,
                 false
             )
-            Assertions.assertEquals(BigInteger.valueOf(4000), cth.getETHBalance(master.contractAddress))
-            Assertions.assertEquals(initialBalance + BigInteger.valueOf(1000), cth.getETHBalance(accGreen))
+            Assertions.assertEquals(
+                BigInteger.valueOf(4000),
+                cth.getETHBalance(master.contractAddress)
+            )
+            Assertions.assertEquals(
+                initialBalance + BigInteger.valueOf(1000),
+                cth.getETHBalance(accGreen)
+            )
         }
     }
 
@@ -65,10 +76,19 @@ class RelayTest {
     fun vacuumEtherTest() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             cth.sendEthereum(BigInteger.valueOf(100_000), relay.contractAddress)
-            Assertions.assertEquals(BigInteger.valueOf(0), cth.getETHBalance(master.contractAddress))
-            Assertions.assertEquals(BigInteger.valueOf(100_000), cth.getETHBalance(relay.contractAddress))
+            Assertions.assertEquals(
+                BigInteger.valueOf(0),
+                cth.getETHBalance(master.contractAddress)
+            )
+            Assertions.assertEquals(
+                BigInteger.valueOf(100_000),
+                cth.getETHBalance(relay.contractAddress)
+            )
             relay.sendToMaster(etherAddress).send()
-            Assertions.assertEquals(BigInteger.valueOf(100_000), cth.getETHBalance(master.contractAddress))
+            Assertions.assertEquals(
+                BigInteger.valueOf(100_000),
+                cth.getETHBalance(master.contractAddress)
+            )
             Assertions.assertEquals(BigInteger.valueOf(0), cth.getETHBalance(relay.contractAddress))
         }
     }
@@ -84,11 +104,23 @@ class RelayTest {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             master.addToken(token.contractAddress).send()
             token.transfer(relay.contractAddress, BigInteger.valueOf(987_654)).send()
-            Assertions.assertEquals(BigInteger.valueOf(0), token.balanceOf(master.contractAddress).send())
-            Assertions.assertEquals(BigInteger.valueOf(987_654), token.balanceOf(relay.contractAddress).send())
+            Assertions.assertEquals(
+                BigInteger.valueOf(0),
+                token.balanceOf(master.contractAddress).send()
+            )
+            Assertions.assertEquals(
+                BigInteger.valueOf(987_654),
+                token.balanceOf(relay.contractAddress).send()
+            )
             relay.sendToMaster(token.contractAddress).send()
-            Assertions.assertEquals(BigInteger.valueOf(987_654), token.balanceOf(master.contractAddress).send())
-            Assertions.assertEquals(BigInteger.valueOf(0), token.balanceOf(relay.contractAddress).send())
+            Assertions.assertEquals(
+                BigInteger.valueOf(987_654),
+                token.balanceOf(master.contractAddress).send()
+            )
+            Assertions.assertEquals(
+                BigInteger.valueOf(0),
+                token.balanceOf(relay.contractAddress).send()
+            )
         }
     }
 
@@ -102,8 +134,14 @@ class RelayTest {
     fun vacuumInvalidTokenTest() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             token.transfer(relay.contractAddress, BigInteger.valueOf(987_654)).send()
-            Assertions.assertEquals(BigInteger.valueOf(0), token.balanceOf(master.contractAddress).send())
-            Assertions.assertEquals(BigInteger.valueOf(987_654), token.balanceOf(relay.contractAddress).send())
+            Assertions.assertEquals(
+                BigInteger.valueOf(0),
+                token.balanceOf(master.contractAddress).send()
+            )
+            Assertions.assertEquals(
+                BigInteger.valueOf(987_654),
+                token.balanceOf(relay.contractAddress).send()
+            )
             Assertions.assertThrows(TransactionException::class.java) {
                 relay.sendToMaster(token.contractAddress).send()
             }

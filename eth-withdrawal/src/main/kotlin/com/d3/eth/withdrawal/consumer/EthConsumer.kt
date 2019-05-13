@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.d3.eth.withdrawal.consumer
 
 import com.d3.commons.config.EthereumConfig
@@ -44,7 +49,10 @@ class EthConsumer(
         if (logs != null) {
             for (log in logs) {
                 if (log.topics.contains("0x33d1e0301846de1496df73b1da3d17c85b7266dd832d21e10ff21a1f143ef293")
-                    && event.proof.account.toLowerCase() == "0x" + log.data.toLowerCase().subSequence(90, 130)
+                    && event.proof.account.toLowerCase() == "0x" + log.data.toLowerCase().subSequence(
+                        90,
+                        130
+                    )
                 ) {
                     executeVacuum(relayVacuumConfig).fold(
                         {

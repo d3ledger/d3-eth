@@ -1,7 +1,12 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.d3.eth.withdrawal.withdrawalservice
 
-import com.github.kittinunf.result.Result
 import com.d3.commons.sidechain.SideChainEvent
+import com.github.kittinunf.result.Result
 
 /**
  * Withdrawal service is responsible for the withdrawal and rollback proof forming and interconnection with Ethereum.

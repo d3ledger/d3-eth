@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 @file:JvmName("EthPreDeployMain")
 
 package com.d3.eth.deploy
@@ -39,7 +44,10 @@ fun main(args: Array<String>) {
         .map { deployHelper ->
 
             val relayRegistry = deployHelper.deployUpgradableRelayRegistrySmartContract()
-            val master = deployHelper.deployUpgradableMasterSmartContract(relayRegistry.contractAddress, args.toList())
+            val master = deployHelper.deployUpgradableMasterSmartContract(
+                relayRegistry.contractAddress,
+                args.toList()
+            )
             val relayImplementation = deployHelper.deployRelaySmartContract(master.contractAddress)
 
             File("master_eth_address").printWriter().use {
