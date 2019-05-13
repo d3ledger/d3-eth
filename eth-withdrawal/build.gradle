@@ -1,5 +1,5 @@
 dependencies {
-    compile project(":eth")
+    compile project(":eth-vacuum")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
