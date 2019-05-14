@@ -1,15 +1,20 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 @file:JvmName("EthSendEther")
 
 package com.d3.eth.deploy
 
-import com.github.kittinunf.result.failure
-import com.github.kittinunf.result.fanout
-import com.github.kittinunf.result.map
 import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadEthPasswords
-import mu.KLogging
 import com.d3.eth.sidechain.util.DeployHelper
+import com.github.kittinunf.result.failure
+import com.github.kittinunf.result.fanout
+import com.github.kittinunf.result.map
+import mu.KLogging
 import java.math.BigInteger
 
 private val logger = KLogging().logger
@@ -37,7 +42,10 @@ fun main(args: Array<String>) {
             )
         }
         .map { deployHelper ->
-            deployHelper.sendEthereum(BigInteger.valueOf((1000000000000000000 * amount).toLong()), addr)
+            deployHelper.sendEthereum(
+                BigInteger.valueOf((1000000000000000000 * amount).toLong()),
+                addr
+            )
             logger.info { "Ether was sent" }
 
         }

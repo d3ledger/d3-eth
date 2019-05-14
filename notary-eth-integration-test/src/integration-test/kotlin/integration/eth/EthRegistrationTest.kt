@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package integration.eth
 
 import com.d3.commons.util.getRandomString
@@ -17,7 +22,8 @@ class EthRegistrationTest {
     /** Integration tests util */
     private val integrationHelper = EthIntegrationHelperUtil()
 
-    private val registrationServiceEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
+    private val registrationServiceEnvironment =
+        RegistrationServiceTestEnvironment(integrationHelper)
 
     private val ethRegistrationConfig = integrationHelper.ethRegistrationConfig
 

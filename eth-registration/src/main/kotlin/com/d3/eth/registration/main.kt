@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 @file:JvmName("EthRegistrationMain")
 
 package com.d3.eth.registration
@@ -20,14 +25,19 @@ const val ETH_REGISTRATION_SERVICE_NAME = "eth-registration"
  * Entry point for Registration Service
  */
 fun main(args: Array<String>) {
-    loadConfigs("eth-registration", EthRegistrationConfig::class.java, "/eth/registration.properties")
+    loadConfigs(
+        "eth-registration",
+        EthRegistrationConfig::class.java,
+        "/eth/registration.properties"
+    )
         .map { ethRegistrationConfig ->
             object : EthRegistrationConfig {
                 override val ethRelayRegistryAddress = System.getenv(ETH_RELAY_REGISTRY_ENV)
                     ?: ethRegistrationConfig.ethRelayRegistryAddress
                 override val ethereum = ethRegistrationConfig.ethereum
                 override val port = ethRegistrationConfig.port
-                override val relayRegistrationIrohaAccount = ethRegistrationConfig.relayRegistrationIrohaAccount
+                override val relayRegistrationIrohaAccount =
+                    ethRegistrationConfig.relayRegistrationIrohaAccount
                 override val notaryIrohaAccount = ethRegistrationConfig.notaryIrohaAccount
                 override val iroha = ethRegistrationConfig.iroha
                 override val registrationCredential = ethRegistrationConfig.registrationCredential
@@ -39,9 +49,13 @@ fun main(args: Array<String>) {
         }
 }
 
-fun executeRegistration(ethRegistrationConfig: EthRegistrationConfig, passwordConfig: EthereumPasswords) {
+fun executeRegistration(
+    ethRegistrationConfig: EthRegistrationConfig,
+    passwordConfig: EthereumPasswords
+) {
     logger.info { "Run ETH registration service" }
-    val irohaNetwork = IrohaAPI(ethRegistrationConfig.iroha.hostname, ethRegistrationConfig.iroha.port)
+    val irohaNetwork =
+        IrohaAPI(ethRegistrationConfig.iroha.hostname, ethRegistrationConfig.iroha.port)
 
     EthRegistrationServiceInitialization(ethRegistrationConfig, passwordConfig, irohaNetwork).init()
         .failure { ex ->

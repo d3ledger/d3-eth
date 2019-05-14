@@ -1,8 +1,13 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package integration.eth.contracts
 
+import com.d3.eth.helper.encodeFunction
 import contract.TestGreeter_v0
 import contract.TestGreeter_v1
-import com.d3.eth.helper.encodeFunction
 import integration.helper.ContractTestHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
