@@ -138,7 +138,7 @@ class EthChainHandler(
         logger.info { "Ethereum chain handler for block ${block.block.number}" }
 
         return ethRelayProvider.getRelays().fanout {
-            ethTokensProvider.getEthAnchoredTokens()
+            ethTokensProvider.getEthTokens()
         }.fold(
             { (wallets, tokens) ->
                 // Eth time in seconds, convert ot milliseconds

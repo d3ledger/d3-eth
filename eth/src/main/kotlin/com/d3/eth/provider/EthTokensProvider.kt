@@ -11,6 +11,11 @@ import com.github.kittinunf.result.Result
 interface EthTokensProvider {
 
     /**
+     * Return all supported Ethereum tokens.
+     */
+    fun  getEthTokens(): Result<Map<String, String>, Exception>
+
+    /**
      * Returns ERC20 Ethereum anchored tokens list in form of
      * (Ethereum wallet -> iroha assetId)
      */

@@ -48,6 +48,24 @@ class EthTokensProviderImpl(
     }
 
     /**
+     * Get all Ethereum tokens.
+     * @returns map (EthreumAddress -> TokenName)
+     */
+    override fun getEthTokens(): Result<Map<String, String>, Exception> {
+        return irohaQueryHelper.getAccountDetails(
+            ethAnchoredTokenStorageAccount,
+            ethAnchoredTokenSetterAccount
+        ).fanout {
+            irohaQueryHelper.getAccountDetails(
+                irohaAnchoredTokenStorageAccount,
+                irohaAnchoredTokenSetterAccount
+            )
+        }.map { (ethAnchored, irohaAnchored) ->
+            ethAnchored.plus(irohaAnchored)
+        }
+    }
+
+    /**
      * Get tokens anchored in Ethereum.
      * @returns map (EthreumAddress -> TokenName)
      */

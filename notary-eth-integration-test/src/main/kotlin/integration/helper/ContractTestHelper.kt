@@ -24,6 +24,12 @@ class ContractTestHelper {
         loadConfigs("test", EthereumPasswords::class.java, "/eth/ethereum_password.properties").get()
 
     val deployHelper = DeployHelper(testConfig.ethereum, passwordConfig)
+
+    // ganache-cli ether custodian
+    val accMain = deployHelper.credentials.address
+    // some ganache-cli account
+    val accGreen = testConfig.ethTestAccount
+
     val keypair = deployHelper.credentials.ecKeyPair
     val relayRegistry by lazy { deployHelper.deployUpgradableRelayRegistrySmartContract() }
     val token by lazy { deployHelper.deployERC20TokenSmartContract() }
@@ -46,10 +52,6 @@ class ContractTestHelper {
     val defaultIrohaHash = Hash.sha3(String.format("%064x", BigInteger.valueOf(12345)))
     val defaultByteHash = irohaHashToByteHash(defaultIrohaHash)
 
-    // ganache-cli ether custodian
-    val accMain = deployHelper.credentials.address
-    // some ganache-cli account
-    val accGreen = testConfig.ethTestAccount
 
     data class sigsData(val vv: ArrayList<BigInteger>, val rr: ArrayList<ByteArray>, val ss: ArrayList<ByteArray>)
 
