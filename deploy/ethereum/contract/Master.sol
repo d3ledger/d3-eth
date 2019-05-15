@@ -306,15 +306,17 @@ contract Master {
         bytes32 txHash,
         uint8[] memory v,
         bytes32[] memory r,
-        bytes32[] memory s
+        bytes32[] memory s,
+        address from
     )
     public
     {
         require(address(xorTokenInstance) != address(0));
         require(address(xorTokenInstance) == tokenAddress);
+        require(relayRegistryInstance.isWhiteListed(from, beneficiary));
         require(used[txHash] == false);
         require(checkSignatures(
-            keccak256(abi.encodePacked(beneficiary, amount, txHash)),
+            keccak256(abi.encodePacked(tokenAddress, amount, beneficiary, txHash, from)),
             v,
             r,
             s)

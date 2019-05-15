@@ -255,7 +255,8 @@ class ContractTestHelper {
             defaultByteHash,
             sigs.vv,
             sigs.rr,
-            sigs.ss
+            sigs.ss,
+            relay.contractAddress
         ).send()
     }
 

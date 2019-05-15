@@ -197,6 +197,23 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      * @param tokenAddress - token ERC20 smart contract address
      * @param tokenInfo - token info
      */
+    fun addIrohaAnchoredERC20Token(tokenAddress: String, tokenInfo: EthTokenInfo) {
+        ModelUtil.createAsset(irohaConsumer, tokenInfo.name, tokenInfo.domain, tokenInfo.precision)
+        ModelUtil.setAccountDetail(
+            tokenProviderIrohaConsumer,
+            accountHelper.irohaAnchoredTokenStorageAccount.accountId,
+            tokenAddress,
+            "${tokenInfo.name}#${tokenInfo.domain}"
+        ).success {
+            logger.info { "token ${tokenInfo.name}#${tokenInfo.domain} was added to ${accountHelper.irohaAnchoredTokenStorageAccount.accountId} by ${tokenProviderIrohaConsumer.creator}" }
+        }
+    }
+
+    /**
+     * Add token to Iroha token provider
+     * @param tokenAddress - token ERC20 smart contract address
+     * @param tokenInfo - token info
+     */
     fun addEthAnchoredERC20Token(tokenAddress: String, tokenInfo: EthTokenInfo) {
         ModelUtil.createAsset(irohaConsumer, tokenInfo.name, tokenInfo.domain, tokenInfo.precision)
         ModelUtil.setAccountDetail(

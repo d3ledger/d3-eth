@@ -1135,7 +1135,8 @@ class MasterTest {
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
-                    sigs.ss
+                    sigs.ss,
+                    master.contractAddress
                 ).send().isStatusOK
             )
 
@@ -1186,7 +1187,8 @@ class MasterTest {
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
-                    sigs.ss
+                    sigs.ss,
+                    master.contractAddress
                 ).send().isStatusOK
             )
 
@@ -1282,7 +1284,8 @@ class MasterTest {
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
-                    sigs.ss
+                    sigs.ss,
+                    master.contractAddress
                 ).send()
             }
         }

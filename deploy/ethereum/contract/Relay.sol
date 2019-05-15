@@ -97,6 +97,7 @@ contract Relay {
      * @param v array of signatures of tx_hash (v-component)
      * @param r array of signatures of tx_hash (r-component)
      * @param s array of signatures of tx_hash (s-component)
+     * @param from relay contract address
      */
     function mintTokensByPeers(
         address tokenAddress,
@@ -105,12 +106,13 @@ contract Relay {
         bytes32 txHash,
         uint8[] memory v,
         bytes32[] memory r,
-        bytes32[] memory s
+        bytes32[] memory s,
+        address from
     )
     public
     {
         emit AddressEvent(masterAddress);
         // trusted call
-        masterInstance.mintTokensByPeers(tokenAddress, amount, beneficiary, txHash, v, r, s);
+        masterInstance.mintTokensByPeers(tokenAddress, amount, beneficiary, txHash, v, r, s, from);
     }
 }

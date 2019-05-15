@@ -6,7 +6,7 @@ import "./Ownable.sol";
 
 contract SoraToken is ERC20Burnable, ERC20Detailed, Ownable {
 
-    uint256 public constant INITIAL_SUPPLY = 1618033988749894848204586834;
+    uint256 public constant INITIAL_SUPPLY = 0;
 
     /**
      * @dev Constructor that gives msg.sender all of existing tokens.
@@ -16,7 +16,6 @@ contract SoraToken is ERC20Burnable, ERC20Detailed, Ownable {
     }
 
     function mintTokens(address beneficiary, uint256 amount) public onlyOwner {
-        require(amount < INITIAL_SUPPLY);
         _mint(beneficiary, amount);
     }
 

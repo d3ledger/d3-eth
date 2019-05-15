@@ -23,7 +23,8 @@ contract IMaster {
         bytes32 txHash,
         uint8[] memory v,
         bytes32[] memory r,
-        bytes32[] memory s
+        bytes32[] memory s,
+        address from
     )
     public;
 
