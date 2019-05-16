@@ -77,7 +77,7 @@ class EthChainHandler(
                                 val amount = BigInteger(it.data.drop(2), 16)
 
                                 if (isIrohaAnchored)
-                                    SideChainEvent.PrimaryBlockChainEvent.OnPrimaryChainDeposit(
+                                    SideChainEvent.PrimaryBlockChainEvent.IrohaAnchoredOnPrimaryChainDeposit(
                                         tx.hash,
                                         time,
                                         wallets[to]!!,
@@ -86,7 +86,7 @@ class EthChainHandler(
                                         from
                                     )
                                 else
-                                    SideChainEvent.PrimaryBlockChainEvent.OnPrimaryChainDeposit(
+                                    SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
                                         tx.hash,
                                         time,
                                         wallets[to]!!,
@@ -126,7 +126,7 @@ class EthChainHandler(
         } else {
             // if tx amount > 0 and is committed successfully
             listOf(
-                SideChainEvent.PrimaryBlockChainEvent.OnPrimaryChainDeposit(
+                SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
                     tx.hash,
                     time,
                     // all non-existent keys were filtered out in parseBlock
