@@ -8,8 +8,8 @@
 package com.d3.eth.deposit
 
 import com.d3.commons.config.EthereumPasswords
-import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadEthPasswords
+import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -27,8 +27,8 @@ const val ETH_DEPOSIT_SERVICE_NAME = "eth-deposit"
  * Application entry point
  */
 fun main(args: Array<String>) {
-    loadConfigs("eth-deposit", EthDepositConfig::class.java, "/eth/deposit.properties")
-        .fanout { loadEthPasswords("eth-deposit", "/eth/ethereum_password.properties", args) }
+    loadLocalConfigs("eth-deposit", EthDepositConfig::class.java, "deposit.properties")
+        .fanout { loadEthPasswords("eth-deposit", "/eth/ethereum_password.properties") }
         .map { (depositConfig, ethereumPasswords) ->
             executeDeposit(ethereumPasswords, depositConfig)
         }

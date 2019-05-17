@@ -7,8 +7,8 @@
 
 package com.d3.eth.vacuum
 
-import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadEthPasswords
+import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -22,7 +22,7 @@ private val logger = KLogging().logger
  * Entry point for moving all currency from relay contracts to master contract
  */
 fun main(args: Array<String>) {
-    loadConfigs(RELAY_VACUUM_PREFIX, RelayVacuumConfig::class.java, "/eth/vacuum.properties")
+    loadLocalConfigs(RELAY_VACUUM_PREFIX, RelayVacuumConfig::class.java, "vacuum.properties")
         .map { relayVacuumConfig ->
             executeVacuum(relayVacuumConfig, args)
         }
@@ -47,7 +47,7 @@ fun executeVacuum(
         }.map { (credential, irohaAPI) ->
             IrohaQueryHelperImpl(irohaAPI, credential.accountId, credential.keyPair)
         }
-        .fanout { loadEthPasswords(RELAY_VACUUM_PREFIX, "/eth/ethereum_password.properties", args) }
+        .fanout { loadEthPasswords(RELAY_VACUUM_PREFIX, "/eth/ethereum_password.properties") }
         .flatMap { (queryHelper, passwordConfig) ->
             RelayVacuum(relayVacuumConfig, passwordConfig, queryHelper).vacuum()
         }
