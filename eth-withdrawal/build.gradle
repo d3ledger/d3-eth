@@ -1,8 +1,15 @@
 dependencies {
     compile project(":eth-vacuum")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
+apply plugin: 'application'
+apply plugin: 'kotlin'
 apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = "com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceMain"
+shadowDistZip.classifier = 'shadow'
+shadowDistTar.classifier = 'shadow'
 
 task runWithdrawal(type: JavaExec) {
     main = 'com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceMain'
