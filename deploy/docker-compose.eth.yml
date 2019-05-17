@@ -7,6 +7,8 @@ services:
       context: ./ethereum
       dockerfile: ganache.dockerfile
     container_name: d3-eth-node0
+    ports:
+      - 8545:8545
     volumes:
       - ./ethereum:/eth
     environment:

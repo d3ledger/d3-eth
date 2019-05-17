@@ -1,5 +1,16 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package integration.eth
 
+import com.d3.commons.util.getRandomString
+import com.d3.eth.provider.ETH_ADDRESS
+import com.d3.eth.provider.ETH_DOMAIN
+import com.d3.eth.provider.ETH_NAME
+import com.d3.eth.provider.ETH_PRECISION
+import com.d3.eth.token.EthTokenInfo
 import com.github.kittinunf.result.success
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
@@ -8,12 +19,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.fail
-import com.d3.eth.provider.ETH_ADDRESS
-import com.d3.eth.provider.ETH_DOMAIN
-import com.d3.eth.provider.ETH_NAME
-import com.d3.eth.provider.ETH_PRECISION
-import com.d3.eth.token.EthTokenInfo
-import com.d3.commons.util.getRandomString
 import java.time.Duration
 
 /**
@@ -60,9 +65,18 @@ class EthTokensProviderTest {
                             val expectedDomain = expectedTokenInfo.domain
                             val expectedPrecision = expectedTokenInfo.precision
                             val assetId = "$expectedName#$expectedDomain"
-                            assertEquals("$expectedName#$expectedDomain", tokens.get(expectedEthWallet))
-                            assertEquals(expectedPrecision, ethTokensProvider.getTokenPrecision(assetId).get())
-                            assertEquals(expectedEthWallet, ethTokensProvider.getTokenAddress(assetId).get())
+                            assertEquals(
+                                "$expectedName#$expectedDomain",
+                                tokens.get(expectedEthWallet)
+                            )
+                            assertEquals(
+                                expectedPrecision,
+                                ethTokensProvider.getTokenPrecision(assetId).get()
+                            )
+                            assertEquals(
+                                expectedEthWallet,
+                                ethTokensProvider.getTokenAddress(assetId).get()
+                            )
                         }
                     },
                     { ex -> fail("Cannot get tokens", ex) })

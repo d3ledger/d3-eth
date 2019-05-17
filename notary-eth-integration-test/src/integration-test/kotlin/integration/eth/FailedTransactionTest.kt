@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package integration.eth
 
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
@@ -68,10 +73,13 @@ class FailedTransactionTest {
             Assertions.assertEquals(200, res.statusCode)
             integrationHelper.registerClientWithoutRelay(clientAccount)
             integrationHelper.sendEth(BigInteger.valueOf(1), failerAddress)
-            integrationHelper.waitOneEtherBlock()
+
             assertEquals(BigInteger.ZERO, integrationHelper.getEthBalance(failerAddress))
             val irohaBalance =
-                integrationHelper.getIrohaAccountBalance("$clientAccount@$CLIENT_DOMAIN", "ether#ethereum")
+                integrationHelper.getIrohaAccountBalance(
+                    "$clientAccount@$CLIENT_DOMAIN",
+                    "ether#ethereum"
+                )
             assertEquals(BigDecimal.ZERO, BigDecimal(irohaBalance))
         }
     }
@@ -109,18 +117,23 @@ class FailedTransactionTest {
             // web3j throws exception in case of contract function call revert
             // so let's catch and ignore it
             try {
-                integrationHelper.sendERC20Token(anotherFailerAddress, BigInteger.valueOf(1), failerAddress)
+                integrationHelper.sendERC20Token(
+                    anotherFailerAddress,
+                    BigInteger.valueOf(1),
+                    failerAddress
+                )
             } catch (e: TransactionException) {
             }
-
-            integrationHelper.waitOneEtherBlock()
 
             // actually this test passes even without transaction status check
             // it's probably impossible to get some money deposit to iroha
             // because logs are empty for reverted transactions
             // but let's leave it for a rainy day
             val irohaBalance =
-                integrationHelper.getIrohaAccountBalance("$clientAccount@$CLIENT_DOMAIN", "$coinName#ethereum")
+                integrationHelper.getIrohaAccountBalance(
+                    "$clientAccount@$CLIENT_DOMAIN",
+                    "$coinName#ethereum"
+                )
             assertEquals(BigDecimal.ZERO, BigDecimal(irohaBalance))
         }
     }

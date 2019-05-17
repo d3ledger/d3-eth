@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 @file:JvmName("EthDepositMain")
 
 package com.d3.eth.deposit
@@ -6,8 +11,8 @@ import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.model.IrohaCredential
-import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
+import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.github.kittinunf.result.*

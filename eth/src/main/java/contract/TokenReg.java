@@ -28,7 +28,7 @@ import org.web3j.tx.gas.ContractGasProvider;
  * or the org.web3j.codegen.SolidityFunctionWrapperGenerator in the 
  * <a href="https://github.com/web3j/web3j/tree/master/codegen">codegen module</a> to update.
  *
- * <p>Generated with web3j version 4.1.1.
+ * <p>Generated with web3j version 4.2.0.
  */
 public class TokenReg extends Contract {
     private static final String BINARY = "";
@@ -76,22 +76,17 @@ public class TokenReg extends Contract {
     }
 
     public RemoteCall<Tuple5<String, String, BigInteger, String, String>> token(BigInteger _id) {
-        final Function function = new Function(FUNC_TOKEN,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(_id)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {
-                }, new TypeReference<Utf8String>() {
-                }, new TypeReference<Uint256>() {
-                }, new TypeReference<Utf8String>() {
-                }, new TypeReference<Address>() {
-                }));
+        final Function function = new Function(FUNC_TOKEN, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(_id)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Uint256>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Address>() {}));
         return new RemoteCall<Tuple5<String, String, BigInteger, String, String>>(
                 new Callable<Tuple5<String, String, BigInteger, String, String>>() {
                     @Override
                     public Tuple5<String, String, BigInteger, String, String> call() throws Exception {
                         List<Type> results = executeCallMultipleValueReturn(function);
                         return new Tuple5<String, String, BigInteger, String, String>(
-                                (String) results.get(0).getValue(),
-                                (String) results.get(1).getValue(),
+                                (String) results.get(0).getValue(), 
+                                (String) results.get(1).getValue(), 
                                 (BigInteger) results.get(2).getValue(), 
                                 (String) results.get(3).getValue(), 
                                 (String) results.get(4).getValue());
@@ -101,11 +96,11 @@ public class TokenReg extends Contract {
 
     public RemoteCall<TransactionReceipt> register(String _addr, String _tla, BigInteger _base, String _name, BigInteger weiValue) {
         final Function function = new Function(
-                FUNC_REGISTER,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(_addr),
-                        new org.web3j.abi.datatypes.Utf8String(_tla),
-                        new org.web3j.abi.datatypes.generated.Uint256(_base),
-                        new org.web3j.abi.datatypes.Utf8String(_name)),
+                FUNC_REGISTER, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(_addr), 
+                new org.web3j.abi.datatypes.Utf8String(_tla), 
+                new org.web3j.abi.datatypes.generated.Uint256(_base), 
+                new org.web3j.abi.datatypes.Utf8String(_name)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function, weiValue);
     }
@@ -119,43 +114,37 @@ public class TokenReg extends Contract {
     }
 
     public RemoteCall<byte[]> meta(BigInteger _id, byte[] _key) {
-        final Function function = new Function(FUNC_META,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(_id),
-                        new org.web3j.abi.datatypes.generated.Bytes32(_key)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Bytes32>() {
-                }));
+        final Function function = new Function(FUNC_META, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(_id), 
+                new org.web3j.abi.datatypes.generated.Bytes32(_key)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Bytes32>() {}));
         return executeRemoteCallSingleValueReturn(function, byte[].class);
     }
 
     public RemoteCall<TransactionReceipt> registerAs(String _addr, String _tla, BigInteger _base, String _name, String _owner, BigInteger weiValue) {
         final Function function = new Function(
-                FUNC_REGISTERAS,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(_addr),
-                        new org.web3j.abi.datatypes.Utf8String(_tla),
-                        new org.web3j.abi.datatypes.generated.Uint256(_base),
-                        new org.web3j.abi.datatypes.Utf8String(_name),
-                        new org.web3j.abi.datatypes.Address(_owner)),
+                FUNC_REGISTERAS, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(_addr), 
+                new org.web3j.abi.datatypes.Utf8String(_tla), 
+                new org.web3j.abi.datatypes.generated.Uint256(_base), 
+                new org.web3j.abi.datatypes.Utf8String(_name), 
+                new org.web3j.abi.datatypes.Address(_owner)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function, weiValue);
     }
 
     public RemoteCall<Tuple5<BigInteger, String, BigInteger, String, String>> fromTLA(String _tla) {
-        final Function function = new Function(FUNC_FROMTLA,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(_tla)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }, new TypeReference<Address>() {
-                }, new TypeReference<Uint256>() {
-                }, new TypeReference<Utf8String>() {
-                }, new TypeReference<Address>() {
-                }));
+        final Function function = new Function(FUNC_FROMTLA, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Utf8String(_tla)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Address>() {}, new TypeReference<Uint256>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Address>() {}));
         return new RemoteCall<Tuple5<BigInteger, String, BigInteger, String, String>>(
                 new Callable<Tuple5<BigInteger, String, BigInteger, String, String>>() {
                     @Override
                     public Tuple5<BigInteger, String, BigInteger, String, String> call() throws Exception {
                         List<Type> results = executeCallMultipleValueReturn(function);
                         return new Tuple5<BigInteger, String, BigInteger, String, String>(
-                                (BigInteger) results.get(0).getValue(),
-                                (String) results.get(1).getValue(),
+                                (BigInteger) results.get(0).getValue(), 
+                                (String) results.get(1).getValue(), 
                                 (BigInteger) results.get(2).getValue(), 
                                 (String) results.get(3).getValue(), 
                                 (String) results.get(4).getValue());
@@ -172,10 +161,9 @@ public class TokenReg extends Contract {
     }
 
     public RemoteCall<BigInteger> tokenCount() {
-        final Function function = new Function(FUNC_TOKENCOUNT,
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+        final Function function = new Function(FUNC_TOKENCOUNT, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
@@ -188,22 +176,17 @@ public class TokenReg extends Contract {
     }
 
     public RemoteCall<Tuple5<BigInteger, String, BigInteger, String, String>> fromAddress(String _addr) {
-        final Function function = new Function(FUNC_FROMADDRESS,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(_addr)),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }, new TypeReference<Utf8String>() {
-                }, new TypeReference<Uint256>() {
-                }, new TypeReference<Utf8String>() {
-                }, new TypeReference<Address>() {
-                }));
+        final Function function = new Function(FUNC_FROMADDRESS, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.Address(_addr)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Uint256>() {}, new TypeReference<Utf8String>() {}, new TypeReference<Address>() {}));
         return new RemoteCall<Tuple5<BigInteger, String, BigInteger, String, String>>(
                 new Callable<Tuple5<BigInteger, String, BigInteger, String, String>>() {
                     @Override
                     public Tuple5<BigInteger, String, BigInteger, String, String> call() throws Exception {
                         List<Type> results = executeCallMultipleValueReturn(function);
                         return new Tuple5<BigInteger, String, BigInteger, String, String>(
-                                (BigInteger) results.get(0).getValue(),
-                                (String) results.get(1).getValue(),
+                                (BigInteger) results.get(0).getValue(), 
+                                (String) results.get(1).getValue(), 
                                 (BigInteger) results.get(2).getValue(), 
                                 (String) results.get(3).getValue(), 
                                 (String) results.get(4).getValue());
@@ -213,19 +196,18 @@ public class TokenReg extends Contract {
 
     public RemoteCall<TransactionReceipt> setMeta(BigInteger _id, byte[] _key, byte[] _value) {
         final Function function = new Function(
-                FUNC_SETMETA,
-                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(_id),
-                        new org.web3j.abi.datatypes.generated.Bytes32(_key),
-                        new org.web3j.abi.datatypes.generated.Bytes32(_value)),
+                FUNC_SETMETA, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(_id), 
+                new org.web3j.abi.datatypes.generated.Bytes32(_key), 
+                new org.web3j.abi.datatypes.generated.Bytes32(_value)), 
                 Collections.<TypeReference<?>>emptyList());
         return executeRemoteCallTransaction(function);
     }
 
     public RemoteCall<BigInteger> fee() {
-        final Function function = new Function(FUNC_FEE,
-                Arrays.<Type>asList(),
-                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
-                }));
+        final Function function = new Function(FUNC_FEE, 
+                Arrays.<Type>asList(), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
