@@ -5,8 +5,8 @@
 
 package integration.eth
 
-import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadEthPasswords
+import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
@@ -66,10 +66,10 @@ class WithdrawalMultinotaryIntegrationTest {
     private val ethRegistrationService: Job
 
     init {
-        val notaryConfig = loadConfigs(
+        val notaryConfig = loadLocalConfigs(
             "eth-deposit",
             EthDepositConfig::class.java,
-            "/eth/deposit.properties"
+            "deposit.properties"
         ).get()
         val ethKeyPath = notaryConfig.ethereum.credentialsPath
 
@@ -80,14 +80,14 @@ class WithdrawalMultinotaryIntegrationTest {
 
         // run 1st instance of deposit
         depositConfig1 =
-            integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig1)
+                integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig1)
         integrationHelper.runEthDeposit(ethDepositConfig = depositConfig1)
 
         // create 2nd deposit config
         val ethereumConfig2 =
             integrationHelper.configHelper.createEthereumConfig(ethKeyPath.split(".key").first() + "2.key")
         depositConfig2 =
-            integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig2)
+                integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig2)
 
         keypair2 = DeployHelper(ethereumConfig2, ethereumPasswords).credentials.ecKeyPair
 

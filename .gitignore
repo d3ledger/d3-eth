@@ -31,7 +31,7 @@ hs_err_pid*
 /eth-registration/build/
 /eth-vacuum/build/
 /eth-withdrawal/build/
-/notary-commons/build/
+/eth-relay/build/
 /notary-eth-integration-test/build/
 /notary-eth-integration-test/gradle/
 /notary-eth-integration-test/gradlew

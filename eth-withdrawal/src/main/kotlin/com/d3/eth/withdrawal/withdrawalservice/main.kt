@@ -28,13 +28,13 @@ const val ETH_WITHDRAWAL_SERVICE_NAME = "eth-withdrawal"
  * Main entry point of Withdrawal Service app
  */
 fun main(args: Array<String>) {
-    loadConfigs("withdrawal", WithdrawalServiceConfig::class.java, "/eth/withdrawal.properties")
-        .fanout { loadEthPasswords("withdrawal", "/eth/ethereum_password.properties", args) }
+    loadLocalConfigs("withdrawal", WithdrawalServiceConfig::class.java, "withdrawal.properties")
+        .fanout { loadEthPasswords("withdrawal", "/eth/ethereum_password.properties") }
         .map { (withdrawalConfig, passwordConfig) ->
-            loadConfigs(
+            loadLocalConfigs(
                 RELAY_VACUUM_PREFIX,
                 RelayVacuumConfig::class.java,
-                "/eth/vacuum.properties"
+                "vacuum.properties"
             )
                 .map { relayVacuumConfig ->
                     val rmqConfig = loadRawConfigs(

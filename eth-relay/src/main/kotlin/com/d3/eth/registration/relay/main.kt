@@ -7,13 +7,13 @@
 
 package com.d3.eth.registration.relay
 
-import com.d3.commons.config.ETH_MASTER_WALLET_ENV
-import com.d3.commons.config.ETH_RELAY_IMPLEMENTATION_ADDRESS_ENV
-import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadEthPasswords
+import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
+import com.d3.eth.env.ETH_MASTER_WALLET_ENV
+import com.d3.eth.env.ETH_RELAY_IMPLEMENTATION_ADDRESS_ENV
 import com.d3.eth.provider.EthFreeRelayProvider
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.fanout
@@ -33,10 +33,10 @@ private val logger = KLogging().logger
  */
 fun main(args: Array<String>) {
     logger.info { "Run relay deployment" }
-    loadConfigs(
+    loadLocalConfigs(
         "relay-registration",
         RelayRegistrationConfig::class.java,
-        "/eth/relay_registration.properties"
+        "relay_registration.properties"
     ).map { relayRegistrationConfig ->
         object : RelayRegistrationConfig {
             override val number = relayRegistrationConfig.number
@@ -55,8 +55,7 @@ fun main(args: Array<String>) {
     }.fanout {
         loadEthPasswords(
             "relay-registration",
-            "/eth/ethereum_password.properties",
-            args
+            "/eth/ethereum_password.properties"
         )
     }.map { (relayRegistrationConfig, passwordConfig) ->
         ModelUtil.loadKeypair(
