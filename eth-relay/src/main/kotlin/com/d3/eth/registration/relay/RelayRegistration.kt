@@ -55,7 +55,8 @@ class RelayRegistration(
         ethMasterWallet: String
     ): Result<Unit, Exception> {
         return Result.of {
-            logger.info { "Deploy $relaysToDeploy ethereum relays" }
+            if (relaysToDeploy > 0)
+                logger.info { "Deploy $relaysToDeploy ethereum relays" }
 
             (1..relaysToDeploy).forEach { _ ->
                 val relayWallet =
