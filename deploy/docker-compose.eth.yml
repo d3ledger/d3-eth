@@ -49,6 +49,8 @@ services:
   d3-eth-deposit:
     image: nexus.iroha.tech:19002/d3-deploy/notary:develop
     container_name: d3-eth-deposit
+    ports:
+      - 20000:20000
     environment:
       WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
       WAIT_BEFORE_HOSTS: 10
