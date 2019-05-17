@@ -47,7 +47,7 @@ services:
       - d3-network
 
   d3-eth-deposit:
-    image: nexus.iroha.tech:19002/d3-deploy/notary:develop
+    image: nexus.iroha.tech:19002/d3-deploy/eth-deposit:develop
     container_name: d3-eth-deposit
     ports:
       - 20000:20000
