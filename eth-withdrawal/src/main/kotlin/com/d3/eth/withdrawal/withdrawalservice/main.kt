@@ -37,10 +37,10 @@ fun main(args: Array<String>) {
                 "vacuum.properties"
             )
                 .map { relayVacuumConfig ->
-                    val rmqConfig = loadRawConfigs(
+                    val rmqConfig = loadRawLocalConfigs(
                         "rmq",
                         RMQConfig::class.java,
-                        "${getConfigFolder()}/rmq.properties"
+                        "rmq.properties"
                     )
                     executeWithdrawal(
                         withdrawalConfig,
