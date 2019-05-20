@@ -37,17 +37,19 @@ class WithdrawalServiceInitialization(
     private val rmqConfig: RMQConfig
 ) {
 
+    private val chainListener = ReliableIrohaChainListener(
+        rmqConfig,
+        withdrawalConfig.ethIrohaWithdrawalQueue,
+        createPrettySingleThreadPool(ETH_WITHDRAWAL_SERVICE_NAME, "rmq-consumer")
+    )
+
     /**
      * Init Iroha chain listener
      * @return Observable on Iroha sidechain events
      */
     private fun initIrohaChain(): Result<Observable<SideChainEvent.IrohaEvent>, Exception> {
         logger.info { "Init Iroha chain listener" }
-        return ReliableIrohaChainListener(
-            rmqConfig,
-            withdrawalConfig.ethIrohaWithdrawalQueue,
-            createPrettySingleThreadPool(ETH_WITHDRAWAL_SERVICE_NAME, "rmq-consumer")
-        ).getBlockObservable()
+        return chainListener.getBlockObservable()
             .map { observable ->
                 observable.flatMapIterable { (block, _) -> IrohaChainHandler().parseBlock(block) }
             }
@@ -108,7 +110,7 @@ class WithdrawalServiceInitialization(
             .map { initWithdrawalService(it) }
             .flatMap { initEthConsumer(it) }
             .map { WithdrawalServiceEndpoint(withdrawalConfig.port) }
-            .map { Unit }
+            .flatMap { chainListener.listen() }
     }
 
     /**
