@@ -2,6 +2,20 @@ version: '3.5'
 
 services:
 
+  d3-eth-node0:
+    build:
+      context: ./ethereum
+      dockerfile: ganache.dockerfile
+    container_name: d3-eth-node0
+    ports:
+      - 8545:8545
+    volumes:
+      - ./ethereum:/eth
+    environment:
+      - NODE=0
+    networks:
+      - d3-network
+
   d3-iroha:
     ports:
       - 50051:50051

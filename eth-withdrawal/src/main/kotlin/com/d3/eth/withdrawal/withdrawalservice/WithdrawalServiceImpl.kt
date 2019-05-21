@@ -194,7 +194,10 @@ class WithdrawalServiceImpl(
                 if (irohaEvent.dstAccount == masterAccount) {
                     logger.info { "Withdrawal event" }
                     return requestNotary(irohaEvent)
-                        .map { listOf(WithdrawalServiceOutputEvent.EthRefund(it)) }
+                        .fanout { tokensProvider.isIrohaAnchored(irohaEvent.asset) }
+                        .map { (proof, isIrohaAnchored) ->
+                            listOf(WithdrawalServiceOutputEvent.EthRefund(proof, isIrohaAnchored))
+                        }
                 }
 
                 return Result.of { emptyList<WithdrawalServiceOutputEvent>() }
@@ -245,7 +248,6 @@ class WithdrawalServiceImpl(
                         throw ex
                     })
             }
-
     }
 
     /**

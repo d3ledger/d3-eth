@@ -75,20 +75,26 @@ fun hashToAddAndRemovePeer(
 
 /**
  * Calculates keccak-256 hash of several params concatenation. Params are:
- * @param beneficiary Ethereum address
- * @param amount amount of token to mint
+ * @param tokenAddress Ethereum address of ERC-20 token
+ * @param amount amount of token/ether to mint
+ * @param beneficiary address to transfer token/eth to
  * @param irohaHash hash of transaction in Iroha
+ * @param from address of the relay contract
  * @return keccak-256 hash of all provided fields
  */
 fun hashToMint(
-    beneficiary: String,
+    tokenAddress: String,
     amount: String,
-    irohaHash: String
+    beneficiary: String,
+    irohaHash: String,
+    from: String
 ): String {
     return Hash.sha3(
-        beneficiary.replace("0x", "")
+        tokenAddress.replace("0x", "")
                 + String.format("%064x", BigInteger(amount)).replace("0x", "")
+                + beneficiary.replace("0x", "")
                 + irohaHash.replace("0x", "")
+                + from.replace("0x", "")
     )
 }
 

@@ -39,7 +39,8 @@ class EthChainHandler(
         tx: Transaction,
         time: BigInteger,
         wallets: Map<String, String>,
-        tokens: Map<String, String>
+        tokenName: String,
+        isIrohaAnchored: Boolean
     ): List<SideChainEvent.PrimaryBlockChainEvent> {
         logger.info { "Handle ERC20 tx ${tx.hash}" }
 
@@ -66,8 +67,6 @@ class EthChainHandler(
                     }
                 }
                 .map {
-                    // all non-existent keys were filtered out in parseBlock
-                    val tokenName = tokens[tx.to]!!
                     ethTokensProvider.getTokenPrecision(tokenName)
                         .fold(
                             { precision ->
@@ -77,14 +76,24 @@ class EthChainHandler(
                                 // amount of transfer is stored in data
                                 val amount = BigInteger(it.data.drop(2), 16)
 
-                                SideChainEvent.PrimaryBlockChainEvent.OnPrimaryChainDeposit(
-                                    tx.hash,
-                                    time,
-                                    wallets[to]!!,
-                                    tokenName,
-                                    BigDecimal(amount, precision).toPlainString(),
-                                    from
-                                )
+                                if (isIrohaAnchored)
+                                    SideChainEvent.PrimaryBlockChainEvent.IrohaAnchoredOnPrimaryChainDeposit(
+                                        tx.hash,
+                                        time,
+                                        wallets[to]!!,
+                                        tokenName,
+                                        BigDecimal(amount, precision).toPlainString(),
+                                        from
+                                    )
+                                else
+                                    SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
+                                        tx.hash,
+                                        time,
+                                        wallets[to]!!,
+                                        tokenName,
+                                        BigDecimal(amount, precision).toPlainString(),
+                                        from
+                                    )
                             },
                             { throw it }
                         )
@@ -117,7 +126,7 @@ class EthChainHandler(
         } else {
             // if tx amount > 0 and is committed successfully
             listOf(
-                SideChainEvent.PrimaryBlockChainEvent.OnPrimaryChainDeposit(
+                SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
                     tx.hash,
                     time,
                     // all non-existent keys were filtered out in parseBlock
@@ -138,9 +147,12 @@ class EthChainHandler(
         logger.info { "Ethereum chain handler for block ${block.block.number}" }
 
         return ethRelayProvider.getRelays().fanout {
-            ethTokensProvider.getEthAnchoredTokens()
+            ethTokensProvider.getEthAnchoredTokens().fanout {
+                ethTokensProvider.getIrohaAnchoredTokens()
+            }
         }.fold(
             { (wallets, tokens) ->
+                val (ethAnchoredTokens, irohaAnchoredTokens) = tokens
                 // Eth time in seconds, convert ot milliseconds
                 val time = block.block.timestamp.multiply(BigInteger.valueOf(1000))
                 block.block.transactions
@@ -148,8 +160,10 @@ class EthChainHandler(
                     .flatMap {
                         if (wallets.containsKey(it.to))
                             handleEther(it, time, wallets)
-                        else if (tokens.containsKey(it.to))
-                            handleErc20(it, time, wallets, tokens)
+                        else if (ethAnchoredTokens.containsKey(it.to))
+                            handleErc20(it, time, wallets, ethAnchoredTokens[it.to]!!, false)
+                        else if (irohaAnchoredTokens.containsKey(it.to))
+                            handleErc20(it, time, wallets, irohaAnchoredTokens[it.to]!!, true)
                         else
                             listOf()
                     }

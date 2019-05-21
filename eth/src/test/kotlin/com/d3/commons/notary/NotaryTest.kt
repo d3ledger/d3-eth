@@ -116,7 +116,7 @@ class NotaryTest {
         val expectedFrom = "eth_from"
         val expectedTime = BigInteger.TEN
 
-        val custodianIntention = SideChainEvent.PrimaryBlockChainEvent.OnPrimaryChainDeposit(
+        val custodianIntention = SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
             expectedHash,
             expectedTime,
             expectedUserId,
@@ -157,7 +157,7 @@ class NotaryTest {
         val expectedUserId = "from"
         val expectedFrom = "eth_from"
         val expectedTime = BigInteger.TEN
-        val custodianIntention = SideChainEvent.PrimaryBlockChainEvent.OnPrimaryChainDeposit(
+        val custodianIntention = SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
             expectedHash,
             expectedTime,
             expectedUserId,
