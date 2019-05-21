@@ -8,8 +8,8 @@
 package com.d3.eth.deploy
 
 import com.d3.commons.config.EthereumConfig
-import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadEthPasswords
+import com.d3.commons.config.loadLocalConfigs
 import com.d3.eth.sidechain.util.DeployHelperBuilder
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.fanout
@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
         System.exit(1)
     }
 
-    loadConfigs("predeploy.ethereum", EthereumConfig::class.java, "/eth/predeploy.properties")
+    loadLocalConfigs("predeploy.ethereum", EthereumConfig::class.java, "predeploy.properties")
         .fanout { loadEthPasswords("predeploy", "/eth/ethereum_password.properties") }
         .map { (ethereumConfig, passwordConfig) ->
             DeployHelperBuilder(

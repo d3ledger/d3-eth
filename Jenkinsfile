@@ -105,15 +105,20 @@ pipeline {
                 sh "./gradlew eth:shadowJar"
                 sh "./gradlew eth-withdrawal:shadowJar"
                 sh "./gradlew eth-registration:shadowJar"
-                sh "./gradlew eth-vacuum:shadowJar"
-    	        }
+                sh "./gradlew eth-relay:shadowJar"
+    	      }
 
               def nexusRepository="nexus.iroha.tech:19002/${login}"
 
-              ethRelay = docker.build("${nexusRepository}/eth-relay:${TAG}", "-f docker/dockerfile --build-arg JAR_FILE=${eth-relay} .")
-              ethRegistration = docker.build("${nexusRepository}/eth-registration:${TAG}", "-f docker/dockerfile --build-arg JAR_FILE=${eth-registration} .")
-              ethDeposit = docker.build("${nexusRepository}/eth-deposit:${TAG}", "-f docker/dockerfile --build-arg JAR_FILE=${eth-deposit} .")
-              ethWithdrawal = docker.build("${nexusRepository}/eth-withdrawal:${TAG}", "-f docker/dockerfile --build-arg JAR_FILE=${eth-withdrawal} .")
+              def relayJarFile="/eth-relay/build/libs/eth-relay-all.jar"
+              def registrationJarFile="/eth-registration/build/libs/eth-registration-all.jar"
+              def depositJarFile="/eth/build/libs/eth-all.jar"
+              def withdrawalJarFile="/eth-withdrawal/build/libs/eth-withdrawal-all.jar"
+
+              ethRelay = docker.build("${nexusRepository}/eth-relay:${TAG}", "-f docker/Dockerfile --build-arg JAR_FILE=${relayJarFile} .")
+              ethRegistration = docker.build("${nexusRepository}/eth-registration:${TAG}", "-f docker/Dockerfile --build-arg JAR_FILE=${registrationJarFile} .")
+              ethDeposit = docker.build("${nexusRepository}/eth-deposit:${TAG}", "-f docker/Dockerfile --build-arg JAR_FILE=${depositJarFile} .")
+              ethWithdrawal = docker.build("${nexusRepository}/eth-withdrawal:${TAG}", "-f docker/Dockerfile --build-arg JAR_FILE=${withdrawalJarFile} .")
 
               ethRelay.push("${TAG}")
               ethRegistration.push("${TAG}")
@@ -126,4 +131,3 @@ pipeline {
     }
   }
 }
-

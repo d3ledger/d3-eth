@@ -7,8 +7,7 @@ package integration.helper
 
 import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.config.RMQConfig
-import com.d3.commons.config.getConfigFolder
-import com.d3.commons.config.loadRawConfigs
+import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
@@ -413,10 +412,9 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             String.getRandomString(9)
         ),
         relayVacuumConfig: RelayVacuumConfig = configHelper.createRelayVacuumConfig(),
-        rmqConfig: RMQConfig = loadRawConfigs(
+        rmqConfig: RMQConfig = loadRawLocalConfigs(
             "rmq",
-            RMQConfig::class.java,
-            "${getConfigFolder()}/rmq.properties"
+            RMQConfig::class.java,"rmq.properties"
         )
     ) {
         com.d3.eth.withdrawal.withdrawalservice.executeWithdrawal(

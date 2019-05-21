@@ -44,14 +44,11 @@ services:
       - d3-rmq
     volumes:
       - ./:/opt/chain-adapter/deploy
-      - ../configs:/opt/chain-adapter/configs
     environment:
       - WAIT_HOSTS=d3-iroha:50051, d3-rmq:5672
       - WAIT_HOSTS_TIMEOUT=300
       - WAIT_SLEEP_INTERVAL=3
       - PROFILE
-      - IROHA_HOST=d3-iroha
-      - IROHA_PORT=50051
     networks:
       - d3-network
 

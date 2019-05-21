@@ -7,10 +7,10 @@
 
 package com.d3.eth.registration
 
-import com.d3.commons.config.ETH_RELAY_REGISTRY_ENV
 import com.d3.commons.config.EthereumPasswords
-import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadEthPasswords
+import com.d3.commons.config.loadLocalConfigs
+import com.d3.eth.env.ETH_RELAY_REGISTRY_ENV
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.map
@@ -25,10 +25,10 @@ const val ETH_REGISTRATION_SERVICE_NAME = "eth-registration"
  * Entry point for Registration Service
  */
 fun main(args: Array<String>) {
-    loadConfigs(
+    loadLocalConfigs(
         "eth-registration",
         EthRegistrationConfig::class.java,
-        "/eth/registration.properties"
+        "registration.properties"
     )
         .map { ethRegistrationConfig ->
             object : EthRegistrationConfig {
@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
                 override val registrationCredential = ethRegistrationConfig.registrationCredential
             }
         }
-        .fanout { loadEthPasswords("eth-registration", "/eth/ethereum_password.properties", args) }
+        .fanout { loadEthPasswords("eth-registration", "/eth/ethereum_password.properties") }
         .map { (registrationConfig, passwordConfig) ->
             executeRegistration(registrationConfig, passwordConfig)
         }

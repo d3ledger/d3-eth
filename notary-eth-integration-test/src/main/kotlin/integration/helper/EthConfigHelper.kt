@@ -29,10 +29,10 @@ open class EthConfigHelper(
 
     /** Configuration for deposit instance */
     private val ethDepositConfig by lazy {
-        loadConfigs(
+        loadLocalConfigs(
             "eth-deposit",
             EthDepositConfig::class.java,
-            "/eth/deposit.properties"
+            "deposit.properties"
         ).get()
     }
 
@@ -45,10 +45,10 @@ open class EthConfigHelper(
         ethTokensFilePath_: String,
         irohaTokensFilePath_: String
     ): ERC20TokenRegistrationConfig {
-        val ethTokenRegistrationConfig = loadConfigs(
+        val ethTokenRegistrationConfig = loadLocalConfigs(
             "token-registration",
             ERC20TokenRegistrationConfig::class.java,
-            "/eth/token_registration.properties"
+            "token_registration.properties"
         ).get()
 
         return object : ERC20TokenRegistrationConfig {
@@ -66,10 +66,10 @@ open class EthConfigHelper(
     /** Creates config for ETH relays registration */
     fun createRelayRegistrationConfig(): RelayRegistrationConfig {
         val relayRegistrationConfig =
-            loadConfigs(
+            loadLocalConfigs(
                 "relay-registration",
                 RelayRegistrationConfig::class.java,
-                "/eth/relay_registration.properties"
+                "relay_registration.properties"
             ).get()
 
         return object : RelayRegistrationConfig {
@@ -133,10 +133,10 @@ open class EthConfigHelper(
         useValidEthereum: Boolean = true
     ): WithdrawalServiceConfig {
         val withdrawalConfig =
-            loadConfigs(
+            loadLocalConfigs(
                 "withdrawal",
                 WithdrawalServiceConfig::class.java,
-                "/eth/withdrawal.properties"
+                "withdrawal.properties"
             ).get()
 
         val ethereumConfig =
@@ -190,10 +190,10 @@ open class EthConfigHelper(
 
     fun createRelayVacuumConfig(): RelayVacuumConfig {
         val vacuumConfig =
-            loadConfigs(
+            loadLocalConfigs(
                 "relay-vacuum",
                 RelayVacuumConfig::class.java,
-                "/eth/vacuum.properties"
+                "vacuum.properties"
             ).get()
         return object : RelayVacuumConfig {
             override val registrationServiceIrohaAccount =

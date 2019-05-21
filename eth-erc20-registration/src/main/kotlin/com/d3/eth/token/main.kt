@@ -8,6 +8,7 @@
 package com.d3.eth.token
 
 import com.d3.commons.config.loadConfigs
+import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.github.kittinunf.result.flatMap
@@ -21,10 +22,10 @@ private val logger = KLogging().logger
  * ERC20 tokens registration entry point
  */
 fun main(args: Array<String>) {
-    loadConfigs(
+    loadLocalConfigs(
         "token-registration",
         ERC20TokenRegistrationConfig::class.java,
-        "/eth/token_registration.properties"
+        "token_registration.properties"
     ).map { executeTokenRegistration(it) }
 }
 
