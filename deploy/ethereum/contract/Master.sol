@@ -311,7 +311,6 @@ contract Master {
     )
     public
     {
-        require(address(xorTokenInstance) != address(0));
         require(address(xorTokenInstance) == tokenAddress);
         require(relayRegistryInstance.isWhiteListed(from, beneficiary));
         require(used[txHash] == false);

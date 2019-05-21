@@ -21,7 +21,11 @@ import kotlin.test.assertEquals
 class ContractTestHelper {
     private val testConfig = loadConfigs("test", TestConfig::class.java, "/test.properties").get()
     private val passwordConfig =
-        loadConfigs("test", EthereumPasswords::class.java, "/eth/ethereum_password.properties").get()
+        loadConfigs(
+            "test",
+            EthereumPasswords::class.java,
+            "/eth/ethereum_password.properties"
+        ).get()
 
     val deployHelper = DeployHelper(testConfig.ethereum, passwordConfig)
 
@@ -53,9 +57,14 @@ class ContractTestHelper {
     val defaultByteHash = irohaHashToByteHash(defaultIrohaHash)
 
 
-    data class sigsData(val vv: ArrayList<BigInteger>, val rr: ArrayList<ByteArray>, val ss: ArrayList<ByteArray>)
+    data class sigsData(
+        val vv: ArrayList<BigInteger>,
+        val rr: ArrayList<ByteArray>,
+        val ss: ArrayList<ByteArray>
+    )
 
-    fun irohaHashToByteHash(irohaHash: String) = Numeric.hexStringToByteArray(irohaHash.slice(2 until irohaHash.length))
+    fun irohaHashToByteHash(irohaHash: String) =
+        Numeric.hexStringToByteArray(irohaHash.slice(2 until irohaHash.length))
 
     fun prepareSignatures(amount: Int, keypairs: List<ECKeyPair>, toSign: String): sigsData {
         val vv = ArrayList<BigInteger>()
@@ -245,7 +254,13 @@ class ContractTestHelper {
     }
 
     fun mintByPeer(beneficiary: String, amount: Long): TransactionReceipt {
-        val finalHash = hashToMint(beneficiary, amount.toString(), defaultIrohaHash)
+        val finalHash = hashToMint(
+            xorAddress,
+            amount.toString(),
+            beneficiary,
+            defaultIrohaHash,
+            relay.contractAddress
+        )
         val sigs = prepareSignatures(1, listOf(keypair), finalHash)
 
         return master.mintTokensByPeers(

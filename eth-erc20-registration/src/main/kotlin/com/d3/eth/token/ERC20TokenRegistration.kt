@@ -121,13 +121,21 @@ class ERC20TokenRegistration(
         irohaConsumer: IrohaConsumer
     ): Result<String, Exception> {
         return Result.of {
+            tokens.forEach { _, ethTokenInfo ->
+                    val utx = Transaction.builder(irohaConsumer.creator)
+                        .createAsset(
+                            ethTokenInfo.name,
+                            ethTokenInfo.domain,
+                            ethTokenInfo.precision
+                        ).build()
+                    irohaConsumer.send(utx).fold(
+                        { logger.info { "Token ${ethTokenInfo.name} created" } },
+                        { logger.warn { "Token ${ethTokenInfo.name} was not created. $it" } }
+                    )
+            }
+
             var utx = Transaction.builder(irohaConsumer.creator)
             tokens.forEach { ethWallet, ethTokenInfo ->
-                utx = utx.createAsset(
-                    ethTokenInfo.name,
-                    ethTokenInfo.domain,
-                    ethTokenInfo.precision
-                )
                 utx = utx.setAccountDetail(
                     tokenStorageAccount,
                     ethWallet,

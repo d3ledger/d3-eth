@@ -61,6 +61,7 @@ class EthConsumer(
         event: WithdrawalServiceOutputEvent.EthRefund
     ): TransactionReceipt? {
         try {
+            logger.info { "Withdraw Iroha anchored" }
             return relay.mintTokensByPeers(
                 event.proof.tokenContractAddress,
                 BigInteger(event.proof.amount),
@@ -84,6 +85,7 @@ class EthConsumer(
         relay: Relay,
         event: WithdrawalServiceOutputEvent.EthRefund
     ): TransactionReceipt? {
+        logger.info { "Withdraw Ethereum anchored" }
         // The first withdraw call
         val call = withdraw(relay, event)
         // Here works next logic:

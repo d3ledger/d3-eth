@@ -1109,23 +1109,25 @@ class MasterTest {
             val beneficiary = "0xbcBCeb4D66065B7b34d1B90f4fa572829F2c6D5c"
             val amountToSend = 1000
 
-            val finalHash =
-                hashToMint(
-                    beneficiary,
-                    amountToSend.toString(),
-                    cth.defaultIrohaHash
-                )
-
             val (keyPairs, peers) = cth.getKeyPairsAndPeers(sigCount)
 
             val master = cth.deployHelper.deployUpgradableMasterSmartContract(
                 cth.relayRegistry.contractAddress,
                 peers
             )
+            val xorAddress = master.xorTokenInstance().send()
+
+            val finalHash = hashToMint(
+                xorAddress,
+                amountToSend.toString(),
+                beneficiary,
+                cth.defaultIrohaHash,
+                cth.relay.contractAddress
+            )
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
-            val xorAddress = master.xorTokenInstance().send()
+            cth.addWhiteListToRelayRegistry(cth.relay.contractAddress, listOf(beneficiary))
 
             Assertions.assertTrue(
                 master.mintTokensByPeers(
@@ -1136,7 +1138,7 @@ class MasterTest {
                     sigs.vv,
                     sigs.rr,
                     sigs.ss,
-                    master.contractAddress
+                    cth.relay.contractAddress
                 ).send().isStatusOK
             )
 
@@ -1161,34 +1163,36 @@ class MasterTest {
             val beneficiary = "0xbcBCeb4D66065B7b34d1B90f4fa572829F2c6D5c"
             val amountToSend = 1000
 
-            val finalHash =
-                hashToMint(
-                    beneficiary,
-                    amountToSend.toString(),
-                    cth.defaultIrohaHash
-                )
-
             val (keyPairs, peers) = cth.getKeyPairsAndPeers(sigCount)
 
             val master = cth.deployHelper.deployUpgradableMasterSmartContract(
                 cth.relayRegistry.contractAddress,
                 peers.dropLast(1)
             )
+            val xorToken = master.xorTokenInstance().send()
+
+            val finalHash = hashToMint(
+                xorToken,
+                amountToSend.toString(),
+                beneficiary,
+                cth.defaultIrohaHash,
+                cth.relay.contractAddress
+            )
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
-            val xorAddress = master.xorTokenInstance().send()
+            cth.addWhiteListToRelayRegistry(cth.relay.contractAddress, listOf(beneficiary))
 
             Assertions.assertTrue(
                 master.mintTokensByPeers(
-                    xorAddress,
+                    xorToken,
                     BigInteger.valueOf(amountToSend.toLong()),
                     beneficiary,
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
                     sigs.ss,
-                    master.contractAddress
+                    cth.relay.contractAddress
                 ).send().isStatusOK
             )
 
@@ -1210,6 +1214,7 @@ class MasterTest {
             val beneficiary = "0xbcBCeb4D66065B7b34d1B90f4fa572829F2c6D5c"
             val amountToSend: Long = 1000
 
+            cth.addWhiteListToRelayRegistry(cth.relay.contractAddress, listOf(beneficiary))
             val result = cth.mintByPeer(beneficiary, amountToSend).isStatusOK
 
             Assertions.assertTrue(result)
@@ -1231,14 +1236,14 @@ class MasterTest {
     /**
      * @given master contract with token
      * @when check token balance
-     * @then master contract balance should be equals to totalSupply
+     * @then master contract balance should be equals to totalSupply which is 0
      */
     @Test
     fun checkMasterBalance() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             assertEquals(1, master.tokens.send().size)
             assertEquals(
-                BigInteger("1618033988749894848204586834"),
+                BigInteger("0"),
                 cth.getToken(master.xorTokenInstance().send()).balanceOf(master.contractAddress).send()
             )
         }
@@ -1258,23 +1263,23 @@ class MasterTest {
             val beneficiary = "0xbcBCeb4D66065B7b34d1B90f4fa572829F2c6D5c"
             val amountToSend = 1000
 
-            val finalHash =
-                hashToMint(
-                    beneficiary,
-                    amountToSend.toString(),
-                    cth.defaultIrohaHash
-                )
-
             val (keyPairs, peers) = cth.getKeyPairsAndPeers(sigCount)
 
             val master = cth.deployHelper.deployUpgradableMasterSmartContract(
                 cth.relayRegistry.contractAddress,
                 peers
             )
+            val xorAddress = master.xorTokenInstance().send()
+
+            val finalHash = hashToMint(
+                xorAddress,
+                amountToSend.toString(),
+                beneficiary,
+                cth.defaultIrohaHash,
+                cth.relay.contractAddress
+            )
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
-
-            val xorAddress = master.xorTokenInstance().send()
 
             Assertions.assertThrows(TransactionException::class.java) {
                 master.mintTokensByPeers(

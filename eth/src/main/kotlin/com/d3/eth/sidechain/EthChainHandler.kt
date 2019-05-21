@@ -163,7 +163,7 @@ class EthChainHandler(
                         else if (ethAnchoredTokens.containsKey(it.to))
                             handleErc20(it, time, wallets, ethAnchoredTokens[it.to]!!, false)
                         else if (irohaAnchoredTokens.containsKey(it.to))
-                            handleErc20(it, time, wallets, ethAnchoredTokens[it.to]!!, true)
+                            handleErc20(it, time, wallets, irohaAnchoredTokens[it.to]!!, true)
                         else
                             listOf()
                     }
