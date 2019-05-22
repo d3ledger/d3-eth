@@ -50,8 +50,10 @@ pipeline {
           iC.inside("--network='d3-${DOCKER_NETWORK}' -e JVM_OPTS='-Xmx3200m' -e TERM='dumb' -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp") {
             sh "./gradlew dependencies"
             sh "./gradlew test --info"
+
             // We need this to test containers
             sh "./gradlew eth-withdrawal:shadowJar"
+            sh "./gradlew eth:shadowJar"
 
             sh "./gradlew compileIntegrationTestKotlin --info"
             sh "./gradlew integrationTest --info"
