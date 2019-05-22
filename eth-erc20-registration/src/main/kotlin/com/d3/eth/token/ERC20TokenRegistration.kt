@@ -17,8 +17,6 @@ import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Transaction
 import mu.KLogging
 import java.io.BufferedReader
-import java.io.File
-import java.io.FileInputStream
 import java.io.InputStreamReader
 
 /**
@@ -76,7 +74,7 @@ class ERC20TokenRegistration(
      */
     private fun readTokensFromFile(pathToTokensFile: String): Result<Map<String, EthTokenInfo>, Exception> {
         return Result.of {
-            val tokensJson = readFile(File(pathToTokensFile))
+            val tokensJson = readFile(pathToTokensFile)
             val adapter = moshi.adapter<Map<String, EthTokenInfo>>(
                 Types.newParameterizedType(
                     Map::class.java,
@@ -93,10 +91,10 @@ class ERC20TokenRegistration(
      * @param file - file to read
      * @return text content of file
      */
-    private fun readFile(file: File): String {
+    private fun readFile(file: String): String {
         val content = StringBuilder()
         var lineBreak = ""
-        FileInputStream(file).use { fis ->
+        ERC20TokenRegistration::class.java.classLoader.getResourceAsStream(file).use { fis ->
             BufferedReader(InputStreamReader(fis)).use { reader ->
                 while (true) {
                     val currentLine = reader.readLine() ?: break
@@ -122,16 +120,16 @@ class ERC20TokenRegistration(
     ): Result<String, Exception> {
         return Result.of {
             tokens.forEach { _, ethTokenInfo ->
-                    val utx = Transaction.builder(irohaConsumer.creator)
-                        .createAsset(
-                            ethTokenInfo.name,
-                            ethTokenInfo.domain,
-                            ethTokenInfo.precision
-                        ).build()
-                    irohaConsumer.send(utx).fold(
-                        { logger.info { "Token ${ethTokenInfo.name} created" } },
-                        { logger.warn { "Token ${ethTokenInfo.name} was not created. $it" } }
-                    )
+                val utx = Transaction.builder(irohaConsumer.creator)
+                    .createAsset(
+                        ethTokenInfo.name,
+                        ethTokenInfo.domain,
+                        ethTokenInfo.precision
+                    ).build()
+                irohaConsumer.send(utx).fold(
+                    { logger.info { "Token ${ethTokenInfo.name} created" } },
+                    { logger.warn { "Token ${ethTokenInfo.name} was not created. $it" } }
+                )
             }
 
             var utx = Transaction.builder(irohaConsumer.creator)

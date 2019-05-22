@@ -7,7 +7,6 @@
 
 package com.d3.eth.token
 
-import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.ModelUtil
