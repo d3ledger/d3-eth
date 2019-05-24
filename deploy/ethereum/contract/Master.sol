@@ -10,7 +10,8 @@ import "./SoraToken.sol";
 contract Master {
     bool internal initialized_;
     address public owner_;
-    mapping(address => bool) public peers;
+    mapping(address => bool) public isPeer;
+    address [] public peers;
     uint public peersCount;
     mapping(bytes32 => bool) public used;
     mapping(address => bool) public uniqueAddresses;
@@ -89,15 +90,24 @@ contract Master {
      * @param newAddress address of new peer
      */
     function addPeer(address newAddress) private returns (uint) {
-        require(peers[newAddress] == false);
-        peers[newAddress] = true;
+        require(isPeer[newAddress] == false);
+        isPeer[newAddress] = true;
+        peers.push(newAddress);
         ++peersCount;
         return peersCount;
     }
 
     function removePeer(address peerAddress) private {
-        require(peers[peerAddress] == true);
-        peers[peerAddress] = false;
+        require(isPeer[peerAddress] == true);
+        isPeer[peerAddress] = false;
+
+        for (uint8 i = 0; i < peers.length; i++) {
+            if (peers[i] == peerAddress) {
+                peers[i] = peers[peers.length-1];
+                peers.length--;
+            }
+        }
+
         --peersCount;
     }
 
@@ -259,7 +269,7 @@ contract Master {
             );
 
             // not a peer address or not unique
-            if (peers[recoveredAddress] != true || uniqueAddresses[recoveredAddress] == true) {
+            if (isPeer[recoveredAddress] != true || uniqueAddresses[recoveredAddress] == true) {
                 continue;
             }
             recoveredAddresses[count] = recoveredAddress;
@@ -323,5 +333,12 @@ contract Master {
 
         xorTokenInstance.mintTokens(beneficiary, amount);
         used[txHash] = true;
+    }
+
+    /**
+         * @return the name of the token.
+         */
+    function getPeers() public view returns (address [] memory) {
+        return peers;
     }
 }

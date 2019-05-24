@@ -879,6 +879,10 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
+            val expectedPeersBefore = peers.toHashSet()
+            val actualPeersBefore = master.peers.send().toHashSet()
+            assert(expectedPeersBefore == actualPeersBefore)
+
             val result = master.addPeerByPeer(
                 newPeer,
                 cth.defaultByteHash,
@@ -888,7 +892,12 @@ class MasterTest {
             ).send().isStatusOK
 
             Assertions.assertTrue(result)
-            Assertions.assertTrue(master.peers(newPeer).send())
+            Assertions.assertTrue(master.isPeer(newPeer).send())
+
+            val expectedPeersAfter = expectedPeersBefore
+            expectedPeersAfter.add(newPeer)
+            val actualPeersAfter = master.peers.send().toHashSet()
+            assert(expectedPeersAfter == actualPeersAfter)
         }
     }
 
@@ -919,6 +928,10 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
+            val expectedPeersBefore = peers.toHashSet()
+            val actualPeersBefore = master.peers.send().toHashSet()
+            assert(expectedPeersBefore == actualPeersBefore)
+
             val result = master.addPeerByPeer(
                 newPeer,
                 cth.defaultByteHash,
@@ -928,7 +941,12 @@ class MasterTest {
             ).send().isStatusOK
 
             Assertions.assertTrue(result)
-            Assertions.assertTrue(master.peers(newPeer).send())
+            Assertions.assertTrue(master.isPeer(newPeer).send())
+
+            val expectedPeersAfter = expectedPeersBefore
+            expectedPeersAfter.add(newPeer)
+            val actualPeersAfter = master.peers.send().toHashSet()
+            assert(expectedPeersAfter == actualPeersAfter)
         }
     }
 
@@ -959,6 +977,10 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
+            val expectedPeersBefore = peers.toHashSet()
+            val actualPeersBefore = master.peers.send().toHashSet()
+            assert(expectedPeersBefore == actualPeersBefore)
+
             // first call
             val resultAdd = master.addPeerByPeer(
                 newPeer,
@@ -969,7 +991,12 @@ class MasterTest {
             ).send().isStatusOK
 
             Assertions.assertTrue(resultAdd)
-            Assertions.assertTrue(master.peers(newPeer).send())
+            Assertions.assertTrue(master.isPeer(newPeer).send())
+
+            val expectedPeersAfter = expectedPeersBefore
+            expectedPeersAfter.add(newPeer)
+            val actualPeersAfter = master.peers.send().toHashSet()
+            assert(expectedPeersAfter == actualPeersAfter)
 
             val removeIrohaHash = Hash.sha3(String.format("%064x", BigInteger.valueOf(54321)))
             val removeHash = hashToAddAndRemovePeer(
@@ -990,7 +1017,10 @@ class MasterTest {
             ).send().isStatusOK
 
             Assertions.assertTrue(resultRemove)
-            Assertions.assertFalse(master.peers(newPeer).send())
+            Assertions.assertFalse(master.isPeer(newPeer).send())
+
+            val actualPeersRemoved = master.peers.send().toHashSet()
+            assert(expectedPeersBefore == actualPeersRemoved)
 
             // second call to add peer with the same hash
             Assertions.assertThrows(TransactionException::class.java) {
@@ -1003,7 +1033,7 @@ class MasterTest {
                 ).send()
             }
 
-            Assertions.assertFalse(master.peers(newPeer).send())
+            Assertions.assertFalse(master.isPeer(newPeer).send())
         }
     }
 
@@ -1034,6 +1064,12 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
+            println(peers)
+            println(master.peers.send())
+            val expectedPeersBefore = peers.toHashSet()
+            val actualPeersBefore = master.peers.send().toHashSet()
+            assert(expectedPeersBefore == actualPeersBefore)
+
             Assertions.assertThrows(TransactionException::class.java) {
                 master.addPeerByPeer(
                     newPeer,
@@ -1044,7 +1080,10 @@ class MasterTest {
                 ).send().isStatusOK
             }
 
-            Assertions.assertFalse(master.peers(newPeer).send())
+            Assertions.assertFalse(master.isPeer(newPeer).send())
+
+            val actualPeersAfter = master.peers.send().toHashSet()
+            assert(expectedPeersBefore == actualPeersAfter)
         }
     }
 
@@ -1080,7 +1119,11 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
-            Assertions.assertTrue(master.peers(peerToRemove).send())
+            val expectedPeersBefore = peers.toHashSet()
+            val actualPeersBefore = master.peers.send().toHashSet()
+            assert(expectedPeersBefore == actualPeersBefore)
+
+            Assertions.assertTrue(master.isPeer(peerToRemove).send())
             Assertions.assertTrue(
                 master.removePeerByPeer(
                     withPeerToRemove.last(),
@@ -1091,7 +1134,12 @@ class MasterTest {
                 ).send().isStatusOK
             )
 
-            Assertions.assertFalse(master.peers(withPeerToRemove.last()).send())
+            Assertions.assertFalse(master.isPeer(withPeerToRemove.last()).send())
+
+            val expectedPeersAfter = expectedPeersBefore
+            expectedPeersAfter.remove(peerToRemove)
+            val actualPeersAfter = master.peers.send().toHashSet()
+            assert(expectedPeersAfter == actualPeersAfter)
         }
     }
 

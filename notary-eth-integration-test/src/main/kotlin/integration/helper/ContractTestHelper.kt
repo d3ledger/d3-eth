@@ -316,7 +316,7 @@ class ContractTestHelper {
         for (i in 0 until amount) {
             val keypair = Keys.createEcKeyPair()
             keyPairs.add(keypair)
-            peers.add(Keys.getAddress(keypair))
+            peers.add("0x" + Keys.getAddress(keypair))
         }
         return Pair(keyPairs, peers)
     }
