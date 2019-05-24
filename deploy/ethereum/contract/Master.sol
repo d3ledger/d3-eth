@@ -105,6 +105,7 @@ contract Master {
             if (peers[i] == peerAddress) {
                 peers[i] = peers[peers.length-1];
                 peers.length--;
+                break;
             }
         }
 

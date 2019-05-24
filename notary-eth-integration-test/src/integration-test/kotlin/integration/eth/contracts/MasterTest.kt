@@ -993,7 +993,7 @@ class MasterTest {
             Assertions.assertTrue(resultAdd)
             Assertions.assertTrue(master.isPeer(newPeer).send())
 
-            val expectedPeersAfter = expectedPeersBefore
+            val expectedPeersAfter = HashSet<String>(expectedPeersBefore)
             expectedPeersAfter.add(newPeer)
             val actualPeersAfter = master.peers.send().toHashSet()
             assert(expectedPeersAfter == actualPeersAfter)
@@ -1064,8 +1064,6 @@ class MasterTest {
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
-            println(peers)
-            println(master.peers.send())
             val expectedPeersBefore = peers.toHashSet()
             val actualPeersBefore = master.peers.send().toHashSet()
             assert(expectedPeersBefore == actualPeersBefore)
@@ -1102,7 +1100,6 @@ class MasterTest {
             val (keyPairs, peers) = cth.getKeyPairsAndPeers(sigCount)
 
             // deploy with peer which will be removed
-
             val withPeerToRemove = peers.toMutableList()
             withPeerToRemove.add(peerToRemove)
             val master = cth.deployHelper.deployMasterSmartContract(
@@ -1110,17 +1107,17 @@ class MasterTest {
                 withPeerToRemove
             )
 
-            val finalHash =
-                hashToAddAndRemovePeer(
-                    withPeerToRemove.last(),
-                    cth.defaultIrohaHash
-                )
+            val finalHash = hashToAddAndRemovePeer(
+                withPeerToRemove.last(),
+                cth.defaultIrohaHash
+            )
 
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
 
-            val expectedPeersBefore = peers.toHashSet()
+            val expectedPeersBefore = withPeerToRemove.toHashSet()
             val actualPeersBefore = master.peers.send().toHashSet()
+
             assert(expectedPeersBefore == actualPeersBefore)
 
             Assertions.assertTrue(master.isPeer(peerToRemove).send())
