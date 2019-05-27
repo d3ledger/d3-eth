@@ -9,13 +9,10 @@ package com.d3.eth.withdrawal.withdrawalservice
 
 import com.d3.commons.config.*
 import com.d3.commons.model.IrohaCredential
-import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.eth.vacuum.RelayVacuumConfig
-import com.github.kittinunf.result.failure
-import com.github.kittinunf.result.fanout
-import com.github.kittinunf.result.flatMap
-import com.github.kittinunf.result.map
+import com.github.kittinunf.result.*
 import jp.co.soramitsu.iroha.java.IrohaAPI
+import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
 
 private val logger = KLogging().logger
@@ -65,29 +62,27 @@ fun executeWithdrawal(
     logger.info { "Run withdrawal service" }
     val irohaAPI = IrohaAPI(withdrawalConfig.iroha.hostname, withdrawalConfig.iroha.port)
 
-    ModelUtil.loadKeypair(
-        withdrawalConfig.withdrawalCredential.pubkeyPath,
-        withdrawalConfig.withdrawalCredential.privkeyPath
-    )
-        .map { keypair ->
-            IrohaCredential(
-                withdrawalConfig.withdrawalCredential.accountId,
-                keypair
-            )
-        }
-        .flatMap { credential ->
-            WithdrawalServiceInitialization(
-                withdrawalConfig,
-                credential,
-                irohaAPI,
-                passwordConfig,
-                relayVacuumConfig,
-                rmqConfig
-            ).init()
-        }
-        .failure { ex ->
-            logger.error("Cannot run withdrawal service", ex)
-            irohaAPI.close()
-            System.exit(1)
-        }
+    Result.of {
+        val keyPair = Utils.parseHexKeypair(
+            withdrawalConfig.withdrawalCredential.pubkey,
+            withdrawalConfig.withdrawalCredential.privkey
+        )
+        IrohaCredential(
+            withdrawalConfig.withdrawalCredential.accountId,
+            keyPair
+        )
+    }.flatMap { credential ->
+        WithdrawalServiceInitialization(
+            withdrawalConfig,
+            credential,
+            irohaAPI,
+            passwordConfig,
+            relayVacuumConfig,
+            rmqConfig
+        ).init()
+    }.failure { ex ->
+        logger.error("Cannot run withdrawal service", ex)
+        irohaAPI.close()
+        System.exit(1)
+    }
 }

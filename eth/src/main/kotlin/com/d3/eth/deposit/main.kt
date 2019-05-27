@@ -17,6 +17,7 @@ import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.github.kittinunf.result.*
 import jp.co.soramitsu.iroha.java.IrohaAPI
+import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
 
 private val logger = KLogging().logger
@@ -42,18 +43,18 @@ fun executeDeposit(
     ethereumPasswords: EthereumPasswords,
     depositConfig: EthDepositConfig
 ) {
-    ModelUtil.loadKeypair(
-        depositConfig.notaryCredential.pubkeyPath,
-        depositConfig.notaryCredential.privkeyPath
-    )
-        .map { keypair -> IrohaCredential(depositConfig.notaryCredential.accountId, keypair) }
-        .flatMap { irohaCredential ->
-            executeDeposit(irohaCredential, ethereumPasswords, depositConfig)
-        }
-        .failure { ex ->
-            logger.error("Cannot run eth deposit", ex)
-            System.exit(1)
-        }
+    Result.of {
+        val keypair = Utils.parseHexKeypair(
+            depositConfig.notaryCredential.pubkey,
+            depositConfig.notaryCredential.privkey
+        )
+        IrohaCredential(depositConfig.notaryCredential.accountId, keypair)
+    }.flatMap { irohaCredential ->
+        executeDeposit(irohaCredential, ethereumPasswords, depositConfig)
+    }.failure { ex ->
+        logger.error("Cannot run eth deposit", ex)
+        System.exit(1)
+    }
 }
 
 /** Run deposit instance with particular [irohaCredential] */

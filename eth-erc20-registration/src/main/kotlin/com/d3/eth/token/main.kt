@@ -7,13 +7,13 @@
 
 package com.d3.eth.token
 
-import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
-import com.d3.commons.sidechain.iroha.util.ModelUtil
+import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.IrohaAPI
+import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
 
 private val logger = KLogging().logger
@@ -31,31 +31,30 @@ fun main(args: Array<String>) {
 
 fun executeTokenRegistration(tokenRegistrationConfig: ERC20TokenRegistrationConfig) {
     logger.info { "Run ERC20 tokens registration" }
-    ModelUtil.loadKeypair(
-        tokenRegistrationConfig.irohaCredential.pubkeyPath,
-        tokenRegistrationConfig.irohaCredential.privkeyPath
-    )
-        .map { keypair ->
-            IrohaCredential(
-                tokenRegistrationConfig.irohaCredential.accountId,
-                keypair
-            )
-        }
-        .flatMap { credentials ->
-            IrohaAPI(
-                tokenRegistrationConfig.iroha.hostname,
-                tokenRegistrationConfig.iroha.port
-            ).use { irohaNetwork ->
-                ERC20TokenRegistration(tokenRegistrationConfig, credentials, irohaNetwork).init()
-            }
-        }
-        .fold(
-            {
-                logger.info { "ERC20 tokens were successfully registered" }
-            },
-            { ex ->
-                logger.error("Cannot run ERC20 token registration", ex)
-                System.exit(1)
-            }
+
+    Result.of {
+        val keyPair = Utils.parseHexKeypair(
+            tokenRegistrationConfig.irohaCredential.pubkey,
+            tokenRegistrationConfig.irohaCredential.privkey
         )
+        IrohaCredential(
+            tokenRegistrationConfig.irohaCredential.accountId,
+            keyPair
+        )
+    }.flatMap { credentials ->
+        IrohaAPI(
+            tokenRegistrationConfig.iroha.hostname,
+            tokenRegistrationConfig.iroha.port
+        ).use { irohaNetwork ->
+            ERC20TokenRegistration(tokenRegistrationConfig, credentials, irohaNetwork).init()
+        }
+    }.fold(
+        {
+            logger.info { "ERC20 tokens were successfully registered" }
+        },
+        { ex ->
+            logger.error("Cannot run ERC20 token registration", ex)
+            System.exit(1)
+        }
+    )
 }
