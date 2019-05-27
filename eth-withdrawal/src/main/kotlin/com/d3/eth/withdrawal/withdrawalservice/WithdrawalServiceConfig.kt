@@ -8,6 +8,7 @@ package com.d3.eth.withdrawal.withdrawalservice
 import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialConfig
+import com.d3.commons.config.IrohaCredentialRawConfig
 
 /** Configuration of withdrawal service */
 interface WithdrawalServiceConfig {
@@ -38,7 +39,7 @@ interface WithdrawalServiceConfig {
     /** Notary account in Iroha */
     val registrationIrohaAccount: String
 
-    val withdrawalCredential: IrohaCredentialConfig
+    val withdrawalCredential: IrohaCredentialRawConfig
 
     /** Iroha configuration */
     val iroha: IrohaConfig

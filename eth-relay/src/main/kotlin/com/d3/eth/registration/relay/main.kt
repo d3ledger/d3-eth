@@ -15,11 +15,13 @@ import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.eth.env.ETH_MASTER_WALLET_ENV
 import com.d3.eth.env.ETH_RELAY_IMPLEMENTATION_ADDRESS_ENV
 import com.d3.eth.provider.EthFreeRelayProvider
+import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.IrohaAPI
+import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
 
 private val logger = KLogging().logger
@@ -58,13 +60,14 @@ fun main(args: Array<String>) {
             "/eth/ethereum_password.properties"
         )
     }.map { (relayRegistrationConfig, passwordConfig) ->
-        ModelUtil.loadKeypair(
-            relayRegistrationConfig.relayRegistrationCredential.pubkeyPath,
-            relayRegistrationConfig.relayRegistrationCredential.privkeyPath
-        ).map { keypair ->
+        Result.of {
+            val keyPair = Utils.parseHexKeypair(
+                relayRegistrationConfig.relayRegistrationCredential.pubkey,
+                relayRegistrationConfig.relayRegistrationCredential.privkey
+            )
             IrohaCredential(
                 relayRegistrationConfig.relayRegistrationCredential.accountId,
-                keypair
+                keyPair
             )
         }.flatMap { credential ->
             IrohaAPI(
