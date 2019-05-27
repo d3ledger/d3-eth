@@ -16,6 +16,7 @@ import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.IrohaAPI
+import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
 
 /**
@@ -38,13 +39,14 @@ class EthRegistrationServiceInitialization(
             "Start registration service init with iroha creator: ${ethRegistrationConfig.registrationCredential.accountId}"
         }
 
-        return ModelUtil.loadKeypair(
-            ethRegistrationConfig.registrationCredential.pubkeyPath,
-            ethRegistrationConfig.registrationCredential.privkeyPath
-        ).map { keypair ->
+        return Result.of {
+            val keyPair = Utils.parseHexKeypair(
+                ethRegistrationConfig.registrationCredential.pubkey,
+                ethRegistrationConfig.registrationCredential.privkey
+            )
             IrohaCredential(
                 ethRegistrationConfig.registrationCredential.accountId,
-                keypair
+                keyPair
             )
         }.map { credential ->
             val queryHelper =

@@ -8,6 +8,7 @@ package com.d3.eth.registration
 import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialConfig
+import com.d3.commons.config.IrohaCredentialRawConfig
 
 /**
  * Interface represents configs for registration service for cfg4k
@@ -22,7 +23,7 @@ interface EthRegistrationConfig {
     /** Iroha account of relay account register */
     val notaryIrohaAccount: String
 
-    val registrationCredential: IrohaCredentialConfig
+    val registrationCredential: IrohaCredentialRawConfig
 
     /** Iroha configuration */
     val iroha: IrohaConfig

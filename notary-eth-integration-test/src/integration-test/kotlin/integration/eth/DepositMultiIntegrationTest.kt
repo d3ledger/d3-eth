@@ -5,11 +5,12 @@
 
 package integration.eth
 
-import com.d3.commons.config.IrohaCredentialConfig
+import com.d3.commons.config.IrohaCredentialRawConfig
 import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
+import com.d3.commons.util.hex
 import com.d3.commons.util.toHexString
 import com.d3.eth.provider.ETH_PRECISION
 import integration.helper.EthIntegrationHelperUtil
@@ -31,12 +32,7 @@ import java.time.Duration
 class DepositMultiIntegrationTest {
     /** Utility functions for integration tests */
     private val integrationHelper = EthIntegrationHelperUtil()
-
-    /** Path to public key of 2nd instance of notary */
-    private val pubkeyPath2 = "deploy/iroha/keys/notary1@notary.pub"
-
-    /** Path to private key of 2nd instance of notary */
-    private val privkeyPath2 = "deploy/iroha/keys/notary1@notary.priv"
+    private val keyPair2 = ModelUtil.generateKeypair()
 
     /** Ethereum assetId in Iroha */
     private val etherAssetId = "ether#ethereum"
@@ -53,9 +49,9 @@ class DepositMultiIntegrationTest {
         }
 
         // create 2nd notary config
-        val irohaCredential = object : IrohaCredentialConfig {
-            override val pubkeyPath = pubkeyPath2
-            override val privkeyPath = privkeyPath2
+        val irohaCredential = object : IrohaCredentialRawConfig {
+            override val pubkey = String.hex(keyPair2.public.encoded).toLowerCase()
+            override val privkey = String.hex(keyPair2.private.encoded).toLowerCase()
             override val accountId = integrationHelper.accountHelper.notaryAccount.accountId
         }
 
@@ -68,9 +64,7 @@ class DepositMultiIntegrationTest {
                 notaryCredential_ = irohaCredential
             )
 
-        val keypair = ModelUtil.loadKeypair(pubkeyPath2, privkeyPath2).get()
-
-        integrationHelper.accountHelper.addNotarySignatory(keypair)
+        integrationHelper.accountHelper.addNotarySignatory(keyPair2)
 
         // run 2nd instance of notary
         integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)

@@ -7,11 +7,12 @@ package com.d3.eth.token
 
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialConfig
+import com.d3.commons.config.IrohaCredentialRawConfig
 
 interface ERC20TokenRegistrationConfig {
 
     /** Iroha credentials */
-    val irohaCredential: IrohaCredentialConfig
+    val irohaCredential: IrohaCredentialRawConfig
 
     /** Iroha config */
     val iroha: IrohaConfig
