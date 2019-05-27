@@ -105,7 +105,7 @@ open class EthConfigHelper(
             override val gasLimit = ethDepositConfig.ethereum.gasLimit
             override val confirmationPeriod = ethDepositConfig.ethereum.confirmationPeriod
         },
-        notaryCredential_: IrohaCredentialConfig = accountHelper.createCredentialConfig(
+        notaryCredential_: IrohaCredentialRawConfig = accountHelper.createCredentialRawConfig(
             accountHelper.notaryAccount
         )
     ): EthDepositConfig {
@@ -184,7 +184,7 @@ open class EthConfigHelper(
             override val notaryIrohaAccount = accountHelper.notaryAccount.accountId
             override val iroha = createIrohaConfig()
             override val registrationCredential =
-                accountHelper.createCredentialConfig(accountHelper.registrationAccount)
+                accountHelper.createCredentialRawConfig(accountHelper.registrationAccount)
         }
     }
 
@@ -209,7 +209,8 @@ open class EthConfigHelper(
             /** Notary Iroha account that stores relay register */
             override val notaryIrohaAccount = accountHelper.notaryAccount.accountId
 
-            override val vacuumCredential = getTestCredentialConfig()
+            override val vacuumCredential =
+                accountHelper.createCredentialRawConfig(accountHelper.testCredential)
             /** Iroha configurations */
             override val iroha = createIrohaConfig()
 

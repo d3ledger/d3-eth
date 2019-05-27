@@ -6,12 +6,16 @@
 package longevity
 
 import com.d3.commons.config.IrohaCredentialConfig
+import com.d3.commons.config.IrohaCredentialRawConfig
 import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.sidechain.iroha.util.ModelUtil
+import com.d3.commons.util.hex
 import com.d3.eth.provider.ETH_PRECISION
 import com.github.kittinunf.result.Result
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.NotaryClient
+import io.ktor.util.hex
+import jp.co.soramitsu.iroha.java.Utils
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -50,9 +54,10 @@ class LongevityTest {
 
         // launch the rest
         (1..3).forEach {
-            val irohaCredential = object : IrohaCredentialConfig {
-                override val pubkeyPath = "deploy/iroha/keys/notary$it@notary.pub"
-                override val privkeyPath = "deploy/iroha/keys/notary$it@notary.priv"
+            val keyPair = ModelUtil.generateKeypair()
+            val irohaCredential = object : IrohaCredentialRawConfig {
+                override val pubkey = String.hex(keyPair.public.encoded).toLowerCase()
+                override val privkey = String.hex(keyPair.private.encoded).toLowerCase()
                 override val accountId = integrationHelper.accountHelper.notaryAccount.accountId
             }
 
@@ -68,10 +73,10 @@ class LongevityTest {
                 )
 
             integrationHelper.accountHelper.addNotarySignatory(
-                ModelUtil.loadKeypair(
-                    irohaCredential.pubkeyPath,
-                    irohaCredential.privkeyPath
-                ).get()
+                Utils.parseHexKeypair(
+                    irohaCredential.pubkey,
+                    irohaCredential.privkey
+                )
             )
 
             integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)

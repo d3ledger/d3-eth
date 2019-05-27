@@ -8,6 +8,7 @@ package com.d3.eth.deposit
 import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialConfig
+import com.d3.commons.config.IrohaCredentialRawConfig
 
 /** Configuration of refund endpoint in Notary */
 interface RefundConfig {
@@ -31,7 +32,7 @@ interface EthDepositConfig {
     /** Iroha account that sets Iroha anchored ERC20 tokens */
     val irohaAnchoredTokenSetterAccount: String
 
-    val notaryCredential: IrohaCredentialConfig
+    val notaryCredential: IrohaCredentialRawConfig
 
     val refund: RefundConfig
 

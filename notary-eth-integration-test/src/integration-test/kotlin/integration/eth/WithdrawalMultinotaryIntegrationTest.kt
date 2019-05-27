@@ -43,11 +43,7 @@ class WithdrawalMultinotaryIntegrationTest {
     /** Utility functions for integration tests */
     private val integrationHelper = EthIntegrationHelperUtil()
 
-    /** Path to public key of 2nd instance of notary */
-    private val pubkeyPath = "deploy/iroha/keys/notary2@notary.pub"
-
-    /** Path to private key of 2nd instance of notary */
-    private val privkeyPath = "deploy/iroha/keys/notary2@notary.priv"
+    private val keyPair2 = ModelUtil.generateKeypair()
 
     private val depositConfig1: EthDepositConfig
 
@@ -92,10 +88,7 @@ class WithdrawalMultinotaryIntegrationTest {
         keypair2 = DeployHelper(ethereumConfig2, ethereumPasswords).credentials.ecKeyPair
 
         integrationHelper.accountHelper.addNotarySignatory(
-            ModelUtil.loadKeypair(
-                pubkeyPath,
-                privkeyPath
-            ).get()
+            keyPair2
         )
 
         // run 2nd instance of deposit
