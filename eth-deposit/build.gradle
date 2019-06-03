@@ -10,16 +10,15 @@ plugins {
 }
 
 dependencies {
-    compile project(":eth-vacuum")
-    compile project(":eth-deposit")
+    compile project(":eth")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 apply plugin: 'application'
 apply plugin: 'kotlin'
 apply plugin: 'com.github.johnrengelman.shadow'
+mainClassName = "com.d3.eth.deposit.EthDepositMain"
 
-mainClassName = "com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceMain"
 shadowDistZip.classifier = 'shadow'
 shadowDistTar.classifier = 'shadow'
 // name of jar file that the shadowJar plugin generates
@@ -37,10 +36,8 @@ soramitsu {
     }
 }
 
-task runWithdrawal(type: JavaExec) {
-    main = 'com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceMain'
+task runEthDeposit(type: JavaExec) {
+    main = 'com.d3.eth.deposit.EthDepositMain'
     classpath = sourceSets.main.runtimeClasspath
-
-    args getEthPasswordsArgs()
     setWorkingDir("$rootDir/")
 }
