@@ -13,34 +13,28 @@ import org.testcontainers.containers.BindMode
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EthWithdrawalRMQFailFast {
     private val containerHelper = ContainerHelper()
-    private val dockerfile = "${containerHelper.userDir}/docker/Dockerfile"
-    private val jarFile = "${containerHelper.userDir}/eth-withdrawal/build/libs/eth-withdrawal-all.jar"
+    private val dockerfile = "${containerHelper.userDir}/eth-withdrawal/build/docker/Dockerfile"
+    private val contextFolder = "${containerHelper.userDir}/eth-withdrawal/build/docker/"
 
-    // Create deposit-withdrawal container
-    private val withdrawalContainer = containerHelper.createContainer(jarFile, dockerfile)
+    // Create withdrawal container
+    private val withdrawalContainer = containerHelper.createSoraPluginContainer(contextFolder, dockerfile)
 
     @BeforeAll
     fun startUp() {
         // Mount Ethereum keys
         withdrawalContainer.addFileSystemBind(
             "${containerHelper.userDir}/deploy/ethereum/keys",
-            "/opt/notary/deploy/ethereum/keys",
+            "/deploy/ethereum/keys",
             BindMode.READ_WRITE
         )
 
         // Mount Ethereum configs
         withdrawalContainer.addFileSystemBind(
             "${containerHelper.userDir}/configs/eth",
-            "/opt/notary/configs/eth",
+            "/configs/eth",
             BindMode.READ_WRITE
         )
 
-        // Mount Iroha keys
-        withdrawalContainer.addFileSystemBind(
-            "${containerHelper.userDir}/deploy/iroha/keys",
-            "/opt/notary/deploy/iroha/keys",
-            BindMode.READ_WRITE
-        )
         // Start Iroha
         containerHelper.irohaContainer.start()
 
