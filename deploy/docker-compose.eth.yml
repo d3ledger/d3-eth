@@ -21,28 +21,20 @@ services:
     container_name: d3-eth-registration
     ports:
       - 8083:8083
-    environment:
-      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051
-      WAIT_BEFORE_HOSTS: 10
-      WAIT_HOSTS_TIMEOUT: 60
     volumes:
-      - ../configs:/opt/notary/configs
-      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
-      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+      - ../configs:/configs
+      - ../deploy/iroha/keys:/deploy/iroha/keys
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
 
   d3-eth-deploy-relay:
     image: nexus.iroha.tech:19002/d3-deploy/eth-relay:develop
     container_name: d3-eth-deploy-relay
-    environment:
-      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
-      WAIT_BEFORE_HOSTS: 10
-      WAIT_HOSTS_TIMEOUT: 60
     volumes:
-      - ../configs:/opt/notary/configs
-      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
-      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+      - ../configs:/configs
+      - ../deploy/iroha/keys:/deploy/iroha/keys
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
 
@@ -51,14 +43,10 @@ services:
     container_name: d3-eth-deposit
     ports:
       - 20000:20000
-    environment:
-      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
-      WAIT_BEFORE_HOSTS: 10
-      WAIT_HOSTS_TIMEOUT: 60
     volumes:
-      - ../configs:/opt/notary/configs
-      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
-      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+      - ../configs:/configs
+      - ../deploy/iroha/keys:/deploy/iroha/keys
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
 
@@ -67,14 +55,10 @@ services:
     container_name: d3-eth-withdrawal
     ports:
       - 8084:8084
-    environment:
-      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
-      WAIT_BEFORE_HOSTS: 10
-      WAIT_HOSTS_TIMEOUT: 60
     volumes:
-      - ../configs:/opt/notary/configs
-      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
-      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+      - ../configs:/configs
+      - ../deploy/iroha/keys:/deploy/iroha/keys
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
 

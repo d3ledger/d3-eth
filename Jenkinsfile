@@ -52,6 +52,7 @@ pipeline {
             sh "./gradlew test --info"
             // We need this to test containers
             sh "./gradlew eth-withdrawal:shadowJar"
+            sh "./gradlew dockerfileCreate"
 
             sh "./gradlew compileIntegrationTestKotlin --info"
             sh "./gradlew integrationTest --info"
@@ -97,38 +98,21 @@ pipeline {
       steps {
         script {
           def scmVars = checkout scm
-          if (env.BRANCH_NAME ==~ /(master|develop|reserved)/) {
-            withCredentials([usernamePassword(credentialsId: 'nexus-d3-docker', usernameVariable: 'login', passwordVariable: 'password')]) {
-              sh "docker login nexus.iroha.tech:19002 -u ${login} -p '${password}'"
-
-              TAG = env.BRANCH_NAME
-              sh "rm build/libs/notary-1.0-SNAPSHOT-all.jar || true"
-              iC = docker.image("gradle:4.10.2-jdk8-slim")
-              iC.inside("-e JVM_OPTS='-Xmx3200m' -e TERM='dumb'") {
-                sh "./gradlew eth:shadowJar"
-                sh "./gradlew eth-withdrawal:shadowJar"
-                sh "./gradlew eth-registration:shadowJar"
-                sh "./gradlew eth-relay:shadowJar"
-    	      }
-
-              def nexusRepository="nexus.iroha.tech:19002/${login}"
-
-              def relayJarFile="/eth-relay/build/libs/eth-relay-all.jar"
-              def registrationJarFile="/eth-registration/build/libs/eth-registration-all.jar"
-              def depositJarFile="/eth/build/libs/eth-all.jar"
-              def withdrawalJarFile="/eth-withdrawal/build/libs/eth-withdrawal-all.jar"
-
-              ethRelay = docker.build("${nexusRepository}/eth-relay:${TAG}", "-f docker/Dockerfile --build-arg JAR_FILE=${relayJarFile} .")
-              ethRegistration = docker.build("${nexusRepository}/eth-registration:${TAG}", "-f docker/Dockerfile --build-arg JAR_FILE=${registrationJarFile} .")
-              ethDeposit = docker.build("${nexusRepository}/eth-deposit:${TAG}", "-f docker/Dockerfile --build-arg JAR_FILE=${depositJarFile} .")
-              ethWithdrawal = docker.build("${nexusRepository}/eth-withdrawal:${TAG}", "-f docker/Dockerfile --build-arg JAR_FILE=${withdrawalJarFile} .")
-
-              ethRelay.push("${TAG}")
-              ethRegistration.push("${TAG}")
-              ethDeposit.push("${TAG}")
-              ethWithdrawal.push("${TAG}")
-            }
-          }
+          if (env.BRANCH_NAME ==~ /(master|develop|reserved)/ || env.TAG_NAME) {
+                withCredentials([usernamePassword(credentialsId: 'nexus-d3-docker', usernameVariable: 'login', passwordVariable: 'password')]) {
+                  TAG = env.TAG_NAME ? env.TAG_NAME : env.BRANCH_NAME
+                  iC = docker.image("gradle:4.10.2-jdk8-slim")
+                  iC.inside(" -e JVM_OPTS='-Xmx3200m' -e TERM='dumb'"+
+                  " -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp"+
+                  " -e DOCKER_REGISTRY_URL='https://nexus.iroha.tech:19002'"+
+                  " -e DOCKER_REGISTRY_USERNAME='${login}'"+
+                  " -e DOCKER_REGISTRY_PASSWORD='${password}'"+
+                  " -e TAG='${TAG}'") {
+                    sh "gradle shadowJar"
+                    sh "gradle dockerPush"
+                  }
+                 }
+              }
         }
       }
     }
