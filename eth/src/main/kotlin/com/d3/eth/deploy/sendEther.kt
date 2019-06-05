@@ -29,7 +29,7 @@ fun main(args: Array<String>) {
         System.exit(1)
     }
     val addr = args[0]
-    val amount = args[1].toDouble()
+    val amount = BigInteger(args[1])
     logger.info { "Send ether $amount from genesis to $addr" }
 
 
@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
         }
         .map { deployHelper ->
             deployHelper.sendEthereum(
-                BigInteger.valueOf((1000000000000000000 * amount).toLong()),
+                amount.multiply(BigInteger.valueOf(1000000000000000000)),
                 addr
             )
             logger.info { "Ether was sent" }
