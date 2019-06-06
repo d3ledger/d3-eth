@@ -53,7 +53,7 @@ pipeline {
             // We need this to test containers
             sh "./gradlew eth-withdrawal:shadowJar"
             sh "./gradlew dockerfileCreate"
-            
+
             sh "./gradlew compileIntegrationTestKotlin --info"
             sh "./gradlew integrationTest --info"
           }
