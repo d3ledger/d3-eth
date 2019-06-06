@@ -3,6 +3,9 @@ rootProject.name = 'd3-eth'
 include 'eth'
 project(':eth').projectDir = 'eth' as File
 
+include 'eth-deposit'
+project(':eth-deposit').projectDir = 'eth-deposit' as File
+
 include 'eth-erc20-registration'
 project(':eth-erc20-registration').projectDir = 'eth-erc20-registration' as File
 

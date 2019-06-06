@@ -43,6 +43,7 @@ dependencies {
     compile project(":eth-erc20-registration")
     compile project(":eth-registration")
     compile project(":eth-relay")
+    compile project(":eth-deposit")
     compile project(":eth-withdrawal")
 
     compile "com.github.d3ledger.notary:notary-registration:$notary_version"
