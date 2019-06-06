@@ -11,10 +11,7 @@ dependencies {
 }
 
 
-apply plugin: 'application'
 apply plugin: 'kotlin'
-apply plugin: 'com.github.johnrengelman.shadow'
-mainClassName = "com.d3.eth.deposit.EthDepositMain"
 
 task runSendEther(type: JavaExec) {
     main = 'com.d3.eth.deploy.EthSendEther'
@@ -36,12 +33,6 @@ task runSendEtherFromContract(type: JavaExec) {
 // Deploy ethereum smart contracts - RelayRegistry, Master, add notaries wallets to Master and lock Master.
 task runPreDeployEthereum(type: JavaExec) {
     main = 'com.d3.eth.deploy.EthPreDeployMain'
-    classpath = sourceSets.main.runtimeClasspath
-    setWorkingDir("$rootDir/")
-}
-
-task runEthDeposit(type: JavaExec) {
-    main = 'com.d3.eth.deposit.EthDepositMain'
     classpath = sourceSets.main.runtimeClasspath
     setWorkingDir("$rootDir/")
 }

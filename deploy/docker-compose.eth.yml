@@ -19,62 +19,46 @@ services:
   d3-eth-registration:
     image: nexus.iroha.tech:19002/d3-deploy/eth-registration:develop
     container_name: d3-eth-registration
+    restart: on-failure
     ports:
       - 8083:8083
-    environment:
-      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051
-      WAIT_BEFORE_HOSTS: 10
-      WAIT_HOSTS_TIMEOUT: 60
     volumes:
-      - ../configs:/opt/notary/configs
-      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
-      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+      - ../configs:/configs
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
 
   d3-eth-deploy-relay:
     image: nexus.iroha.tech:19002/d3-deploy/eth-relay:develop
     container_name: d3-eth-deploy-relay
-    environment:
-      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
-      WAIT_BEFORE_HOSTS: 10
-      WAIT_HOSTS_TIMEOUT: 60
+    restart: on-failure
     volumes:
-      - ../configs:/opt/notary/configs
-      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
-      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+      - ../configs:/configs
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
 
   d3-eth-deposit:
     image: nexus.iroha.tech:19002/d3-deploy/eth-deposit:develop
     container_name: d3-eth-deposit
+    restart: on-failure
     ports:
       - 20000:20000
-    environment:
-      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
-      WAIT_BEFORE_HOSTS: 10
-      WAIT_HOSTS_TIMEOUT: 60
     volumes:
-      - ../configs:/opt/notary/configs
-      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
-      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+      - ../configs:/configs
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
 
   d3-eth-withdrawal:
     image: nexus.iroha.tech:19002/d3-deploy/eth-withdrawal:develop
     container_name: d3-eth-withdrawal
+    restart: on-failure
     ports:
       - 8084:8084
-    environment:
-      WAIT_HOSTS: d3-rmq:5672, d3-iroha:50051, d3-eth-node0:8545
-      WAIT_BEFORE_HOSTS: 10
-      WAIT_HOSTS_TIMEOUT: 60
     volumes:
-      - ../configs:/opt/notary/configs
-      - ../deploy/iroha/keys:/opt/notary/deploy/iroha/keys
-      - ../deploy/ethereum/keys:/opt/notary/deploy/ethereum/keys
+      - ../configs:/configs
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
 

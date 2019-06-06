@@ -17,8 +17,8 @@ dependencies {
 apply plugin: 'application'
 apply plugin: 'kotlin'
 apply plugin: 'com.github.johnrengelman.shadow'
+mainClassName = "com.d3.eth.deposit.EthDepositMain"
 
-mainClassName = "com.d3.eth.registration.EthRegistrationMain"
 shadowDistZip.classifier = 'shadow'
 shadowDistTar.classifier = 'shadow'
 // name of jar file that the shadowJar plugin generates
@@ -36,10 +36,8 @@ soramitsu {
     }
 }
 
-task runEthRegistration(type: JavaExec) {
-    main = 'com.d3.eth.registration.EthRegistrationMain'
+task runEthDeposit(type: JavaExec) {
+    main = 'com.d3.eth.deposit.EthDepositMain'
     classpath = sourceSets.main.runtimeClasspath
-
-    args getEthPasswordsArgs()
     setWorkingDir("$rootDir/")
 }
