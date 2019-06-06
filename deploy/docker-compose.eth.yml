@@ -19,11 +19,11 @@ services:
   d3-eth-registration:
     image: nexus.iroha.tech:19002/d3-deploy/eth-registration:develop
     container_name: d3-eth-registration
+    restart: on-failure
     ports:
       - 8083:8083
     volumes:
       - ../configs:/configs
-      - ../deploy/iroha/keys:/deploy/iroha/keys
       - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
@@ -31,9 +31,9 @@ services:
   d3-eth-deploy-relay:
     image: nexus.iroha.tech:19002/d3-deploy/eth-relay:develop
     container_name: d3-eth-deploy-relay
+    restart: on-failure
     volumes:
       - ../configs:/configs
-      - ../deploy/iroha/keys:/deploy/iroha/keys
       - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
@@ -41,11 +41,11 @@ services:
   d3-eth-deposit:
     image: nexus.iroha.tech:19002/d3-deploy/eth-deposit:develop
     container_name: d3-eth-deposit
+    restart: on-failure
     ports:
       - 20000:20000
     volumes:
       - ../configs:/configs
-      - ../deploy/iroha/keys:/deploy/iroha/keys
       - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
@@ -53,11 +53,11 @@ services:
   d3-eth-withdrawal:
     image: nexus.iroha.tech:19002/d3-deploy/eth-withdrawal:develop
     container_name: d3-eth-withdrawal
+    restart: on-failure
     ports:
       - 8084:8084
     volumes:
       - ../configs:/configs
-      - ../deploy/iroha/keys:/deploy/iroha/keys
       - ../deploy/ethereum/keys:/deploy/ethereum/keys
     networks:
       - d3-network
