@@ -51,28 +51,26 @@ class EthRegistrationStrategyImpl(
      * @param publicKey - client public key
      * @return ethereum wallet has been registered
      */
+    @Synchronized
     override fun register(
         accountName: String,
         domainId: String,
         publicKey: String
     ): Result<String, Exception> {
-        return ethFreeRelayProvider.getRelay()
-            .flatMap { freeEthWallet ->
-                ethRelayProvider.getRelayByAccountId("$accountName@$domainId")
-                    .flatMap { assignedRelays ->
-                        //TODO maybe check it before calling ethFreeRelayProvider.getRelay()?
-                        // check that client hasn't been registered yet
-                        if (assignedRelays.isPresent)
-                            throw IllegalArgumentException("Client $accountName@$domainId has already been registered with relay: ${assignedRelays.get()}")
-
-                        // register relay to Iroha
-                        ethereumAccountRegistrator.register(
-                            freeEthWallet,
-                            accountName,
-                            domainId,
-                            publicKey
-                        ) { "$accountName@$domainId" }
-                    }
+        // check that client hasn't been registered yet
+        return ethRelayProvider.getRelayByAccountId("$accountName@$domainId")
+            .flatMap { assignedRelays ->
+                if (assignedRelays.isPresent)
+                    throw IllegalArgumentException("Client $accountName@$domainId has already been registered with relay: ${assignedRelays.get()}")
+                ethFreeRelayProvider.getRelay()
+            }.flatMap { freeEthWallet ->
+                // register with relay in Iroha
+                ethereumAccountRegistrator.register(
+                    freeEthWallet,
+                    accountName,
+                    domainId,
+                    publicKey
+                ) { "$accountName@$domainId" }
             }
     }
 
