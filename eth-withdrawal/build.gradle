@@ -10,8 +10,8 @@ plugins {
 }
 
 dependencies {
-    compile project(":eth-vacuum")
-    compile project(":eth-deposit")
+    implementation project(":eth-vacuum")
+    implementation project(":eth-deposit")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 

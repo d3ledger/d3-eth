@@ -212,6 +212,11 @@ class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPa
         return proxiedMaster
     }
 
+    /**
+     * Load Master contract implementation
+     * @param address - address of master contract
+     * @return Master contract
+     */
     fun loadMasterContract(address: String): Master {
         val proxiedMaster = Master.load(
             address,
@@ -240,6 +245,21 @@ class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPa
     }
 
     /**
+     * Load Relay contract implementation
+     * @param address - address of relay contract
+     * @return Relay contract
+     */
+    fun loadRelayContract(address: String): Relay {
+        val relay = Relay.load(
+            address,
+            web3,
+            transactionManager,
+            StaticGasProvider(gasPrice, gasLimit)
+        )
+        return relay
+    }
+
+    /**
      * Deploy upgradable proxy to relay contract.
      * @param relayImplementationAddress - address to deployed implementation of Relay contract
      * @param masterAddress - address of master contract
@@ -264,9 +284,24 @@ class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPa
             transactionManager,
             StaticGasProvider(gasPrice, gasLimit)
         )
-        logger.info { "Upgradable proxy to Relay contract ${proxiedRelay.contractAddress} was deployed" }
+        logger.info { """Upgradable proxy to Relay contract ${proxiedRelay.contractAddress} """ +
+                """was deployed and initialized with master $masterAddress""" }
 
         return proxiedRelay
+    }
+
+    /**
+     * Load Proxy contract
+     * @param address - address of proxy contract
+     * @return Proxy contract
+     */
+    fun loadOwnedUpgradabilityProxy(address: String): OwnedUpgradeabilityProxy {
+        return OwnedUpgradeabilityProxy.load(
+            address,
+            web3,
+            transactionManager,
+            StaticGasProvider(gasPrice, gasLimit)
+        )
     }
 
     /**
