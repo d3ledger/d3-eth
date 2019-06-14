@@ -14,6 +14,7 @@ import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.flatMap
+import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -31,6 +32,10 @@ class RelayRegistration(
     irohaAPI: IrohaAPI,
     relayRegistrationEthereumPasswords: EthereumPasswords
 ) {
+    init {
+        logger.info { "Start relay registration (ethMasterWallet = ${relayRegistrationConfig.ethMasterWallet}, ethRelayImplementationAddress = ${relayRegistrationConfig.ethRelayImplementationAddress})" }
+    }
+
     /** Ethereum endpoint */
     private val deployHelper =
         DeployHelper(relayRegistrationConfig.ethereum, relayRegistrationEthereumPasswords)
@@ -49,24 +54,51 @@ class RelayRegistration(
         return ModelUtil.setAccountDetail(irohaConsumer, notaryIrohaAccount, relayAddress, "free")
     }
 
+    /**
+     * Check that Relay Implementation and Master contracts are actually deployed
+     * @param ethRelayImplementationAddress - address of Relay contract
+     * @param ethMasterWallet - address of Master contract
+     */
+    fun checkContracts(
+        ethRelayImplementationAddress: String,
+        ethMasterWallet: String
+    ): Result<Unit, Exception> {
+        return Result.of {
+            val relayIsValid = deployHelper.loadRelayContract(ethRelayImplementationAddress).isValid
+            val masterIsValid = deployHelper.loadOwnedUpgradabilityProxy(ethMasterWallet).isValid
+            if (!relayIsValid || !masterIsValid) {
+                var message = ""
+                if (!relayIsValid)
+                    message += "Contract address is incorrect for relay implementation at $ethRelayImplementationAddress\n"
+                if (!masterIsValid)
+                    message += "Contract address is incorrect for master at $ethMasterWallet\n"
+                throw IllegalArgumentException(message)
+            }
+        }
+    }
+
     fun deploy(
         relaysToDeploy: Int,
         ethRelayImplementationAddress: String,
         ethMasterWallet: String
     ): Result<Unit, Exception> {
-        return Result.of {
-            if (relaysToDeploy > 0)
-                logger.info { "Deploy $relaysToDeploy ethereum relays" }
+        return checkContracts(ethRelayImplementationAddress, ethMasterWallet)
+            .map {
+                if (relaysToDeploy > 0)
+                    logger.info { "Deploy $relaysToDeploy ethereum relays" }
 
-            (1..relaysToDeploy).forEach { _ ->
-                val relayWallet =
-                    deployHelper.deployUpgradableRelaySmartContract(ethRelayImplementationAddress, ethMasterWallet)
-                        .contractAddress
-                registerRelayIroha(relayWallet).fold(
-                    { logger.info("Relay $relayWallet was deployed") },
-                    { ex -> logger.error("Cannot deploy relay $relayWallet", ex) })
+                (1..relaysToDeploy).forEach { _ ->
+                    val relayWallet =
+                        deployHelper.deployUpgradableRelaySmartContract(
+                            ethRelayImplementationAddress,
+                            ethMasterWallet
+                        )
+                            .contractAddress
+                    registerRelayIroha(relayWallet).fold(
+                        { logger.info("Relay $relayWallet was deployed") },
+                        { ex -> logger.error("Cannot deploy relay $relayWallet", ex) })
+                }
             }
-        }
     }
 
     /**

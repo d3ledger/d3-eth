@@ -42,25 +42,25 @@ fun main(args: Array<String>) {
                 .build()
         }
         .map { deployHelper ->
-
             val relayRegistry = deployHelper.deployUpgradableRelayRegistrySmartContract()
+            File("relay_registry_eth_address").printWriter().use {
+                it.print(relayRegistry.contractAddress)
+            }
+
             val master = deployHelper.deployUpgradableMasterSmartContract(
                 relayRegistry.contractAddress,
                 args.toList()
             )
-            val relayImplementation = deployHelper.deployRelaySmartContract(master.contractAddress)
-
             File("master_eth_address").printWriter().use {
                 it.print(master.contractAddress)
             }
-            File("relay_registry_eth_address").printWriter().use {
-                it.print(relayRegistry.contractAddress)
-            }
-            File("relay_implementation_address").printWriter().use {
-                it.println(relayImplementation.contractAddress)
-            }
             File("sora_token_eth_address").printWriter().use {
                 it.print(master.tokens.send().get(0))
+            }
+
+            val relayImplementation = deployHelper.deployRelaySmartContract(master.contractAddress)
+            File("relay_implementation_address").printWriter().use {
+                it.println(relayImplementation.contractAddress)
             }
         }
         .failure { ex ->
