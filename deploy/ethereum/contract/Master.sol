@@ -11,7 +11,6 @@ contract Master {
     bool internal initialized_;
     address public owner_;
     mapping(address => bool) public isPeer;
-    address [] public peers;
     uint public peersCount;
     mapping(bytes32 => bool) public used;
     mapping(address => bool) public uniqueAddresses;
@@ -21,7 +20,7 @@ contract Master {
 
     SoraToken public xorTokenInstance;
 
-    address[] public tokens;
+    mapping(address => bool) public isToken;
 
     /**
      * Emit event when master contract does not have enough assets to proceed withdraw
@@ -48,9 +47,12 @@ contract Master {
             addPeer(initialPeers[i]);
         }
 
+        // 0 means ether which is definitely in whitelist
+        isToken[address(0)] = true;
+
         // Create new instance of Sora token
         xorTokenInstance = new SoraToken();
-        tokens.push(address(xorTokenInstance));
+        isToken[address(xorTokenInstance)] = true;
 
         initialized_ = true;
     }
@@ -78,21 +80,12 @@ contract Master {
     }
 
     /**
-     * Return array of listed tokens
-     * @return array of tokens
-     */
-    function getTokens() public view returns (address[] memory) {
-        return tokens;
-    }
-
-    /**
      * Adds new peer to list of signature verifiers. Can be called only by contract owner.
      * @param newAddress address of new peer
      */
     function addPeer(address newAddress) private returns (uint) {
         require(isPeer[newAddress] == false);
         isPeer[newAddress] = true;
-        peers.push(newAddress);
         ++peersCount;
         return peersCount;
     }
@@ -100,15 +93,6 @@ contract Master {
     function removePeer(address peerAddress) private {
         require(isPeer[peerAddress] == true);
         isPeer[peerAddress] = false;
-
-        for (uint8 i = 0; i < peers.length; i++) {
-            if (peers[i] == peerAddress) {
-                peers[i] = peers[peers.length-1];
-                peers.length--;
-                break;
-            }
-        }
-
         --peersCount;
     }
 
@@ -161,10 +145,7 @@ contract Master {
      */
     function addToken(address newToken) public onlyOwner {
         uint i;
-        for (i = 0; i < tokens.length; ++i) {
-            require(tokens[i] != newToken);
-        }
-        tokens.push(newToken);
+        isToken[newToken] = true;
     }
 
     /**
@@ -173,18 +154,7 @@ contract Master {
      * @return true if token inside whitelist or false otherwise
      */
     function checkTokenAddress(address tokenAddress) public view returns (bool) {
-        // 0 means ether which is definitely in whitelist
-        if (tokenAddress == address (0)) {
-            return true;
-        }
-        bool token_found = false;
-        for (uint i = 0; i < tokens.length; ++i) {
-            if (tokens[i] == tokenAddress) {
-                token_found = true;
-                break;
-            }
-        }
-        return token_found;
+        return isToken[tokenAddress];
     }
 
     /**
@@ -334,12 +304,5 @@ contract Master {
 
         xorTokenInstance.mintTokens(beneficiary, amount);
         used[txHash] = true;
-    }
-
-    /**
-         * @return the name of the token.
-         */
-    function getPeers() public view returns (address [] memory) {
-        return peers;
     }
 }

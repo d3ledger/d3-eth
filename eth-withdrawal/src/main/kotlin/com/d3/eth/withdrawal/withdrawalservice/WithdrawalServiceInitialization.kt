@@ -23,6 +23,7 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
+import java.lang.RuntimeException
 
 /**
  * @param withdrawalConfig - configuration for withdrawal service
@@ -84,10 +85,15 @@ class WithdrawalServiceInitialization(
                     { res ->
                         res.map { withdrawalEvents ->
                             withdrawalEvents.map { event ->
-                                val transactionReceipt = ethConsumer.consume(event)
-                                // TODO: Add subtraction of assets from master account in Iroha in 'else'
-                                if (transactionReceipt == null || transactionReceipt.status == FAILED_STATUS) {
+                                try {
+                                    val transactionReceipt = ethConsumer.consume(event)
+                                    // TODO: Add subtraction of assets from master account in Iroha in 'else'
+                                    if (transactionReceipt == null || transactionReceipt.status == FAILED_STATUS) {
+                                        throw RuntimeException("Ethereum transaction has failed")
+                                    }
+                                } catch (e: Exception) {
                                     withdrawalService.returnIrohaAssets(event)
+                                    throw e;
                                 }
                             }
                         }.failure { ex ->
@@ -96,6 +102,7 @@ class WithdrawalServiceInitialization(
                         //TODO call ack()
                     }, { ex ->
                         logger.error("Withdrawal observable error", ex)
+                        System.exit(1)
                     }
                 )
             Unit

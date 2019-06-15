@@ -67,7 +67,7 @@ class RelayVacuum(
     fun vacuum(): Result<Unit, Exception> {
         return ethTokensProvider.getEthAnchoredTokens().flatMap { providedTokens ->
             logger.info { "Provided tokens $providedTokens" }
-            getAllRelays().map { relays ->
+            val res = getAllRelays().map { relays ->
                 logger.info { "Relays to vacuum ${relays.map { relay -> relay.contractAddress }}" }
                 relays.forEach { relay ->
                     relay.sendToMaster(ethTokenAddress).send()
@@ -78,6 +78,8 @@ class RelayVacuum(
                     }
                 }
             }
+            logger.info { "Vacuum finished" }
+            res
         }
     }
 
