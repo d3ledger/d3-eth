@@ -55,12 +55,12 @@ fun main(args: Array<String>) {
                 it.print(master.contractAddress)
             }
             File("sora_token_eth_address").printWriter().use {
-                it.print(master.tokens.send().get(0))
+                it.print(master.xorTokenInstance().send())
             }
 
             val relayImplementation = deployHelper.deployRelaySmartContract(master.contractAddress)
             File("relay_implementation_address").printWriter().use {
-                it.println(relayImplementation.contractAddress)
+                it.print(relayImplementation.contractAddress)
             }
         }
         .failure { ex ->
