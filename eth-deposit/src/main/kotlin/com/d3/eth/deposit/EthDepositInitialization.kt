@@ -14,11 +14,13 @@ import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.util.createPrettyScheduledThreadPool
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
+import com.d3.eth.deposit.endpoint.TestingEndpoint
 import com.d3.eth.provider.EthRelayProvider
 import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
+import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
@@ -32,8 +34,6 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.JsonRpc2_0Web3j
 import org.web3j.protocol.http.HttpService
 import java.math.BigInteger
-
-const val ENDPOINT_ETHEREUM = "eth"
 
 /**
  * Class for deposit instantiation
@@ -113,8 +113,9 @@ class EthDepositInitialization(
      */
     private fun initRefund() {
         logger.info { "Init Refund endpoint" }
+        val serverBundle = ServerInitializationBundle(ethDepositConfig.refund.port, ENDPOINT_ETHEREUM)
         RefundServerEndpoint(
-            ServerInitializationBundle(ethDepositConfig.refund.port, ENDPOINT_ETHEREUM),
+            serverBundle,
             EthRefundStrategyImpl(
                 ethDepositConfig,
                 irohaAPI,
@@ -124,6 +125,9 @@ class EthDepositInitialization(
                 ethTokensProvider
             )
         )
+        if(ethDepositConfig.testingMode) {
+            TestingEndpoint(serverBundle)
+        }
     }
 
     /**
