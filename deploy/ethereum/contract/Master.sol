@@ -144,6 +144,7 @@ contract Master {
      * @param newToken token to add
      */
     function addToken(address newToken) public onlyOwner {
+        require(isToken[newToken] == false);
         uint i;
         isToken[newToken] = true;
     }
