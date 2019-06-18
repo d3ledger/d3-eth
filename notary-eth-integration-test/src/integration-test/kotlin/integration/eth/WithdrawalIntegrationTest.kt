@@ -9,13 +9,13 @@ import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
-import com.d3.eth.deposit.ENDPOINT_ETHEREUM
 import com.d3.eth.deposit.endpoint.BigIntegerMoshiAdapter
 import com.d3.eth.deposit.endpoint.EthNotaryResponse
 import com.d3.eth.deposit.endpoint.EthNotaryResponseMoshiAdapter
 import com.d3.eth.provider.ETH_PRECISION
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.d3.eth.sidechain.util.DeployHelper
+import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.d3.eth.sidechain.util.hashToWithdraw
 import com.d3.eth.sidechain.util.signUserData
 import com.squareup.moshi.Moshi
@@ -125,7 +125,7 @@ class WithdrawalIntegrationTest {
 
             // query
             res =
-                khttp.get("http://127.0.0.1:${depositConfig.refund.port}/$ENDPOINT_ETHEREUM/$hash")
+                    khttp.get("http://127.0.0.1:${depositConfig.refund.port}/$ENDPOINT_ETHEREUM/$hash")
 
             val moshi = Moshi
                 .Builder()
