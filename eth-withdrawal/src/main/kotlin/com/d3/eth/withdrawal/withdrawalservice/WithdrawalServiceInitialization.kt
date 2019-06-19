@@ -83,7 +83,7 @@ class WithdrawalServiceInitialization(
                 .subscribe(
                     { res ->
                         res.map { withdrawalEvents ->
-                            withdrawalEvents.map { event ->
+                            withdrawalEvents.forEach { event ->
                                 try {
                                     val transactionReceipt = ethConsumer.consume(event)
                                     // TODO: Add subtraction of assets from master account in Iroha in 'else'
@@ -91,8 +91,8 @@ class WithdrawalServiceInitialization(
                                         throw RuntimeException("Ethereum transaction has failed")
                                     }
                                 } catch (e: Exception) {
+                                    logger.error("Withdrawal error, perform rollback", e)
                                     withdrawalService.returnIrohaAssets(event)
-                                    throw e;
                                 }
                             }
                         }.failure { ex ->
