@@ -56,7 +56,15 @@ pipeline {
 
             sh "./gradlew compileIntegrationTestKotlin --info"
             sh "./gradlew integrationTest --info"
+            sh "./gradlew d3TestReport"
           }
+          publishHTML (target: [
+                allowMissing: false,
+                alwaysLinkToLastBuild: false,
+                keepAll: true,
+                reportDir: 'build/reports',
+                reportFiles: 'd3-test-report.html',
+                reportName: "D3 test report"])
           // scan smartcontracts only on pull requests to master
           try {
             if (env.CHANGE_TARGET == "master") {
