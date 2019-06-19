@@ -124,7 +124,6 @@ open class EthConfigHelper(
             override val iroha = irohaConfig
             override val ethereum = ethereumConfig
             override val withdrawalAccountId = ethDepositConfig.withdrawalAccountId
-            override val testingMode = true
         }
     }
 
@@ -162,7 +161,6 @@ open class EthConfigHelper(
             override val iroha = createIrohaConfig()
             override val ethereum = ethereumConfig
             override val ethIrohaWithdrawalQueue = testName
-            override val testingMode = true
         }
     }
 
