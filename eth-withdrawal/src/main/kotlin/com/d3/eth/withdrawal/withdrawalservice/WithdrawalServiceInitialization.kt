@@ -23,7 +23,6 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
-import java.lang.RuntimeException
 
 /**
  * @param withdrawalConfig - configuration for withdrawal service
@@ -73,7 +72,7 @@ class WithdrawalServiceInitialization(
                 relayVacuumConfig
             )
             withdrawalService.output()
-                .subscribeOn(
+                .observeOn(
                     Schedulers.from(
                         createPrettyFixThreadPool(
                             ETH_WITHDRAWAL_SERVICE_NAME,
