@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package com.d3.eth.withdrawal.withdrawalservice
+package com.d3.eth.endpoints
 
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
+import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.Result
 import io.ktor.application.call
 import io.ktor.application.install
@@ -24,7 +25,9 @@ import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
+import java.math.BigInteger
 
+const val DEPOSIT_PATH = "deposit"
 const val WITHDRAWAL_PATH = "withdraw"
 const val TRANSFER_PATH = "transfer"
 const val ETH_ASSET = "ether#ethereum"
@@ -34,12 +37,13 @@ const val ETH_ASSET = "ether#ethereum"
  */
 class TestingEndpoint(
     private val serverBundle: ServerInitializationBundle,
+    private val deployHelper: DeployHelper,
     private val irohaAPI: IrohaAPI,
     private val notaryAccountId: String
 ) {
 
     init {
-        logger.info { "Start test withdrawal on port ${serverBundle.port}" }
+        logger.info { "Start test deposit on port ${serverBundle.port}" }
 
         val server = embeddedServer(Netty, port = serverBundle.port) {
             install(CORS)
@@ -51,11 +55,21 @@ class TestingEndpoint(
                 gson()
             }
             routing {
+                post(serverBundle.ethRefund + "/$DEPOSIT_PATH") {
+                    val testDeposit = call.receive(TestDeposit::class)
+                    logger.info { "Testing deposit invoked with parameters:${testDeposit.address}, ${testDeposit.amount}" }
+                    sendEth(testDeposit).fold({
+                        logger.info { "Ether was sent successfully" }
+                        call.respondText("", status = HttpStatusCode.NoContent)
+                    },
+                        { ex -> call.respondText(ex.message!!, status = HttpStatusCode.BadRequest) }
+                    )
+                }
                 post(serverBundle.ethRefund + "/$WITHDRAWAL_PATH") {
                     val testWithdrawal = call.receive(TestWithdrawal::class)
-                    logger.info { "Testing withdrawal invoked with parameters:${testWithdrawal.address}, ${testWithdrawal.amount}" }
+                    TestingEndpoint.logger.info { "Testing withdrawal invoked with parameters:${testWithdrawal.address}, ${testWithdrawal.amount}" }
                     withdrawEth(testWithdrawal).fold({
-                        logger.info { "Ether was withdrawn successfully" }
+                        TestingEndpoint.logger.info { "Ether was withdrawn successfully" }
                         call.respondText("", status = HttpStatusCode.NoContent)
                     },
                         { ex -> call.respondText(ex.message!!, status = HttpStatusCode.BadRequest) }
@@ -63,9 +77,9 @@ class TestingEndpoint(
                 }
                 post(serverBundle.ethRefund + "/$TRANSFER_PATH") {
                     val testTransfer = call.receive(TestTransfer::class)
-                    logger.info { "Testing transfer invoked with parameters:${testTransfer.destAccountId}, ${testTransfer.amount}" }
+                    TestingEndpoint.logger.info { "Testing transfer invoked with parameters:${testTransfer.destAccountId}, ${testTransfer.amount}" }
                     transferEth(testTransfer).fold({
-                        logger.info { "Ether was transferred successfully" }
+                        TestingEndpoint.logger.info { "Ether was transferred successfully" }
                         call.respondText("", status = HttpStatusCode.NoContent)
                     },
                         { ex -> call.respondText(ex.message!!, status = HttpStatusCode.BadRequest) }
@@ -74,6 +88,15 @@ class TestingEndpoint(
             }
         }
         server.start(wait = false)
+    }
+
+    private fun sendEth(testDeposit: TestDeposit): Result<Unit, Exception> {
+        return Result.of {
+            deployHelper.sendEthereum(
+                BigInteger(testDeposit.amount).multiply(BigInteger.valueOf(1000000000000000000)),
+                testDeposit.address
+            )
+        }
     }
 
     private fun withdrawEth(testWithdrawal: TestWithdrawal): Result<Unit, Exception> {
@@ -138,6 +161,8 @@ class TestingEndpoint(
      */
     companion object : KLogging()
 }
+
+data class TestDeposit(val address: String, val amount: String)
 
 data class TestWithdrawal(
     val accountId: String,

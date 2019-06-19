@@ -14,7 +14,6 @@ import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.util.createPrettyScheduledThreadPool
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
-import com.d3.eth.deposit.endpoint.TestingEndpoint
 import com.d3.eth.provider.EthRelayProvider
 import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.EthChainHandler
@@ -125,9 +124,6 @@ class EthDepositInitialization(
                 ethTokensProvider
             )
         )
-        if(ethDepositConfig.testingMode) {
-            TestingEndpoint(serverBundle)
-        }
     }
 
     /**

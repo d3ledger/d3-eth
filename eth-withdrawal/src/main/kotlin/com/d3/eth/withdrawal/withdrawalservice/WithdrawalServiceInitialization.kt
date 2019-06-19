@@ -8,13 +8,11 @@ package com.d3.eth.withdrawal.withdrawalservice
 import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.config.RMQConfig
 import com.d3.commons.model.IrohaCredential
-import com.d3.commons.notary.endpoint.ServerInitializationBundle
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.IrohaChainHandler
 import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
-import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.consumer.EthConsumer
 import com.github.kittinunf.result.Result
@@ -25,7 +23,6 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
-import java.lang.RuntimeException
 
 /**
  * @param withdrawalConfig - configuration for withdrawal service
@@ -119,13 +116,6 @@ class WithdrawalServiceInitialization(
             .map { initWithdrawalService(it) }
             .flatMap { initEthConsumer(it) }
             .map { WithdrawalServiceEndpoint(withdrawalConfig.port) }
-            .map {
-                TestingEndpoint(
-                    ServerInitializationBundle(withdrawalConfig.port + 10000, ENDPOINT_ETHEREUM),
-                    irohaAPI,
-                    withdrawalConfig.notaryIrohaAccount
-                )
-            }
             .flatMap { chainListener.listen() }
     }
 

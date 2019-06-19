@@ -15,6 +15,9 @@ project(':eth-registration').projectDir = 'eth-registration' as File
 include 'eth-relay'
 project(':eth-relay').projectDir = 'eth-relay' as File
 
+include 'eth-testing-endpoints'
+project(':eth-testing-endpoints').projectDir = 'eth-testing-endpoints' as File
+
 include 'eth-vacuum'
 project(':eth-vacuum').projectDir = 'eth-vacuum' as File
 

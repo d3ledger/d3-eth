@@ -41,7 +41,4 @@ interface EthDepositConfig {
 
     /** Iroha withdrawal account grant permission to */
     val withdrawalAccountId: String
-
-    /** Enables testing endpoint for deposit simulation **/
-    val testingMode: Boolean
 }

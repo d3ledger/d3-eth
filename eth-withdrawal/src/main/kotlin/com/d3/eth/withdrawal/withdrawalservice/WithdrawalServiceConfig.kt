@@ -49,7 +49,4 @@ interface WithdrawalServiceConfig {
 
     /** RMQ Iroha Block */
     val ethIrohaWithdrawalQueue: String
-
-    /** Enables testing endpoint for withdrawal simulation **/
-    val testingMode: Boolean
 }
