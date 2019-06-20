@@ -29,6 +29,8 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
+const val ENDPOINT_ETHEREUM = "eth"
+
 /**
  * Authenticator class for basic access authentication
  * @param ethereumPasswords config with Ethereum node credentials

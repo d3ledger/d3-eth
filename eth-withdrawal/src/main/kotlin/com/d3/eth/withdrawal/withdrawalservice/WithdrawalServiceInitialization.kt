@@ -23,7 +23,6 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
-import java.lang.RuntimeException
 
 /**
  * @param withdrawalConfig - configuration for withdrawal service
@@ -35,7 +34,7 @@ class WithdrawalServiceInitialization(
     private val irohaAPI: IrohaAPI,
     private val withdrawalEthereumPasswords: EthereumPasswords,
     private val relayVacuumConfig: RelayVacuumConfig,
-    private val rmqConfig: RMQConfig
+    rmqConfig: RMQConfig
 ) {
 
     private val chainListener = ReliableIrohaChainListener(
@@ -73,7 +72,7 @@ class WithdrawalServiceInitialization(
                 relayVacuumConfig
             )
             withdrawalService.output()
-                .subscribeOn(
+                .observeOn(
                     Schedulers.from(
                         createPrettyFixThreadPool(
                             ETH_WITHDRAWAL_SERVICE_NAME,
@@ -84,7 +83,7 @@ class WithdrawalServiceInitialization(
                 .subscribe(
                     { res ->
                         res.map { withdrawalEvents ->
-                            withdrawalEvents.map { event ->
+                            withdrawalEvents.forEach { event ->
                                 try {
                                     val transactionReceipt = ethConsumer.consume(event)
                                     // TODO: Add subtraction of assets from master account in Iroha in 'else'
@@ -92,8 +91,8 @@ class WithdrawalServiceInitialization(
                                         throw RuntimeException("Ethereum transaction has failed")
                                     }
                                 } catch (e: Exception) {
+                                    logger.error("Withdrawal error, perform rollback", e)
                                     withdrawalService.returnIrohaAssets(event)
-                                    throw e;
                                 }
                             }
                         }.failure { ex ->
