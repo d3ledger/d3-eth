@@ -43,7 +43,7 @@ class TestingEndpoint(
 ) {
 
     init {
-        logger.info { "Start test deposit on port ${serverBundle.port}" }
+        logger.info { "Start ${serverBundle.ethRefund} test endpoints on port ${serverBundle.port}" }
 
         val server = embeddedServer(Netty, port = serverBundle.port) {
             install(CORS)
@@ -67,9 +67,9 @@ class TestingEndpoint(
                 }
                 post(serverBundle.ethRefund + "/$WITHDRAWAL_PATH") {
                     val testWithdrawal = call.receive(TestWithdrawal::class)
-                    TestingEndpoint.logger.info { "Testing withdrawal invoked with parameters:${testWithdrawal.address}, ${testWithdrawal.amount}" }
+                    logger.info { "Testing withdrawal invoked with parameters:${testWithdrawal.address}, ${testWithdrawal.amount}" }
                     withdrawEth(testWithdrawal).fold({
-                        TestingEndpoint.logger.info { "Ether was withdrawn successfully" }
+                        logger.info { "Ether was withdrawn successfully" }
                         call.respondText("", status = HttpStatusCode.NoContent)
                     },
                         { ex -> call.respondText(ex.message!!, status = HttpStatusCode.BadRequest) }
@@ -77,9 +77,9 @@ class TestingEndpoint(
                 }
                 post(serverBundle.ethRefund + "/$TRANSFER_PATH") {
                     val testTransfer = call.receive(TestTransfer::class)
-                    TestingEndpoint.logger.info { "Testing transfer invoked with parameters:${testTransfer.destAccountId}, ${testTransfer.amount}" }
+                    logger.info { "Testing transfer invoked with parameters:${testTransfer.destAccountId}, ${testTransfer.amount}" }
                     transferEth(testTransfer).fold({
-                        TestingEndpoint.logger.info { "Ether was transferred successfully" }
+                        logger.info { "Ether was transferred successfully" }
                         call.respondText("", status = HttpStatusCode.NoContent)
                     },
                         { ex -> call.respondText(ex.message!!, status = HttpStatusCode.BadRequest) }
