@@ -7,6 +7,7 @@ package com.d3.eth.endpoints
 
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
 import com.d3.eth.sidechain.util.DeployHelper
+import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.github.kittinunf.result.Result
 import io.ktor.application.call
 import io.ktor.application.install
@@ -43,7 +44,7 @@ class TestingEndpoint(
 ) {
 
     init {
-        logger.info { "Start test endpoints on port ${serverBundle.port}" }
+        logger.info { "Start ${serverBundle.ethRefund} test endpoints on port ${serverBundle.port}" }
 
         val server = embeddedServer(Netty, port = serverBundle.port) {
             install(CORS)
