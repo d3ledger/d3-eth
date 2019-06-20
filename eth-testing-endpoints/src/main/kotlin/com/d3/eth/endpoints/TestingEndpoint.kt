@@ -43,7 +43,7 @@ class TestingEndpoint(
 ) {
 
     init {
-        logger.info { "Start test deposit on port ${serverBundle.port}" }
+        logger.info { "Start test endpoints on port ${serverBundle.port}" }
 
         val server = embeddedServer(Netty, port = serverBundle.port) {
             install(CORS)
