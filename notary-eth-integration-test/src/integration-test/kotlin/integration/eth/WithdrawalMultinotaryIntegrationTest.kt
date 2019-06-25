@@ -51,7 +51,7 @@ class WithdrawalMultinotaryIntegrationTest {
 
     private val keypair1: ECKeyPair
 
-    private val keypair2: ECKeyPair
+    private val ethKeyPair2: ECKeyPair
 
     private val ethereumPasswords =
         loadEthPasswords("eth-deposit", "/eth/ethereum_password.properties").get()
@@ -85,11 +85,23 @@ class WithdrawalMultinotaryIntegrationTest {
         depositConfig2 =
                 integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig2)
 
-        keypair2 = DeployHelper(ethereumConfig2, ethereumPasswords).credentials.ecKeyPair
+        val notary2IrohaPublicKey = keyPair2.public.toHexString()
+        val notary2EthereumCredentials = DeployHelper(ethereumConfig2, ethereumPasswords).credentials
+        val notary2EthereumAddress = notary2EthereumCredentials.address
+        ethKeyPair2 = notary2EthereumCredentials.ecKeyPair
+        val notary2Name = "notary_name_" + String.getRandomString(5)
+        val notary2EndpointAddress = "http://127.0.0.1:${depositConfig2.refund.port}"
 
-        integrationHelper.accountHelper.addNotarySignatory(
-            keyPair2
+        integrationHelper.triggerExpansion(
+            integrationHelper.accountHelper.notaryAccount.accountId,
+            notary2IrohaPublicKey,
+            2,
+            notary2EthereumAddress,
+            notary2Name,
+            notary2EndpointAddress
         )
+
+        Thread.sleep(5_000)
 
         // run 2nd instance of deposit
         integrationHelper.runEthDeposit(ethDepositConfig = depositConfig2)
@@ -115,7 +127,7 @@ class WithdrawalMultinotaryIntegrationTest {
      * @then both notaries reply with valid refund information and signature
      */
     @Test
-    fun testRefund() {
+    fun testRefundEndpoints() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
             val masterAccount = integrationHelper.accountHelper.notaryAccount.accountId
@@ -173,14 +185,6 @@ class WithdrawalMultinotaryIntegrationTest {
             assert(response1 is EthNotaryResponse.Successful)
             response1 as EthNotaryResponse.Successful
 
-            Assertions.assertEquals(decimalAmount.toPlainString(), response1.ethRefund.amount)
-            Assertions.assertEquals(ethWallet, response1.ethRefund.address)
-            Assertions.assertEquals(
-                "0x0000000000000000000000000000000000000000",
-                response1.ethRefund.assetId
-            )
-            Assertions.assertEquals(hash, response1.ethRefund.irohaTxHash)
-
             Assertions.assertEquals(
                 signUserData(
                     keypair1,
@@ -203,17 +207,9 @@ class WithdrawalMultinotaryIntegrationTest {
             assert(response2 is EthNotaryResponse.Successful)
             response2 as EthNotaryResponse.Successful
 
-            Assertions.assertEquals(decimalAmount.toPlainString(), response2.ethRefund.amount)
-            Assertions.assertEquals(ethWallet, response2.ethRefund.address)
-            Assertions.assertEquals(
-                "0x0000000000000000000000000000000000000000",
-                response2.ethRefund.assetId
-            )
-            Assertions.assertEquals(hash, response2.ethRefund.irohaTxHash)
-
             Assertions.assertEquals(
                 signUserData(
-                    keypair2,
+                    ethKeyPair2,
                     hashToWithdraw(
                         "0x0000000000000000000000000000000000000000",
                         decimalAmount.toPlainString(),

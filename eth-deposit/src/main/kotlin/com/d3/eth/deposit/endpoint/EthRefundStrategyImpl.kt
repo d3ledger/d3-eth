@@ -165,7 +165,7 @@ class EthRefundStrategyImpl(
                 )
 
             val signature = signUserData(ecKeyPair, finalHash)
-            EthNotaryResponse.Successful(signature, ethRefund)
+            EthNotaryResponse.Successful(signature)
         }
     }
 

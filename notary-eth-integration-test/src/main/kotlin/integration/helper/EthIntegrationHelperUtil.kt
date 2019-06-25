@@ -8,6 +8,8 @@ package integration.helper
 import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.config.RMQConfig
 import com.d3.commons.config.loadRawLocalConfigs
+import com.d3.commons.expansion.ExpansionDetails
+import com.d3.commons.expansion.ExpansionUtils
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
@@ -313,7 +315,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         name: String,
         keypair: KeyPair = ModelUtil.generateKeypair()
     ): String {
-        ethRegistrationStrategy.register(name, CLIENT_DOMAIN,  keypair.public.toHexString())
+        ethRegistrationStrategy.register(name, CLIENT_DOMAIN, keypair.public.toHexString())
             .fold({ registeredEthWallet ->
                 logger.info("registered client $name with relay $registeredEthWallet")
                 return registeredEthWallet
@@ -386,13 +388,19 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      */
     fun runEthDeposit(
         ethereumPasswords: EthereumPasswords = configHelper.ethPasswordConfig,
-        ethDepositConfig: EthDepositConfig = configHelper.createEthDepositConfig()
+        ethDepositConfig: EthDepositConfig = configHelper.createEthDepositConfig(
+            String.getRandomString(9)
+        ),
+        rmqConfig: RMQConfig = loadRawLocalConfigs(
+            "rmq",
+            RMQConfig::class.java, "rmq.properties"
+        )
     ) {
         val name = String.getRandomString(9)
         val address = "http://localhost:${ethDepositConfig.refund.port}"
         addNotary(name, address)
 
-        executeDeposit(ethereumPasswords, ethDepositConfig)
+        executeDeposit(ethereumPasswords, ethDepositConfig, rmqConfig)
 
         logger.info { "Notary $name is started on $address" }
     }
@@ -414,7 +422,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         relayVacuumConfig: RelayVacuumConfig = configHelper.createRelayVacuumConfig(),
         rmqConfig: RMQConfig = loadRawLocalConfigs(
             "rmq",
-            RMQConfig::class.java,"rmq.properties"
+            RMQConfig::class.java, "rmq.properties"
         )
     ) {
         com.d3.eth.withdrawal.withdrawalservice.executeWithdrawal(
@@ -422,6 +430,59 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             configHelper.ethPasswordConfig,
             relayVacuumConfig,
             rmqConfig
+        )
+    }
+
+    /**
+     * Get list of all notary endpoints
+     */
+    fun getNotaries(): Map<String, String> {
+        return getAccountDetails(
+            accountHelper.notaryListStorageAccount.accountId,
+            accountHelper.notaryListSetterAccount.accountId
+        )
+    }
+
+    /**
+     * Trigger Ethereum node expansion.
+     * @param accountId - account to expand
+     * @param publicKey - new public key to add
+     * @param quorum - new quorum
+     * @param ethereumAddress - Ethereum address of new node for contract checks
+     */
+    fun triggerExpansion(
+        accountId: String,
+        publicKey: String,
+        quorum: Int,
+        ethereumAddress: String,
+        notaryName: String,
+        notaryEndpointAddress: String
+    ) {
+        val expansionDetails = ExpansionDetails(
+            accountId,
+            publicKey,
+            quorum,
+            mapOf(
+                "eth_address" to ethereumAddress,
+                "notary_name" to notaryName,
+                "notary_endpoint" to notaryEndpointAddress
+            )
+        )
+
+        IrohaConsumerImpl(
+            accountHelper.superuserAccount,
+            irohaAPI
+        ).send(
+            ExpansionUtils.createExpansionTriggerTx(
+                accountHelper.superuserAccount.accountId,
+                expansionDetails,
+                accountHelper.expansionTriggerAccount.accountId
+            )
+        ).fold(
+            { hash ->
+                logger.info { "Expansion trigger transaction with hash $hash sent" }
+            },
+            { ex -> throw ex }
         )
     }
 

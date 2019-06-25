@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package com.d3.eth.notary.endpoint
+package com.d3.eth.deposit.endpoint
 
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
-import com.d3.eth.deposit.endpoint.*
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -27,20 +26,17 @@ class RefundServerEndpointTest {
     val serverBundle = ServerInitializationBundle(8080, "eth")
 
     /** JSON adapter */
-    val moshi =
-        Moshi.Builder().add(EthNotaryResponseMoshiAdapter()).add(
-            BigInteger::class.java,
-            BigIntegerMoshiAdapter()
-        )
-            .build()
+    val moshi = Moshi.Builder().add(EthNotaryResponseMoshiAdapter()).add(
+        BigInteger::class.java,
+        BigIntegerMoshiAdapter()
+    ).build()
 
     /** Stub for Ethereum refund request, should represent tx hash from Iroha */
     private val ethRequest = EthRefundRequest("tx_hash_from_iroha")
 
     /** Successful response */
     private val successResponse = EthNotaryResponse.Successful(
-        "signature",
-        EthRefund("address", "coin", "10", "irohaTxHash", "")
+        "signature"
     )
 
     /** Strategy mock that always returns success */
@@ -51,7 +47,14 @@ class RefundServerEndpointTest {
         } doReturn successResponse
     }
 
-    val server = RefundServerEndpoint(serverBundle, ethRefundStrategyMock)
+    private val ethAddPeerStrategyMock = mock<EthAddPeerStrategy> {
+        val request = any<IrohaTransactionHashType>()
+        on {
+            performAddPeer(request)
+        } doReturn successResponse
+    }
+
+    val server = RefundServerEndpoint(serverBundle, ethRefundStrategyMock, ethAddPeerStrategyMock)
 
     /**
      * @given initialized server class
@@ -76,12 +79,45 @@ class RefundServerEndpointTest {
      * @then  check that answer returns key not found
      */
     @Test
-    fun emptyCall() {
+    fun emptyRefundCall() {
         val failureResponse = EthNotaryResponse.Error("Request has been failed. Error in URL")
 
         val refundAnswer = server.onCallEthRefund(null)
 
         assertEquals(HttpStatusCode.BadRequest, refundAnswer.code)
         assertEquals(failureResponse.reason, refundAnswer.message)
+    }
+
+    /**
+     * @given initialized server class
+     * @when  call onCallAddPeerRefund()
+     * @then  check that answer returns success
+     */
+    @Test
+    fun onEthAddPeerCallTest() {
+        val irohaTxHash = "tx_hash_from_iroha"
+        val request = moshi.adapter(IrohaTransactionHashType::class.java).toJson(irohaTxHash)
+        val result = server.onCallAddPeer(request)
+
+        assertEquals(HttpStatusCode.OK, result.code)
+        assertEquals(
+            successResponse,
+            moshi.adapter(EthNotaryResponse::class.java).fromJson(result.message)
+        )
+    }
+
+    /**
+     * @given initialized server class
+     * @when  call onCallAddPeerRefund() with null parameter
+     * @then  check that answer returns key not found
+     */
+    @Test
+    fun emptyAddPeerCall() {
+        val failureResponse = EthNotaryResponse.Error("Request has been failed. Error in URL")
+
+        val answer = server.onCallAddPeer(null)
+
+        assertEquals(HttpStatusCode.BadRequest, answer.code)
+        assertEquals(failureResponse.reason, answer.message)
     }
 }

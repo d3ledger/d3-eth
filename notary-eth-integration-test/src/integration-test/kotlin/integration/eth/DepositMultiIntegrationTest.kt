@@ -13,6 +13,7 @@ import com.d3.commons.util.getRandomString
 import com.d3.commons.util.hex
 import com.d3.commons.util.toHexString
 import com.d3.eth.provider.ETH_PRECISION
+import com.d3.eth.sidechain.util.DeployHelper
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
@@ -64,7 +65,21 @@ class DepositMultiIntegrationTest {
                 notaryCredential_ = irohaCredential
             )
 
-        integrationHelper.accountHelper.addNotarySignatory(keyPair2)
+        val notary2IrohaPublicKey = keyPair2.public.toHexString()
+        val notary2EthereumCredentials = DeployHelper(depositConfig.ethereum, ethereumPasswords).credentials
+        val notary2EthereumAddress = notary2EthereumCredentials.address
+        val notary2Name = "notary_name_" + String.getRandomString(5)
+        val notary2EndpointAddress = "http://127.0.0.1:${depositConfig.refund.port}"
+
+        integrationHelper.triggerExpansion(
+            integrationHelper.accountHelper.notaryAccount.accountId,
+            notary2IrohaPublicKey,
+            2,
+            notary2EthereumAddress,
+            notary2Name,
+            notary2EndpointAddress
+        )
+        Thread.sleep(5_000)
 
         // run 2nd instance of notary
         integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)
@@ -87,7 +102,6 @@ class DepositMultiIntegrationTest {
             registrationTestEnvironment.registrationConfig.port
         )
         Assertions.assertEquals(200, res.statusCode)
-        // TODO: D3-417 Web3j cannot pass an empty list of addresses to the smart contract.
         return integrationHelper.registerClientInEth(clientIrohaAccount)
     }
 

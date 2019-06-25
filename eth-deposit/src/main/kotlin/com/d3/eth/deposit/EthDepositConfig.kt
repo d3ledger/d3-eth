@@ -19,6 +19,9 @@ interface EthDepositConfig {
     /** Iroha account that has registered wallets */
     val registrationServiceIrohaAccount: String
 
+    /** Account that stores list of notaries endpoints */
+    val notaryListStorageAccount: String
+
     /** Iroha account that stores Ethereum anchored ERC20 tokens */
     val ethAnchoredTokenStorageAccount: String
 
@@ -41,4 +44,12 @@ interface EthDepositConfig {
 
     /** Iroha withdrawal account grant permission to */
     val withdrawalAccountId: String
+
+    /** Account that trigger expansion */
+    val expansionTriggerAccount: String
+
+    /** Creator of expansion trigger transaction */
+    val expansionTriggerCreatorAccountId: String
+
+    val ethIrohaDepositQueue: String
 }
