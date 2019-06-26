@@ -57,7 +57,7 @@ class DeployHelperBuilder(ethereumConfig: EthereumConfig, ethereumPasswords: Eth
      */
     fun setFastTransactionManager(): DeployHelperBuilder {
         deployHelper.transactionManager =
-                FastRawTransactionManager(deployHelper.web3, deployHelper.credentials)
+            FastRawTransactionManager(deployHelper.web3, deployHelper.credentials)
         return this
     }
 
@@ -286,8 +286,10 @@ class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPa
             transactionManager,
             StaticGasProvider(gasPrice, gasLimit)
         )
-        logger.info { """Upgradable proxy to Relay contract ${proxiedRelay.contractAddress} """ +
-                """was deployed and initialized with master $masterAddress""" }
+        logger.info {
+            """Upgradable proxy to Relay contract ${proxiedRelay.contractAddress} """ +
+                    """was deployed and initialized with master $masterAddress"""
+        }
 
         return proxiedRelay
     }

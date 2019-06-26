@@ -39,12 +39,17 @@ class EthAddPeerStrategyImpl(
         return irohaTx.map { tx ->
             if (tx.payload.reducedPayload.creatorAccountId != expansionTriggerCreatorAccountId)
                 throw IllegalArgumentException("Wrong iroha tx creator account id ${tx.payload.reducedPayload.creatorAccountId}, expected ${expansionTriggerCreatorAccountId}")
-            val setAccountDetail = tx.payload.reducedPayload.getCommands(0).setAccountDetail
-            if (setAccountDetail.accountId != expansionTriggerAccountId)
-                throw IllegalArgumentException("Wrong iroha tx account id ${setAccountDetail.accountId}, expected ${expansionTriggerAccountId}")
+
+            val validatedTxs = tx.payload.reducedPayload.commandsList
+                .filter { it.hasSetAccountDetail() }
+                .map { it.setAccountDetail }
+                .filter { it.accountId == expansionTriggerAccountId }
+
+            if (validatedTxs.count() == 0)
+                throw IllegalArgumentException("Expansion command not found in transaction $irohaTxHash")
 
             val expansionDetails = gson.fromJson(
-                setAccountDetail.value.irohaUnEscape(),
+                validatedTxs.first().value.irohaUnEscape(),
                 ExpansionDetails::class.java
             )
 

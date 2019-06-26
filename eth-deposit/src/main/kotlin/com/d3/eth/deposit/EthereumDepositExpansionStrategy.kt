@@ -60,7 +60,7 @@ class EthereumDepositExpansionStrategy(
         val notaryName = expansionDetails.additionalData["notary_name"]
         val notaryEndpoint = expansionDetails.additionalData["notary_endpoint"]
         return consumer.send(
-            Transaction.builder(notaryCredential.accountId)
+            Transaction.builder(notaryCredential.accountId, triggerTime)
                 .addSignatory(
                     notaryCredential.accountId,
                     String.unHex(expansionDetails.publicKey.toLowerCase())
@@ -72,7 +72,6 @@ class EthereumDepositExpansionStrategy(
                     notaryName,
                     notaryEndpoint
                 )
-                .setCreatedTime(triggerTime)
                 .build()
         )
     }

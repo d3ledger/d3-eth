@@ -25,7 +25,6 @@ import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
-import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
@@ -38,6 +37,7 @@ import jp.co.soramitsu.iroha.java.Transaction
 import mu.KLogging
 import okhttp3.OkHttpClient
 import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.WalletUtils
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.JsonRpc2_0Web3j
 import org.web3j.protocol.http.HttpService
@@ -57,8 +57,10 @@ class EthDepositInitialization(
     private val ethRelayProvider: EthRelayProvider,
     private val ethTokensProvider: EthTokensProvider
 ) {
-    private var ecKeyPair: ECKeyPair =
-        DeployHelper(ethDepositConfig.ethereum, passwordsConfig).credentials.ecKeyPair
+    private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(
+        passwordsConfig.credentialsPassword,
+        ethDepositConfig.ethereum.credentialsPath
+    ).ecKeyPair
 
     private val queryHelper = IrohaQueryHelperImpl(irohaAPI, notaryCredential)
 
@@ -88,7 +90,7 @@ class EthDepositInitialization(
             .flatMap { irohaChainListener.getBlockObservable() }
             .flatMap { irohaObservable ->
                 irohaObservable
-                    .subscribeOn(
+                    .observeOn(
                         Schedulers.from(
                             createPrettyFixThreadPool(
                                 ETH_DEPOSIT_SERVICE_NAME,

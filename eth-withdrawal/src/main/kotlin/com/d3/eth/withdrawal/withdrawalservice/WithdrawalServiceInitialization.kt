@@ -69,13 +69,11 @@ class WithdrawalServiceInitialization(
         withdrawalConfig.notaryListSetterAccount
     )
 
-
     val ethConsumer = EthConsumer(
         withdrawalConfig.ethereum,
         withdrawalEthereumPasswords,
         relayVacuumConfig
     )
-
 
     private val expansionService = ServiceExpansion(
         withdrawalConfig.expansionTriggerAccount,
