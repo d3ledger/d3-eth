@@ -40,10 +40,14 @@ class DepositMultiIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
+    private val ethDeposit1: Job
+    private val ethDeposit2: Job
 
     init {
         // run notary
-        integrationHelper.runEthDeposit()
+        ethDeposit1 = GlobalScope.launch {
+            integrationHelper.runEthDeposit()
+        }
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -82,8 +86,9 @@ class DepositMultiIntegrationTest {
         Thread.sleep(5_000)
 
         // run 2nd instance of notary
-        integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)
-
+        ethDeposit2 = GlobalScope.launch {
+            integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)
+        }
     }
 
     /** Iroha client account */
@@ -109,6 +114,8 @@ class DepositMultiIntegrationTest {
 
     @AfterAll
     fun dropDown() {
+        ethDeposit1.cancel()
+        ethDeposit2.cancel()
         ethRegistrationService.cancel()
         integrationHelper.close()
     }
