@@ -148,7 +148,7 @@ class ProofCollector(
                 val ss = ArrayList<ByteArray>()
 
                 notaryPeerListProvider.getPeerList().forEach { peer ->
-                    WithdrawalServiceImpl.logger.info { "Query $peer for proof" }
+                    WithdrawalServiceImpl.logger.info { "Query $peer for proof for hash $hash" }
                     val res: khttp.responses.Response
                     try {
                         res = khttp.get("$peer/eth/$hash")

@@ -271,7 +271,7 @@ class WithdrawalPipelineIntegrationTest {
             toAddress,
             amount
         )
-        Thread.sleep(15_000)
+        Thread.sleep(10_000)
 
         // check balance of client in Iroha
         assertEquals(
