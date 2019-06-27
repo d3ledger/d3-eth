@@ -69,11 +69,16 @@ class DepositMultiIntegrationTest {
                 notaryCredential_ = irohaCredential
             )
 
+        // wait for deposit service
+        Thread.sleep(5_000)
         val notary2IrohaPublicKey = keyPair2.public.toHexString()
-        val notary2EthereumCredentials = DeployHelper(depositConfig.ethereum, ethereumPasswords).credentials
+        val notary2EthereumCredentials =
+            DeployHelper(depositConfig.ethereum, ethereumPasswords).credentials
         val notary2EthereumAddress = notary2EthereumCredentials.address
         val notary2Name = "notary_name_" + String.getRandomString(5)
         val notary2EndpointAddress = "http://127.0.0.1:${depositConfig.refund.port}"
+        // wait for expansion is finished
+        Thread.sleep(5_000)
 
         integrationHelper.triggerExpansion(
             integrationHelper.accountHelper.notaryAccount.accountId,
@@ -133,7 +138,8 @@ class DepositMultiIntegrationTest {
     fun depositMultisig() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             Thread.currentThread().name = this::class.simpleName
-            val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
             val amount = BigInteger.valueOf(1_234_000_000_000)
             // send ETH
             runBlocking { delay(2000) }
@@ -143,7 +149,12 @@ class DepositMultiIntegrationTest {
 
             Assertions.assertEquals(
                 BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
-                BigDecimal(integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId))
+                BigDecimal(
+                    integrationHelper.getIrohaAccountBalance(
+                        clientIrohaAccountId,
+                        etherAssetId
+                    )
+                )
             )
         }
     }
@@ -162,7 +173,8 @@ class DepositMultiIntegrationTest {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
             val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
             val assetId = "${tokenInfo.name}#ethereum"
-            val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
             val amount = BigInteger.valueOf(51)
 
             // send ETH

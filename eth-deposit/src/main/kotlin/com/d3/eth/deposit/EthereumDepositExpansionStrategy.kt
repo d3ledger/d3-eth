@@ -14,6 +14,7 @@ import com.github.kittinunf.result.Result
 import iroha.protocol.BlockOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Transaction
+import mu.KLogging
 
 /**
  * Class responsible for ethereum expansion
@@ -23,6 +24,14 @@ class EthereumDepositExpansionStrategy(
     private val irohaAPI: IrohaAPI,
     private val ethDepositConfig: EthDepositConfig
 ) {
+
+    init {
+        logger.info {
+            "Init deposit expansion strategy, " +
+                    "expansionTriggerAccount=${ethDepositConfig.expansionTriggerAccount}, " +
+                    "expansionTriggerCreatorAccountId=${ethDepositConfig.expansionTriggerCreatorAccountId}"
+        }
+    }
 
     private val expansionService = ServiceExpansion(
         ethDepositConfig.expansionTriggerAccount,
@@ -76,4 +85,8 @@ class EthereumDepositExpansionStrategy(
         )
     }
 
+    /**
+     * Logger
+     */
+    companion object : KLogging()
 }
