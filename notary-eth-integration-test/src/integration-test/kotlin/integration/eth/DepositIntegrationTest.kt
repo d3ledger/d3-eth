@@ -37,10 +37,13 @@ class DepositIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
+    private val ethDeposit: Job
 
     init {
         // run notary
-        integrationHelper.runEthDeposit()
+        ethDeposit = GlobalScope.launch {
+            integrationHelper.runEthDeposit()
+        }
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -71,6 +74,7 @@ class DepositIntegrationTest {
     @AfterAll
     fun dropDown() {
         ethRegistrationService.cancel()
+        ethDeposit.cancel()
         integrationHelper.close()
     }
 
