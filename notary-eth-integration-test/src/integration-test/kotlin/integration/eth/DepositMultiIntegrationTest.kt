@@ -146,6 +146,7 @@ class DepositMultiIntegrationTest {
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendEth(amount, relayWallet)
             }
+            runBlocking { delay(5_000) }
 
             Assertions.assertEquals(
                 BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
@@ -181,6 +182,7 @@ class DepositMultiIntegrationTest {
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
             }
+            runBlocking { delay(5_000) }
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),
