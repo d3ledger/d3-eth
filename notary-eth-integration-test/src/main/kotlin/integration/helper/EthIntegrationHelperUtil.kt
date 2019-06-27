@@ -458,6 +458,11 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         notaryName: String,
         notaryEndpointAddress: String
     ) {
+        logger.info {
+            "Send expansion transaction publicKey=${publicKey} " +
+                    "eth_address=${ethereumAddress}, " +
+                    "notary_endpoint=${notaryEndpointAddress}"
+        }
         val expansionDetails = ExpansionDetails(
             accountId,
             publicKey,
