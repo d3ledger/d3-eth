@@ -7,7 +7,6 @@ package com.d3.eth.withdrawal.withdrawalservice
 
 import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.expansion.ServiceExpansion
-import com.d3.commons.sidechain.iroha.IrohaChainHandler
 import com.d3.eth.sidechain.util.DeployHelper
 import iroha.protocol.BlockOuterClass
 import org.web3j.utils.Numeric
@@ -48,6 +47,5 @@ class EthereumWithdrawalExpansionStrategy(
                 addPeerProof.s
             ).send()
         }
-        IrohaChainHandler().parseBlock(block)
     }
 }
