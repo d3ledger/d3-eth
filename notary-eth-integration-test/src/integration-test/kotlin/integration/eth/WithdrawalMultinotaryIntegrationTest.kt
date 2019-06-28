@@ -26,9 +26,7 @@ import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
 import khttp.get
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -37,6 +35,8 @@ import org.web3j.crypto.ECKeyPair
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Duration
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WithdrawalMultinotaryIntegrationTest {
@@ -60,9 +60,13 @@ class WithdrawalMultinotaryIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
-    private val ethDeposit1: Job
-    private val ethDeposit2: Job
+    val context: CoroutineContext = EmptyCoroutineContext
 
+    fun CoroutineScope.runDeposit(depositConfig: EthDepositConfig) {
+        launch {
+            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
+        }
+    }
 
     init {
         val notaryConfig = loadLocalConfigs(
@@ -79,19 +83,18 @@ class WithdrawalMultinotaryIntegrationTest {
 
         // run 1st instance of deposit
         depositConfig1 =
-                integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig1)
-        ethDeposit1 = GlobalScope.launch {
-            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig1)
-        }
+            integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig1)
+        CoroutineScope(context).runDeposit(depositConfig1)
 
         // create 2nd deposit config
         val ethereumConfig2 =
             integrationHelper.configHelper.createEthereumConfig(ethKeyPath.split(".key").first() + "2.key")
         depositConfig2 =
-                integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig2)
+            integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig2)
 
         val notary2IrohaPublicKey = keyPair2.public.toHexString()
-        val notary2EthereumCredentials = DeployHelper(ethereumConfig2, ethereumPasswords).credentials
+        val notary2EthereumCredentials =
+            DeployHelper(ethereumConfig2, ethereumPasswords).credentials
         val notary2EthereumAddress = notary2EthereumCredentials.address
         ethKeyPair2 = notary2EthereumCredentials.ecKeyPair
         val notary2Name = "notary_name_" + String.getRandomString(5)
@@ -109,9 +112,7 @@ class WithdrawalMultinotaryIntegrationTest {
         Thread.sleep(5_000)
 
         // run 2nd instance of deposit
-        ethDeposit2 = GlobalScope.launch {
-            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig2)
-        }
+        CoroutineScope(context).runDeposit(depositConfig2)
 
         // run registration
         registrationTestEnvironment.registrationInitialization.init()
@@ -122,8 +123,7 @@ class WithdrawalMultinotaryIntegrationTest {
 
     @AfterAll
     fun dropDown() {
-        ethDeposit1.cancel()
-        ethDeposit2.cancel()
+        context.cancel()
         ethRegistrationService.cancel()
         integrationHelper.close()
     }

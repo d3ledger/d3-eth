@@ -5,6 +5,7 @@
 
 package integration.eth
 
+import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.config.IrohaCredentialRawConfig
 import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
@@ -12,6 +13,7 @@ import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.hex
 import com.d3.commons.util.toHexString
+import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.provider.ETH_PRECISION
 import com.d3.eth.sidechain.util.DeployHelper
 import integration.helper.EthIntegrationHelperUtil
@@ -25,6 +27,8 @@ import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Duration
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Integration tests with multiple notaries for deposit case.
@@ -40,14 +44,23 @@ class DepositMultiIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
-    private val ethDeposit1: Job
-    private val ethDeposit2: Job
+
+    val context: CoroutineContext = EmptyCoroutineContext
+
+    fun CoroutineScope.runDeposit() {
+        launch {
+            integrationHelper.runEthDeposit()
+        }
+    }
+    fun CoroutineScope.runDeposit(ethPassword: EthereumPasswords, depositConfig: EthDepositConfig) {
+        launch {
+            integrationHelper.runEthDeposit(ethPassword, depositConfig)
+        }
+    }
 
     init {
         // run notary
-        ethDeposit1 = GlobalScope.launch {
-            integrationHelper.runEthDeposit()
-        }
+        CoroutineScope(context).runDeposit()
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -91,9 +104,7 @@ class DepositMultiIntegrationTest {
         Thread.sleep(5_000)
 
         // run 2nd instance of notary
-        ethDeposit2 = GlobalScope.launch {
-            integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)
-        }
+        CoroutineScope(context).runDeposit(ethereumPasswords, depositConfig)
     }
 
     /** Iroha client account */
@@ -119,8 +130,7 @@ class DepositMultiIntegrationTest {
 
     @AfterAll
     fun dropDown() {
-        ethDeposit1.cancel()
-        ethDeposit2.cancel()
+        context.cancel()
         ethRegistrationService.cancel()
         integrationHelper.close()
     }

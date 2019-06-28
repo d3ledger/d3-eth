@@ -10,11 +10,12 @@ import com.d3.commons.util.toHexString
 import com.d3.eth.sidechain.util.DeployHelper
 import integration.helper.EthIntegrationHelperUtil
 import jp.co.soramitsu.crypto.ed25519.Ed25519Sha3
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -22,13 +23,19 @@ import kotlin.test.assertTrue
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EthExpansionTest {
     private val integrationHelper = EthIntegrationHelperUtil()
-    private val depositService: Job
     private val withdrawalService: Job
 
-    init {
-        depositService = GlobalScope.launch {
+    val context: CoroutineContext = EmptyCoroutineContext
+
+    fun CoroutineScope.runDeposit() {
+        launch {
             integrationHelper.runEthDeposit()
         }
+    }
+
+    init {
+        CoroutineScope(context).runDeposit()
+
         withdrawalService = GlobalScope.launch {
             integrationHelper.runEthWithdrawalService(
                 integrationHelper.configHelper.createWithdrawalConfig(
@@ -37,6 +44,11 @@ class EthExpansionTest {
             )
         }
         Thread.sleep(10_000)
+    }
+
+    @AfterAll
+    fun dropDown() {
+        context.cancel()
     }
 
     /**

@@ -9,19 +9,20 @@ import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
+import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.provider.ETH_PRECISION
 import com.d3.eth.token.EthTokenInfo
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.KeyPair
 import java.time.Duration
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 
 /**
@@ -57,16 +58,21 @@ class WithdrawalPipelineIntegrationTest {
 
     private val ethRegistrationService: Job
     private val withdrawalService: Job
-    private val ethDeposit: Job
+
+    val context: CoroutineContext = EmptyCoroutineContext
+
+    fun CoroutineScope.runDeposit(depositConfig: EthDepositConfig) {
+        launch {
+            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
+        }
+    }
 
     init {
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(ethRegistrationConfig)
         }
-        ethDeposit = GlobalScope.launch {
-            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
-        }
+        CoroutineScope(context).runDeposit(depositConfig)
         withdrawalService = GlobalScope.launch {
             integrationHelper.runEthWithdrawalService()
         }
@@ -92,7 +98,7 @@ class WithdrawalPipelineIntegrationTest {
         registrationTestEnvironment.close()
         ethRegistrationService.cancel()
         withdrawalService.cancel()
-        ethDeposit.cancel()
+        context.cancel()
         integrationHelper.close()
     }
 

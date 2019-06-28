@@ -12,13 +12,13 @@ import com.d3.commons.util.toHexString
 import com.d3.eth.provider.ETH_PRECISION
 import integration.helper.EthIntegrationHelperUtil
 import integration.registration.RegistrationServiceTestEnvironment
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.KeyPair
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Integration tests for withdrawal rollback service.
@@ -45,12 +45,17 @@ class WithdrawalRollbackIntegrationTest {
 
     private val ethRegistrationService: Job
     private val withdrawalService: Job
-    private val ethDeposit: Job
 
-    init {
-        ethDeposit = GlobalScope.launch {
+    val context: CoroutineContext = EmptyCoroutineContext
+
+    fun CoroutineScope.runDeposit() {
+        launch {
             integrationHelper.runEthDeposit()
         }
+    }
+    init {
+        CoroutineScope(context).runDeposit()
+
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(ethRegistrationConfig)
@@ -78,7 +83,7 @@ class WithdrawalRollbackIntegrationTest {
 
     @AfterAll
     fun dropDown() {
-        ethDeposit.cancel()
+        context.cancel()
         registrationTestEnvironment.close()
         ethRegistrationService.cancel()
         withdrawalService.cancel()

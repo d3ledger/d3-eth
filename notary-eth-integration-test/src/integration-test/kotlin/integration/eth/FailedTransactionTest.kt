@@ -14,9 +14,7 @@ import com.d3.eth.token.EthTokenInfo
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -25,6 +23,8 @@ import org.web3j.protocol.exceptions.TransactionException
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Duration
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,12 +35,17 @@ class FailedTransactionTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
-    private val ethDeposit: Job
 
-    init {
-        ethDeposit = GlobalScope.launch {
+    val context: CoroutineContext = EmptyCoroutineContext
+
+    fun CoroutineScope.runDeposit() {
+        launch {
             integrationHelper.runEthDeposit()
         }
+    }
+
+    init {
+        CoroutineScope(context).runDeposit()
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -49,7 +54,7 @@ class FailedTransactionTest {
 
     @AfterAll
     fun dropDown() {
-        ethDeposit.cancel()
+        context.cancel()
         ethRegistrationService.cancel()
         integrationHelper.close()
     }

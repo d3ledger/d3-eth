@@ -9,6 +9,7 @@ import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
+import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.endpoint.BigIntegerMoshiAdapter
 import com.d3.eth.deposit.endpoint.EthNotaryResponse
 import com.d3.eth.deposit.endpoint.EthNotaryResponseMoshiAdapter
@@ -22,9 +23,7 @@ import com.squareup.moshi.Moshi
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,6 +33,8 @@ import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Duration
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Class for Ethereum sidechain infrastructure deployment and communication.
@@ -51,12 +52,18 @@ class WithdrawalIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
-    private val ethDeposit: Job
 
-    init {
-        ethDeposit = GlobalScope.launch {
+    val context: CoroutineContext = EmptyCoroutineContext
+
+    fun CoroutineScope.runDeposit(depositConfig: EthDepositConfig) {
+        launch {
             integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
         }
+    }
+
+    init {
+        CoroutineScope(context).runDeposit(depositConfig)
+
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -71,7 +78,7 @@ class WithdrawalIntegrationTest {
 
     @AfterAll
     fun dropDown() {
-        ethDeposit.cancel()
+        context.cancel()
         ethRegistrationService.cancel()
         integrationHelper.close()
     }

@@ -13,9 +13,7 @@ import com.d3.eth.provider.ETH_PRECISION
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -23,6 +21,8 @@ import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Duration
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Integration tests for deposit case.
@@ -37,13 +37,19 @@ class DepositIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
-    private val ethDeposit: Job
+
+    val context: CoroutineContext = EmptyCoroutineContext
+
+    fun CoroutineScope.runDeposit() {
+        launch {
+            integrationHelper.runEthDeposit()
+        }
+    }
 
     init {
         // run notary
-        ethDeposit = GlobalScope.launch {
-            integrationHelper.runEthDeposit()
-        }
+        CoroutineScope(context).runDeposit()
+
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -73,8 +79,8 @@ class DepositIntegrationTest {
 
     @AfterAll
     fun dropDown() {
+        context.cancel()
         ethRegistrationService.cancel()
-        ethDeposit.cancel()
         integrationHelper.close()
     }
 
