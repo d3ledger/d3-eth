@@ -79,6 +79,16 @@ class EthDepositInitialization(
         ethDepositConfig
     )
 
+    init {
+        logger.info {
+            "Init deposit ethAddress=" +
+            WalletUtils.loadCredentials(
+                passwordsConfig.credentialsPassword,
+                ethDepositConfig.ethereum.credentialsPath
+            ).address
+        }
+    }
+
     /**
      * Init notary
      */

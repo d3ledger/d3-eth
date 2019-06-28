@@ -40,10 +40,14 @@ class DepositMultiIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
+    private val ethDeposit1: Job
+    private val ethDeposit2: Job
 
     init {
         // run notary
-        integrationHelper.runEthDeposit()
+        ethDeposit1 = GlobalScope.launch {
+            integrationHelper.runEthDeposit()
+        }
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -65,11 +69,16 @@ class DepositMultiIntegrationTest {
                 notaryCredential_ = irohaCredential
             )
 
+        // wait for deposit service
+        Thread.sleep(5_000)
         val notary2IrohaPublicKey = keyPair2.public.toHexString()
-        val notary2EthereumCredentials = DeployHelper(depositConfig.ethereum, ethereumPasswords).credentials
+        val notary2EthereumCredentials =
+            DeployHelper(depositConfig.ethereum, ethereumPasswords).credentials
         val notary2EthereumAddress = notary2EthereumCredentials.address
         val notary2Name = "notary_name_" + String.getRandomString(5)
         val notary2EndpointAddress = "http://127.0.0.1:${depositConfig.refund.port}"
+        // wait for expansion is finished
+        Thread.sleep(5_000)
 
         integrationHelper.triggerExpansion(
             integrationHelper.accountHelper.notaryAccount.accountId,
@@ -82,8 +91,9 @@ class DepositMultiIntegrationTest {
         Thread.sleep(5_000)
 
         // run 2nd instance of notary
-        integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)
-
+        ethDeposit2 = GlobalScope.launch {
+            integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)
+        }
     }
 
     /** Iroha client account */
@@ -109,6 +119,8 @@ class DepositMultiIntegrationTest {
 
     @AfterAll
     fun dropDown() {
+        ethDeposit1.cancel()
+        ethDeposit2.cancel()
         ethRegistrationService.cancel()
         integrationHelper.close()
     }
@@ -126,17 +138,24 @@ class DepositMultiIntegrationTest {
     fun depositMultisig() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             Thread.currentThread().name = this::class.simpleName
-            val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
             val amount = BigInteger.valueOf(1_234_000_000_000)
             // send ETH
             runBlocking { delay(2000) }
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendEth(amount, relayWallet)
             }
+            runBlocking { delay(15_000) }
 
             Assertions.assertEquals(
                 BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
-                BigDecimal(integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId))
+                BigDecimal(
+                    integrationHelper.getIrohaAccountBalance(
+                        clientIrohaAccountId,
+                        etherAssetId
+                    )
+                )
             )
         }
     }
@@ -155,13 +174,15 @@ class DepositMultiIntegrationTest {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
             val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
             val assetId = "${tokenInfo.name}#ethereum"
-            val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
             val amount = BigInteger.valueOf(51)
 
             // send ETH
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
             }
+            runBlocking { delay(15_000) }
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),

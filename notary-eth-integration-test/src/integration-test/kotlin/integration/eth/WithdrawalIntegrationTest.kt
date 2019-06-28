@@ -51,9 +51,12 @@ class WithdrawalIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
+    private val ethDeposit: Job
 
     init {
-        integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
+        ethDeposit = GlobalScope.launch {
+            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
+        }
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -68,6 +71,7 @@ class WithdrawalIntegrationTest {
 
     @AfterAll
     fun dropDown() {
+        ethDeposit.cancel()
         ethRegistrationService.cancel()
         integrationHelper.close()
     }
@@ -125,7 +129,7 @@ class WithdrawalIntegrationTest {
 
             // query
             res =
-                    khttp.get("http://127.0.0.1:${depositConfig.refund.port}/$ENDPOINT_ETHEREUM/$hash")
+                khttp.get("http://127.0.0.1:${depositConfig.refund.port}/$ENDPOINT_ETHEREUM/$hash")
 
             val moshi = Moshi
                 .Builder()

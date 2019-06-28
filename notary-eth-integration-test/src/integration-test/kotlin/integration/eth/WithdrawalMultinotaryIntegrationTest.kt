@@ -60,6 +60,9 @@ class WithdrawalMultinotaryIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
+    private val ethDeposit1: Job
+    private val ethDeposit2: Job
+
 
     init {
         val notaryConfig = loadLocalConfigs(
@@ -77,7 +80,9 @@ class WithdrawalMultinotaryIntegrationTest {
         // run 1st instance of deposit
         depositConfig1 =
                 integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig1)
-        integrationHelper.runEthDeposit(ethDepositConfig = depositConfig1)
+        ethDeposit1 = GlobalScope.launch {
+            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig1)
+        }
 
         // create 2nd deposit config
         val ethereumConfig2 =
@@ -104,7 +109,9 @@ class WithdrawalMultinotaryIntegrationTest {
         Thread.sleep(5_000)
 
         // run 2nd instance of deposit
-        integrationHelper.runEthDeposit(ethDepositConfig = depositConfig2)
+        ethDeposit2 = GlobalScope.launch {
+            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig2)
+        }
 
         // run registration
         registrationTestEnvironment.registrationInitialization.init()
@@ -115,6 +122,8 @@ class WithdrawalMultinotaryIntegrationTest {
 
     @AfterAll
     fun dropDown() {
+        ethDeposit1.cancel()
+        ethDeposit2.cancel()
         ethRegistrationService.cancel()
         integrationHelper.close()
     }
