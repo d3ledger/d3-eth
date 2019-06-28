@@ -13,6 +13,8 @@ import com.d3.commons.notary.NotaryImpl
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
+import com.d3.commons.sidechain.iroha.consumer.MultiSigIrohaConsumer
+import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettyScheduledThreadPool
@@ -82,10 +84,10 @@ class EthDepositInitialization(
     init {
         logger.info {
             "Init deposit ethAddress=" +
-            WalletUtils.loadCredentials(
-                passwordsConfig.credentialsPassword,
-                ethDepositConfig.ethereum.credentialsPath
-            ).address
+                    WalletUtils.loadCredentials(
+                        passwordsConfig.credentialsPassword,
+                        ethDepositConfig.ethereum.credentialsPath
+                    ).address
         }
     }
 
@@ -154,15 +156,20 @@ class EthDepositInitialization(
     ): Notary {
         logger.info { "Init ethereum notary" }
 
-        irohaAPI.transactionSync(
-            Transaction.builder(notaryCredential.accountId)
-                .grantPermission(
-                    ethDepositConfig.withdrawalAccountId,
-                    Primitive.GrantablePermission.can_transfer_my_assets
-                )
-                .sign(notaryCredential.keyPair)
-                .build()
-        )
+        val adjustedTime = ModelUtil.getCurrentTime().divide(BigInteger.valueOf(86400000))
+            .multiply(BigInteger.valueOf(86400000)).toLong()
+        val consumer = MultiSigIrohaConsumer(notaryCredential, irohaAPI)
+        consumer
+            .send(
+                Transaction.builder(notaryCredential.accountId, adjustedTime)
+                    .grantPermission(
+                        ethDepositConfig.withdrawalAccountId,
+                        Primitive.GrantablePermission.can_transfer_my_assets
+                    )
+                    .setQuorum(consumer.getConsumerQuorum().get())
+                    .sign(notaryCredential.keyPair)
+                    .build()
+            )
 
         return NotaryImpl(notaryCredential, irohaAPI, ethEvents)
     }
