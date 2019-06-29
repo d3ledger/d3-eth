@@ -36,7 +36,7 @@ class EthExpansionTest {
                 )
             )
         }
-        Thread.sleep(10_000)
+        Thread.sleep(15_000)
     }
 
     /**
