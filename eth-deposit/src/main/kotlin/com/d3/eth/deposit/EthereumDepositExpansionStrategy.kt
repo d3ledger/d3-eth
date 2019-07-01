@@ -46,10 +46,16 @@ class EthereumDepositExpansionStrategy(
     fun filterAndExpand(block: BlockOuterClass.Block) {
         expansionService.expand(block) { expansionDetails, _, triggerTime ->
             if (expansionDetails.accountIdToExpand == notaryCredential.accountId) {
-                EthDepositInitialization.logger.info { "Add new peer with iroha pubkey ${expansionDetails.publicKey} endpoint ${expansionDetails.additionalData["notary_endpoint"]}" }
+                logger.info {
+                    "Add new peer with iroha pubkey ${expansionDetails.publicKey} " +
+                            "endpoint ${expansionDetails.additionalData["notary_endpoint"]}"
+                }
                 addPeer(expansionDetails, triggerTime)
             } else {
-                EthDepositInitialization.logger.info { "Expansion account ${expansionDetails.accountIdToExpand} is different from ${notaryCredential.accountId}" }
+                logger.info {
+                    "Expansion account ${expansionDetails.accountIdToExpand} is " +
+                            "different from ${notaryCredential.accountId}"
+                }
             }
         }
     }
