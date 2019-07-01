@@ -7,11 +7,8 @@
 
 package com.d3.eth.deposit
 
-import com.d3.commons.config.EthereumPasswords
-import com.d3.commons.config.loadEthPasswords
-import com.d3.commons.config.loadLocalConfigs
+import com.d3.commons.config.*
 import com.d3.commons.model.IrohaCredential
-import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
@@ -31,7 +28,12 @@ fun main(args: Array<String>) {
     loadLocalConfigs("eth-deposit", EthDepositConfig::class.java, "deposit.properties")
         .fanout { loadEthPasswords("eth-deposit", "/eth/ethereum_password.properties") }
         .map { (depositConfig, ethereumPasswords) ->
-            executeDeposit(ethereumPasswords, depositConfig)
+            val rmqConfig = loadRawLocalConfigs(
+                "rmq",
+                RMQConfig::class.java,
+                "rmq.properties"
+            )
+            executeDeposit(ethereumPasswords, depositConfig, rmqConfig)
         }
         .failure { ex ->
             logger.error("Cannot run eth deposit", ex)
@@ -41,7 +43,8 @@ fun main(args: Array<String>) {
 
 fun executeDeposit(
     ethereumPasswords: EthereumPasswords,
-    depositConfig: EthDepositConfig
+    depositConfig: EthDepositConfig,
+    rmqConfig: RMQConfig
 ) {
     Result.of {
         val keypair = Utils.parseHexKeypair(
@@ -50,7 +53,7 @@ fun executeDeposit(
         )
         IrohaCredential(depositConfig.notaryCredential.accountId, keypair)
     }.flatMap { irohaCredential ->
-        executeDeposit(irohaCredential, ethereumPasswords, depositConfig)
+        executeDeposit(irohaCredential, ethereumPasswords, depositConfig, rmqConfig)
     }.failure { ex ->
         logger.error("Cannot run eth deposit", ex)
         System.exit(1)
@@ -61,7 +64,8 @@ fun executeDeposit(
 fun executeDeposit(
     irohaCredential: IrohaCredential,
     ethereumPasswords: EthereumPasswords,
-    depositConfig: EthDepositConfig
+    depositConfig: EthDepositConfig,
+    rmqConfig: RMQConfig
 ): Result<Unit, Exception> {
     logger.info { "Run ETH deposit" }
 
@@ -93,6 +97,7 @@ fun executeDeposit(
         irohaAPI,
         depositConfig,
         ethereumPasswords,
+        rmqConfig,
         ethRelayProvider,
         ethTokensProvider
     ).init()

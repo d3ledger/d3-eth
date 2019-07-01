@@ -6,14 +6,20 @@
 package com.d3.eth.deposit
 
 import com.d3.commons.config.EthereumPasswords
+import com.d3.commons.config.RMQConfig
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.notary.Notary
 import com.d3.commons.notary.NotaryImpl
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
 import com.d3.commons.sidechain.SideChainEvent
+import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
 import com.d3.commons.sidechain.iroha.consumer.MultiSigIrohaConsumer
 import com.d3.commons.sidechain.iroha.util.ModelUtil
+import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
+import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettyScheduledThreadPool
+import com.d3.commons.util.createPrettySingleThreadPool
+import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
 import com.d3.eth.provider.EthRelayProvider
@@ -26,11 +32,14 @@ import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import iroha.protocol.Primitive
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Transaction
 import mu.KLogging
 import okhttp3.OkHttpClient
+import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.WalletUtils
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.JsonRpc2_0Web3j
 import org.web3j.protocol.http.HttpService
@@ -46,19 +55,70 @@ class EthDepositInitialization(
     private val irohaAPI: IrohaAPI,
     private val ethDepositConfig: EthDepositConfig,
     private val passwordsConfig: EthereumPasswords,
+    rmqConfig: RMQConfig,
     private val ethRelayProvider: EthRelayProvider,
     private val ethTokensProvider: EthTokensProvider
 ) {
+    private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(
+        passwordsConfig.credentialsPassword,
+        ethDepositConfig.ethereum.credentialsPath
+    ).ecKeyPair
+
+    private val queryHelper = IrohaQueryHelperImpl(irohaAPI, notaryCredential)
+
+    private val irohaChainListener = ReliableIrohaChainListener(
+        rmqConfig,
+        ethDepositConfig.ethIrohaDepositQueue,
+        consumerExecutorService = createPrettySingleThreadPool(
+            ETH_DEPOSIT_SERVICE_NAME,
+            "rmq-consumer"
+        )
+    )
+
+    private val expansionStrategy = EthereumDepositExpansionStrategy(
+        notaryCredential,
+        irohaAPI,
+        ethDepositConfig
+    )
+
+    init {
+        logger.info {
+            "Init deposit ethAddress=" +
+                    WalletUtils.loadCredentials(
+                        passwordsConfig.credentialsPassword,
+                        ethDepositConfig.ethereum.credentialsPath
+                    ).address
+        }
+    }
+
     /**
      * Init notary
      */
     fun init(): Result<Unit, Exception> {
         logger.info { "Eth deposit initialization" }
         return initEthChain()
-            .map { ethEvent ->
-                initNotary(ethEvent)
-            }
+            .map { ethEvent -> initNotary(ethEvent) }
             .flatMap { notary -> notary.initIrohaConsumer() }
+            .flatMap { irohaChainListener.getBlockObservable() }
+            .flatMap { irohaObservable ->
+                irohaObservable
+                    .observeOn(
+                        Schedulers.from(
+                            createPrettyFixThreadPool(
+                                ETH_DEPOSIT_SERVICE_NAME,
+                                "event-handler"
+                            )
+                        )
+                    ).subscribe(
+                        { (block, _) ->
+                            expansionStrategy.filterAndExpand(block)
+                        }, { ex ->
+                            logger.error("Withdrawal observable error", ex)
+                            System.exit(1)
+                        }
+                    )
+                irohaChainListener.listen()
+            }
             .map { initRefund() }
     }
 
@@ -130,6 +190,12 @@ class EthDepositInitialization(
                 ethDepositConfig.ethereum,
                 passwordsConfig,
                 ethTokensProvider
+            ),
+            EthAddPeerStrategyImpl(
+                queryHelper,
+                ecKeyPair,
+                ethDepositConfig.expansionTriggerAccount,
+                ethDepositConfig.expansionTriggerCreatorAccountId
             )
         )
     }

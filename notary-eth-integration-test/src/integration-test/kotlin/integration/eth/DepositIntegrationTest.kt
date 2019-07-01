@@ -37,10 +37,13 @@ class DepositIntegrationTest {
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
+    private val ethDeposit: Job
 
     init {
         // run notary
-        integrationHelper.runEthDeposit()
+        ethDeposit = GlobalScope.launch {
+            integrationHelper.runEthDeposit()
+        }
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
@@ -71,6 +74,7 @@ class DepositIntegrationTest {
     @AfterAll
     fun dropDown() {
         ethRegistrationService.cancel()
+        ethDeposit.cancel()
         integrationHelper.close()
     }
 
@@ -86,17 +90,24 @@ class DepositIntegrationTest {
     fun depositOfETH() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
-            val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
             val amount = BigInteger.valueOf(1_234_000_000_000)
             // send ETH
 
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendEth(amount, relayWallet)
             }
+            Thread.sleep(3_000)
 
             Assertions.assertEquals(
                 BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
-                BigDecimal(integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId))
+                BigDecimal(
+                    integrationHelper.getIrohaAccountBalance(
+                        clientIrohaAccountId,
+                        etherAssetId
+                    )
+                )
             )
         }
     }
@@ -114,7 +125,8 @@ class DepositIntegrationTest {
     fun depositZeroETH() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             Thread.currentThread().name = this::class.simpleName
-            val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
             val zeroAmount = BigInteger.ZERO
             val amount = BigInteger.valueOf(1_234_000_000_000)
 
@@ -130,11 +142,16 @@ class DepositIntegrationTest {
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendEth(amount, relayWallet)
             }
-
+            Thread.sleep(3_000)
 
             Assertions.assertEquals(
                 BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
-                BigDecimal(integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId))
+                BigDecimal(
+                    integrationHelper.getIrohaAccountBalance(
+                        clientIrohaAccountId,
+                        etherAssetId
+                    )
+                )
             )
         }
     }
@@ -153,13 +170,15 @@ class DepositIntegrationTest {
             Thread.currentThread().name = this::class.simpleName
             val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
             val assetId = "${tokenInfo.name}#ethereum"
-            val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
             val amount = BigInteger.valueOf(51)
 
             // send ETH
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
             }
+            Thread.sleep(7_000)
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),
@@ -182,7 +201,8 @@ class DepositIntegrationTest {
             Thread.currentThread().name = this::class.simpleName
             val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
             val assetId = "${tokenInfo.name}#ethereum"
-            val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
             val zeroAmount = BigInteger.ZERO
             val amount = BigInteger.valueOf(51)
 
@@ -198,6 +218,7 @@ class DepositIntegrationTest {
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
             }
+            Thread.sleep(7_000)
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),

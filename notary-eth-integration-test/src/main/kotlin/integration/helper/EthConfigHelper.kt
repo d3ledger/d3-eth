@@ -6,6 +6,7 @@
 package integration.helper
 
 import com.d3.commons.config.*
+import com.d3.commons.util.getRandomString
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.RefundConfig
 import com.d3.eth.registration.EthRegistrationConfig
@@ -97,6 +98,7 @@ open class EthConfigHelper(
 
     /** Test configuration of Deposit with runtime dependencies */
     fun createEthDepositConfig(
+        testName: String = String.getRandomString(9),
         irohaConfig: IrohaConfig = createIrohaConfig(),
         ethereumConfig: EthereumConfig = object : EthereumConfig {
             override val url = ethDepositConfig.ethereum.url
@@ -112,6 +114,9 @@ open class EthConfigHelper(
         return object : EthDepositConfig {
             override val registrationServiceIrohaAccount =
                 accountHelper.registrationAccount.accountId
+            override val notaryListStorageAccount = accountHelper.notaryListStorageAccount.accountId
+            override val expansionTriggerAccount = accountHelper.expansionTriggerAccount.accountId
+            override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
             override val ethAnchoredTokenStorageAccount =
                 accountHelper.ethAnchoredTokenStorageAccount.accountId
             override val ethAnchoredTokenSetterAccount = accountHelper.tokenSetterAccount.accountId
@@ -124,6 +129,7 @@ open class EthConfigHelper(
             override val iroha = irohaConfig
             override val ethereum = ethereumConfig
             override val withdrawalAccountId = ethDepositConfig.withdrawalAccountId
+            override val ethIrohaDepositQueue = testName
         }
     }
 
@@ -156,7 +162,10 @@ open class EthConfigHelper(
             override val notaryListStorageAccount = accountHelper.notaryListStorageAccount.accountId
             override val notaryListSetterAccount = accountHelper.notaryListSetterAccount.accountId
             override val registrationIrohaAccount = accountHelper.registrationAccount.accountId
+            override val expansionTriggerAccount = accountHelper.expansionTriggerAccount.accountId
             override val withdrawalCredential = withdrawalConfig.withdrawalCredential
+            override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
+            override val ethMasterWallet = masterContractAddress
             override val port = portCounter.incrementAndGet()
             override val iroha = createIrohaConfig()
             override val ethereum = ethereumConfig

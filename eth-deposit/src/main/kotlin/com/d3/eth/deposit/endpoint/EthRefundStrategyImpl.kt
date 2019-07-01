@@ -77,7 +77,8 @@ class EthRefundStrategyImpl(
             when {
                 // rollback case
                 appearedTx.payload.reducedPayload.commandsCount == 1 &&
-                        commands.hasSetAccountDetail() -> {
+                        commands.hasSetAccountDetail() &&
+                        commands.setAccountDetail.key == "rollback" -> {
 
                     // TODO a.chernyshov replace with effective implementation
                     // 1. Get eth transaction hash from setAccountDetail
@@ -165,7 +166,7 @@ class EthRefundStrategyImpl(
                 )
 
             val signature = signUserData(ecKeyPair, finalHash)
-            EthNotaryResponse.Successful(signature, ethRefund)
+            EthNotaryResponse.Successful(signature)
         }
     }
 

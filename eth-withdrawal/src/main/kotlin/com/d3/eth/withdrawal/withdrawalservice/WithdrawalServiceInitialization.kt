@@ -7,12 +7,16 @@ package com.d3.eth.withdrawal.withdrawalservice
 
 import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.config.RMQConfig
+import com.d3.commons.expansion.ServiceExpansion
 import com.d3.commons.model.IrohaCredential
+import com.d3.commons.provider.NotaryPeerListProviderImpl
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.IrohaChainHandler
 import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
+import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
+import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.consumer.EthConsumer
 import com.github.kittinunf.result.Result
@@ -33,7 +37,7 @@ class WithdrawalServiceInitialization(
     private val credential: IrohaCredential,
     private val irohaAPI: IrohaAPI,
     private val withdrawalEthereumPasswords: EthereumPasswords,
-    private val relayVacuumConfig: RelayVacuumConfig,
+    relayVacuumConfig: RelayVacuumConfig,
     rmqConfig: RMQConfig
 ) {
 
@@ -41,6 +45,50 @@ class WithdrawalServiceInitialization(
         rmqConfig,
         withdrawalConfig.ethIrohaWithdrawalQueue,
         createPrettySingleThreadPool(ETH_WITHDRAWAL_SERVICE_NAME, "rmq-consumer")
+    )
+
+    private val queryHelper by lazy {
+        IrohaQueryHelperImpl(
+            irohaAPI,
+            credential.accountId,
+            credential.keyPair
+        )
+    }
+
+    private val tokensProvider = EthTokensProviderImpl(
+        queryHelper,
+        withdrawalConfig.ethAnchoredTokenStorageAccount,
+        withdrawalConfig.ethAnchoredTokenSetterAccount,
+        withdrawalConfig.irohaAnchoredTokenStorageAccount,
+        withdrawalConfig.irohaAnchoredTokenSetterAccount
+    )
+
+    private val notaryPeerListProvider = NotaryPeerListProviderImpl(
+        queryHelper,
+        withdrawalConfig.notaryListStorageAccount,
+        withdrawalConfig.notaryListSetterAccount
+    )
+
+    val ethConsumer = EthConsumer(
+        withdrawalConfig.ethereum,
+        withdrawalEthereumPasswords,
+        relayVacuumConfig
+    )
+
+    private val expansionService = ServiceExpansion(
+        withdrawalConfig.expansionTriggerAccount,
+        withdrawalConfig.expansionTriggerCreatorAccountId,
+        irohaAPI
+    )
+
+    private val proofCollector =
+        ProofCollector(queryHelper, withdrawalConfig, tokensProvider, notaryPeerListProvider)
+
+    private val ethereumWithdrawalExpansionStrategy = EthereumWithdrawalExpansionStrategy(
+        withdrawalConfig,
+        withdrawalEthereumPasswords,
+        expansionService,
+        proofCollector
     )
 
     /**
@@ -51,7 +99,10 @@ class WithdrawalServiceInitialization(
         logger.info { "Init Iroha chain listener" }
         return chainListener.getBlockObservable()
             .map { observable ->
-                observable.flatMapIterable { (block, _) -> IrohaChainHandler().parseBlock(block) }
+                observable.flatMapIterable { (block, _) ->
+                    ethereumWithdrawalExpansionStrategy.filterAndExpand(block)
+                    IrohaChainHandler().parseBlock(block)
+                }
             }
     }
 
@@ -59,18 +110,21 @@ class WithdrawalServiceInitialization(
      * Init Withdrawal Service
      */
     private fun initWithdrawalService(inputEvents: Observable<SideChainEvent.IrohaEvent>): WithdrawalService {
-        return WithdrawalServiceImpl(withdrawalConfig, credential, irohaAPI, inputEvents)
+        return WithdrawalServiceImpl(
+            withdrawalConfig,
+            credential,
+            irohaAPI,
+            queryHelper,
+            inputEvents,
+            tokensProvider,
+            proofCollector
+        )
     }
 
     private fun initEthConsumer(withdrawalService: WithdrawalService): Result<Unit, Exception> {
         logger.info { "Init Ether withdrawal consumer" }
 
         return Result.of {
-            val ethConsumer = EthConsumer(
-                withdrawalConfig.ethereum,
-                withdrawalEthereumPasswords,
-                relayVacuumConfig
-            )
             withdrawalService.output()
                 .observeOn(
                     Schedulers.from(

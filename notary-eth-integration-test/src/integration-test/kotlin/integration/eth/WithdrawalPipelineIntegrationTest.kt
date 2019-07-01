@@ -56,15 +56,17 @@ class WithdrawalPipelineIntegrationTest {
     private val timeoutDuration = Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)
 
     private val ethRegistrationService: Job
-
     private val withdrawalService: Job
+    private val ethDeposit: Job
 
     init {
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(ethRegistrationConfig)
         }
-        integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
+        ethDeposit = GlobalScope.launch {
+            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
+        }
         withdrawalService = GlobalScope.launch {
             integrationHelper.runEthWithdrawalService()
         }
@@ -90,6 +92,7 @@ class WithdrawalPipelineIntegrationTest {
         registrationTestEnvironment.close()
         ethRegistrationService.cancel()
         withdrawalService.cancel()
+        ethDeposit.cancel()
         integrationHelper.close()
     }
 

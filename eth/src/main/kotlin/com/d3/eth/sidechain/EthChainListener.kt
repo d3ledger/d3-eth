@@ -6,8 +6,10 @@
 package com.d3.eth.sidechain
 
 import com.d3.commons.sidechain.ChainListener
+import com.d3.commons.util.createPrettyFixThreadPool
 import com.github.kittinunf.result.Result
 import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import mu.KLogging
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
@@ -36,7 +38,16 @@ class EthChainListener(
 
     override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
         return Result.of {
-            web3.blockFlowable(false).toObservable()
+            web3.blockFlowable(false)
+                .toObservable()
+                .observeOn(
+                    Schedulers.from(
+                        createPrettyFixThreadPool(
+                            "eth-deposit",
+                            "eth-event-handler"
+                        )
+                    )
+                )
                 // skip up to confirmationPeriod blocks in case of chain reorganisation
                 .filter { lastBlock < it.block.number }
                 .map {

@@ -44,11 +44,13 @@ class WithdrawalRollbackIntegrationTest {
     private val notaryAccount = integrationHelper.accountHelper.notaryAccount.accountId
 
     private val ethRegistrationService: Job
-
     private val withdrawalService: Job
+    private val ethDeposit: Job
 
     init {
-        integrationHelper.runEthDeposit()
+        ethDeposit = GlobalScope.launch {
+            integrationHelper.runEthDeposit()
+        }
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(ethRegistrationConfig)
@@ -60,6 +62,7 @@ class WithdrawalRollbackIntegrationTest {
                 )
             )
         }
+        Thread.sleep(10_000)
     }
 
     lateinit var clientName: String
@@ -76,6 +79,7 @@ class WithdrawalRollbackIntegrationTest {
 
     @AfterAll
     fun dropDown() {
+        ethDeposit.cancel()
         registrationTestEnvironment.close()
         ethRegistrationService.cancel()
         withdrawalService.cancel()

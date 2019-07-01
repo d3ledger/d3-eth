@@ -29,9 +29,9 @@ data class Response(val code: HttpStatusCode, val message: String)
  */
 class RefundServerEndpoint(
     private val serverBundle: ServerInitializationBundle,
-    private val ethStrategy: EthRefundStrategy
+    private val ethStrategy: EthRefundStrategy,
+    private val addPeerStrategy: EthAddPeerStrategy
 ) {
-
     private val moshi = Moshi
         .Builder()
         .add(EthNotaryResponseMoshiAdapter())
@@ -52,8 +52,13 @@ class RefundServerEndpoint(
                 gson()
             }
             routing {
+                get("ethereum/proof/add_peer/{tx_hash}") {
+                    logger.info { "Add peer endpoint called with parameters: ${call.parameters}" }
+                    val response = onCallAddPeer(call.parameters["tx_hash"])
+                    call.respondText(response.message, status = response.code)
+                }
                 get(serverBundle.ethRefund + "/{tx_hash}") {
-                    logger.info { "Eth refund invoked with parameters:${call.parameters}" }
+                    logger.info { "Eth refund invoked with parameters: ${call.parameters}" }
                     val response = onCallEthRefund(call.parameters["tx_hash"])
                     call.respondText(response.message, status = response.code)
                 }
@@ -76,6 +81,25 @@ class RefundServerEndpoint(
     fun onCallEthRefund(rawRequest: String?): Response {
         return rawRequest?.let { request ->
             val response = ethStrategy.performRefund(EthRefundRequest(request))
+            when (response) {
+                is EthNotaryResponse.Successful -> Response(
+                    HttpStatusCode.OK,
+                    ethNotaryAdapter.toJson(response)
+                )
+                is EthNotaryResponse.Error -> {
+                    logger.error { response.reason }
+                    Response(HttpStatusCode.BadRequest, ethNotaryAdapter.toJson(response))
+                }
+            }
+        } ?: onErrorPipelineCall()
+    }
+
+    /**
+     * Add new peer proof for Ethereum
+     */
+    fun onCallAddPeer(rawRequest: String?): Response {
+        return rawRequest?.let { request ->
+            val response = addPeerStrategy.performAddPeer(request)
             when (response) {
                 is EthNotaryResponse.Successful -> Response(
                     HttpStatusCode.OK,
