@@ -178,7 +178,7 @@ class DepositIntegrationTest {
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
             }
-            Thread.sleep(3_000)
+            Thread.sleep(7_000)
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),
@@ -218,7 +218,7 @@ class DepositIntegrationTest {
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
             }
-            Thread.sleep(3_000)
+            Thread.sleep(7_000)
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),

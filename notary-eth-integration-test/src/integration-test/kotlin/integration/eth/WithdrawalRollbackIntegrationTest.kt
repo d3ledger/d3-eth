@@ -62,6 +62,7 @@ class WithdrawalRollbackIntegrationTest {
                 )
             )
         }
+        Thread.sleep(10_000)
     }
 
     lateinit var clientName: String
