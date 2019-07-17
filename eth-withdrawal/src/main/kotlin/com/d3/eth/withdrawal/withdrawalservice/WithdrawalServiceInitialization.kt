@@ -11,6 +11,7 @@ import com.d3.commons.expansion.ServiceExpansion
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.provider.NotaryPeerListProviderImpl
 import com.d3.commons.sidechain.SideChainEvent
+import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.IrohaChainHandler
 import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -103,7 +104,7 @@ class WithdrawalServiceInitialization(
                     ethereumWithdrawalExpansionStrategy.filterAndExpand(block)
                     IrohaChainHandler(
                         credential.accountId,
-                        withdrawalConfig.feeDescriptionString
+                        FEE_DESCRIPTION
                     ).parseBlock(block)
                 }
             }

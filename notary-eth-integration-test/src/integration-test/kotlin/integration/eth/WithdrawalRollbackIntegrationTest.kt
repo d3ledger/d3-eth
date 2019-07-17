@@ -41,8 +41,8 @@ class WithdrawalRollbackIntegrationTest {
     /** Ethereum test address where we want to withdraw to */
     private val toAddress = integrationHelper.configHelper.testConfig.ethTestAccount
 
-    /** Notary account in Iroha */
-    private val notaryAccount = integrationHelper.accountHelper.notaryAccount.accountId
+    /** Withdrawal trigger account */
+    private val withdrawalAccountId = integrationHelper.accountHelper.withdrawalAccount.accountId
 
     private val ethRegistrationService: Job
     private val withdrawalService: Job
@@ -135,7 +135,7 @@ class WithdrawalRollbackIntegrationTest {
             clientId,
             keypair,
             clientId,
-            notaryAccount,
+            withdrawalAccountId,
             assetId,
             toAddress,
             decimalAmount.toPlainString(),

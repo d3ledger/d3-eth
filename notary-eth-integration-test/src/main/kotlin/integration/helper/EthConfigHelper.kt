@@ -168,7 +168,6 @@ open class EthConfigHelper(
                 accountHelper.createCredentialRawConfig(accountHelper.withdrawalAccount)
             override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
             override val ethWithdrawalBillingAccountId = accountHelper.ethWithdrawalBillingAccount.accountId
-            override val feeDescriptionString = FEE_DESCRIPTION
             override val ethMasterWallet = masterContractAddress
             override val port = portCounter.incrementAndGet()
             override val iroha = createIrohaConfig()

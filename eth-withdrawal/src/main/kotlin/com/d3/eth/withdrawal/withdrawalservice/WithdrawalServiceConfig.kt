@@ -47,9 +47,6 @@ interface WithdrawalServiceConfig {
     /** Account id of withdrawal billing */
     val ethWithdrawalBillingAccountId: String
 
-    /** Identifier of fee transaction */
-    val feeDescriptionString: String
-
     /** Master contact Ethereum address */
     val ethMasterWallet: String
 

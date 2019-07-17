@@ -7,6 +7,7 @@ package com.d3.eth.withdrawal.withdrawalservice
 
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.SideChainEvent
+import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
@@ -42,8 +43,6 @@ class WithdrawalServiceImpl(
         val amount: String,
         val description: String
     )
-
-    private val feeDescription = withdrawalServiceConfig.feeDescriptionString
 
     private val billingAccountId = withdrawalServiceConfig.ethWithdrawalBillingAccountId
 
@@ -133,8 +132,8 @@ class WithdrawalServiceImpl(
     override fun finalizeWithdrawal(event: WithdrawalServiceOutputEvent): Result<String, Exception> =
         getTransfers(event)
             .map { transfers ->
-                val transfer = transfers.first { it.description != feeDescription }
-                val fees = transfers.filter { it.description == feeDescription }
+                val transfer = transfers.first { it.description != FEE_DESCRIPTION }
+                val fees = transfers.filter { it.description == FEE_DESCRIPTION }
                 var transactionBuilder = Transaction
                     .builder(irohaConsumer.creator, System.currentTimeMillis())
                     .subtractAssetQuantity(transfer.assetId, transfer.amount)
