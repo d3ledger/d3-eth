@@ -9,6 +9,7 @@ import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
+import com.d3.commons.sidechain.iroha.util.isWithdrawalTransaction
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProvider
@@ -32,7 +33,7 @@ class NotaryException(reason: String) : Exception(reason)
 class EthRefundStrategyImpl(
     depositConfig: EthDepositConfig,
     irohaAPI: IrohaAPI,
-    private val credential: IrohaCredential,
+    credential: IrohaCredential,
     ethereumConfig: EthereumConfig,
     ethereumPasswords: EthereumPasswords,
     private val tokensProvider: EthTokensProvider
@@ -44,6 +45,8 @@ class EthRefundStrategyImpl(
         credential.accountId,
         depositConfig.registrationServiceIrohaAccount
     )
+
+    private val withdrawalAccountId = depositConfig.withdrawalAccountId
 
     private var ecKeyPair: ECKeyPair =
         DeployHelper(ethereumConfig, ethereumPasswords).credentials.ecKeyPair
@@ -73,7 +76,6 @@ class EthRefundStrategyImpl(
     ): Result<EthRefund, Exception> {
         return Result.of {
             val commands = appearedTx.payload.reducedPayload.getCommands(0)
-
             when {
                 // rollback case
                 appearedTx.payload.reducedPayload.commandsCount == 1 &&
@@ -106,21 +108,24 @@ class EthRefundStrategyImpl(
                     )
                 }
                 // withdrawal case
-                (appearedTx.payload.reducedPayload.commandsCount == 1) &&
-                        commands.hasTransferAsset() -> {
-                    val destAccount = commands.transferAsset.destAccountId
-                    // TODO: Bulat change destAccount to withdrawalTrigger account
-                    if (destAccount != credential.accountId)
-                        throw NotaryException("Refund - check transaction. Destination account is wrong '$destAccount'")
+                isWithdrawalTransaction(
+                    appearedTx,
+                    withdrawalAccountId
+                ) -> {
+                    // pick withdrawal transfer
+                    val withdrawalCommand = appearedTx.payload.reducedPayload.commandsList
+                        .filter { cmd -> cmd.hasTransferAsset() }
+                        .map { cmd -> cmd.transferAsset }
+                        .first { cmd -> cmd.destAccountId == withdrawalAccountId }
 
-                    val amount = commands.transferAsset.amount
-                    val assetId = commands.transferAsset.assetId
-                    val destEthAddress = commands.transferAsset.description
+                    val amount = withdrawalCommand.amount
+                    val assetId = withdrawalCommand.assetId
+                    val destEthAddress = withdrawalCommand.description
 
                     val tokenInfo = tokensProvider.getTokenAddress(assetId)
                         .fanout { tokensProvider.getTokenPrecision(assetId) }
 
-                    relayProvider.getRelayByAccountId(commands.transferAsset.srcAccountId)
+                    relayProvider.getRelayByAccountId(withdrawalCommand.srcAccountId)
                         .fanout {
                             tokenInfo
                         }.fold(
@@ -133,7 +138,7 @@ class EthRefundStrategyImpl(
                                     tokenInfo.first,
                                     decimalAmount,
                                     request.irohaTx,
-                                    relayAddress.orElseThrow { Exception("Relay addres  not found for user ${commands.transferAsset.srcAccountId}") }
+                                    relayAddress.orElseThrow { Exception("Relay addres  not found for user ${withdrawalCommand.srcAccountId}") }
                                 )
                             },
                             { throw it }

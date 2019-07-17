@@ -6,6 +6,7 @@
 package integration.eth
 
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
+import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
@@ -36,6 +37,10 @@ class WithdrawalPipelineIntegrationTest {
     /** Test Deposit configuration */
     private val depositConfig = integrationHelper.configHelper.createEthDepositConfig()
 
+    /** Test withrdawal service configuration */
+    private val withdrwalConfig =
+        integrationHelper.configHelper.createWithdrawalConfig(String.getRandomString(9))
+
     /** Refund endpoint address */
     private val refundAddress = "http://localhost:${depositConfig.refund.port}"
 
@@ -51,7 +56,10 @@ class WithdrawalPipelineIntegrationTest {
     private val toAddress = integrationHelper.configHelper.testConfig.ethTestAccount
 
     /** Notary account in Iroha */
-    private val notaryAccount = integrationHelper.accountHelper.notaryAccount.accountId
+    private val withdrawalAccountId = integrationHelper.accountHelper.withdrawalAccount.accountId
+
+    private val billingAccountId =
+        integrationHelper.accountHelper.ethWithdrawalBillingAccount.accountId
 
     private val timeoutDuration = Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)
 
@@ -68,7 +76,7 @@ class WithdrawalPipelineIntegrationTest {
             integrationHelper.runEthDeposit(ethDepositConfig = depositConfig)
         }
         withdrawalService = GlobalScope.launch {
-            integrationHelper.runEthWithdrawalService()
+            integrationHelper.runEthWithdrawalService(withdrawalServiceConfig = withdrwalConfig)
         }
     }
 
@@ -147,7 +155,7 @@ class WithdrawalPipelineIntegrationTest {
                 clientId,
                 keypair,
                 clientId,
-                notaryAccount,
+                withdrawalAccountId,
                 assetId,
                 toAddress,
                 decimalAmount.toPlainString()
@@ -172,6 +180,12 @@ class WithdrawalPipelineIntegrationTest {
             assertEquals(
                 masterBalanceInitial.subtract(amount),
                 masterBalanceActual
+            )
+
+            // check withdrawal service balance in Iroha
+            assertEquals(
+                0.0,
+                integrationHelper.getIrohaAccountBalance(withdrawalAccountId, assetId).toDouble()
             )
         }
     }
@@ -214,7 +228,7 @@ class WithdrawalPipelineIntegrationTest {
                 clientId,
                 keypair,
                 clientId,
-                notaryAccount,
+                withdrawalAccountId,
                 assetId,
                 toAddress,
                 amount.toPlainString()
@@ -234,6 +248,12 @@ class WithdrawalPipelineIntegrationTest {
             assertEquals(
                 masterBalanceInitial.subtract(bigIntegerValue),
                 masterBalanceActual
+            )
+
+            // check withdrawal service balance in Iroha
+            assertEquals(
+                0.0,
+                integrationHelper.getIrohaAccountBalance(withdrawalAccountId, assetId).toDouble()
             )
         }
     }
@@ -266,7 +286,7 @@ class WithdrawalPipelineIntegrationTest {
             clientId,
             keypair,
             clientId,
-            notaryAccount,
+            withdrawalAccountId,
             assetId,
             toAddress,
             amount
@@ -295,6 +315,12 @@ class WithdrawalPipelineIntegrationTest {
             BigInteger.ZERO,
             masterBalanceActual
         )
+
+        // check withdrawal service balance in Iroha
+        assertEquals(
+            0.0,
+            integrationHelper.getIrohaAccountBalance(withdrawalAccountId, assetId).toDouble()
+        )
     }
 
     /**
@@ -312,12 +338,12 @@ class WithdrawalPipelineIntegrationTest {
             // add assets to user
             integrationHelper.addIrohaAssetTo(clientId, assetId, amount)
 
-            // make transfer to notaryAccount to initiate withdrawal
+            // make transfer to withdrawalAccountId to initiate withdrawal
             val hash = integrationHelper.transferAssetIrohaFromClient(
                 clientId,
                 keypair,
                 clientId,
-                notaryAccount,
+                withdrawalAccountId,
                 assetId,
                 toAddress,
                 amount.toPlainString()
@@ -354,7 +380,7 @@ class WithdrawalPipelineIntegrationTest {
                 clientId,
                 keypair,
                 clientId,
-                notaryAccount,
+                withdrawalAccountId,
                 assetId,
                 withdrawalEthAddress,
                 amount.toPlainString()
@@ -366,6 +392,100 @@ class WithdrawalPipelineIntegrationTest {
             // query for refund
             val res = khttp.get("$refundAddress/eth/$hash")
             assertEquals(200, res.statusCode)
+        }
+    }
+
+    /**
+     * Full withdrawal pipeline test with fee
+     * @given iroha and withdrawal services are running, free relays available, user account has 125 Wei in Iroha
+     * @when user transfers 125 Wei to Iroha master account and 34 XOR as fee
+     * @then balance of user's wallet in Ethereum increased by 125 Wei and billing account gets 34
+     * XOR
+     */
+    @Test
+    fun testFullWithdrawalPipelineWithFee() {
+        Assertions.assertTimeoutPreemptively(timeoutDuration) {
+            val amount = BigInteger.valueOf(1251400000000)
+            val feeAmount = BigInteger.valueOf(3400000000)
+
+            // make sure master has enough assets
+            integrationHelper.sendEth(amount, integrationHelper.masterContract.contractAddress)
+            val masterBalanceInitial =
+                integrationHelper.getEthBalance(integrationHelper.masterContract.contractAddress)
+
+            val initialBalance = integrationHelper.getEthBalance(toAddress)
+            val decimalAmount = BigDecimal(amount, ETH_PRECISION)
+            val feeDecimalAmount = BigDecimal(feeAmount, ETH_PRECISION)
+            val assetId = "ether#ethereum"
+            val xorAssetId = "xor#sora"
+
+            // add Iroha assets to user
+            integrationHelper.addIrohaAssetTo(clientId, assetId, decimalAmount)
+            integrationHelper.addIrohaAssetTo(clientId, xorAssetId, feeDecimalAmount)
+
+            val ininialClientIrohaBalance =
+                integrationHelper.getIrohaAccountBalance(clientId, assetId)
+            val initialClientXorBalance =
+                integrationHelper.getIrohaAccountBalance(clientId, xorAssetId)
+
+            // transfer Ether from user to notary master account
+            integrationHelper.transferAssetIrohaFromClientWithFee(
+                clientId,
+                keypair,
+                clientId,
+                withdrawalAccountId,
+                assetId,
+                toAddress,
+                decimalAmount.toPlainString(),
+                xorAssetId,
+                FEE_DESCRIPTION,
+                feeDecimalAmount.toPlainString()
+            )
+            Thread.sleep(10_000)
+
+            // check Ether balance of client in Iroha
+            assertEquals(
+                ininialClientIrohaBalance.toDouble() - decimalAmount.toDouble(),
+                integrationHelper.getIrohaAccountBalance(clientId, assetId).toDouble()
+            )
+            // check XOR balance of client in Iroha
+            assertEquals(
+                initialClientXorBalance.toDouble() - feeDecimalAmount.toDouble(),
+                integrationHelper.getIrohaAccountBalance(clientId, xorAssetId).toDouble()
+            )
+
+            // check Ether balance of client in Ethereum
+            assertEquals(
+                initialBalance.add(amount),
+                integrationHelper.getEthBalance(toAddress)
+            )
+
+            // check notary balance in Ethereum
+            val masterBalanceActual =
+                integrationHelper.getEthBalance(integrationHelper.masterContract.contractAddress)
+            assertEquals(
+                masterBalanceInitial.subtract(amount),
+                masterBalanceActual
+            )
+
+            // check withdrawal service balance in Iroha
+            assertEquals(
+                0.0,
+                integrationHelper.getIrohaAccountBalance(withdrawalAccountId, assetId).toDouble()
+            )
+            assertEquals(
+                0.0,
+                integrationHelper.getIrohaAccountBalance(withdrawalAccountId, xorAssetId).toDouble()
+            )
+
+            // check billing service balance
+            assertEquals(
+                feeDecimalAmount,
+                integrationHelper.getIrohaAccountBalance(
+                    billingAccountId,
+                    xorAssetId
+                ).toBigDecimal()
+            )
         }
     }
 }

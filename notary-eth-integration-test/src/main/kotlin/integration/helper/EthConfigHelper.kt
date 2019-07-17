@@ -6,6 +6,7 @@
 package integration.helper
 
 import com.d3.commons.config.*
+import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.util.getRandomString
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.RefundConfig
@@ -19,7 +20,7 @@ import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
  *Class that handles all the configuration objects.
  */
 open class EthConfigHelper(
-    private val accountHelper: IrohaAccountHelper,
+    private val accountHelper: EthereumAccountHelper,
     open val relayRegistryContractAddress: String,
     open val masterContractAddress: String,
     open val relayImplementaionContractAddress: String
@@ -128,7 +129,7 @@ open class EthConfigHelper(
             override val refund = createRefundConfig()
             override val iroha = irohaConfig
             override val ethereum = ethereumConfig
-            override val withdrawalAccountId = ethDepositConfig.withdrawalAccountId
+            override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName
         }
     }
@@ -163,8 +164,11 @@ open class EthConfigHelper(
             override val notaryListSetterAccount = accountHelper.notaryListSetterAccount.accountId
             override val registrationIrohaAccount = accountHelper.registrationAccount.accountId
             override val expansionTriggerAccount = accountHelper.expansionTriggerAccount.accountId
-            override val withdrawalCredential = withdrawalConfig.withdrawalCredential
+            override val withdrawalCredential =
+                accountHelper.createCredentialRawConfig(accountHelper.withdrawalAccount)
             override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
+            override val ethWithdrawalBillingAccountId = accountHelper.ethWithdrawalBillingAccount.accountId
+            override val feeDescriptionString = FEE_DESCRIPTION
             override val ethMasterWallet = masterContractAddress
             override val port = portCounter.incrementAndGet()
             override val iroha = createIrohaConfig()

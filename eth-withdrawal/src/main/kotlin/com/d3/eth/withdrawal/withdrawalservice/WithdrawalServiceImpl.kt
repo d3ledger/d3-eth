@@ -10,13 +10,16 @@ import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
-import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.eth.provider.EthTokensProvider
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.fanout
+import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import io.reactivex.Observable
+import iroha.protocol.Commands
+import iroha.protocol.TransactionOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
+import jp.co.soramitsu.iroha.java.Transaction
 import mu.KLogging
 
 /**
@@ -32,12 +35,22 @@ class WithdrawalServiceImpl(
     private val proofCollector: ProofCollector
 ) : WithdrawalService {
 
-    private val masterAccount = withdrawalServiceConfig.notaryIrohaAccount
+    /** Transfer data */
+    data class TransferData(
+        val dstAccountId: String,
+        val assetId: String,
+        val amount: String,
+        val description: String
+    )
+
+    private val feeDescription = withdrawalServiceConfig.feeDescriptionString
+
+    private val billingAccountId = withdrawalServiceConfig.ethWithdrawalBillingAccountId
 
     private val irohaConsumer: IrohaConsumer by lazy { IrohaConsumerImpl(credential, irohaAPI) }
 
     init {
-        logger.info { "Init withdrawal service, irohaCredentials = ${credential.accountId}, notaryAccount = $masterAccount'" }
+        logger.info { "Init withdrawal service, irohaCredentials = ${credential.accountId}, notaryAccount = ${credential.accountId}'" }
     }
 
     /**
@@ -48,9 +61,9 @@ class WithdrawalServiceImpl(
     override fun onIrohaEvent(irohaEvent: SideChainEvent.IrohaEvent): Result<List<WithdrawalServiceOutputEvent>, Exception> {
         when (irohaEvent) {
             is SideChainEvent.IrohaEvent.SideChainTransfer -> {
-                logger.info { "Iroha transfer event to ${irohaEvent.dstAccount}, expected $masterAccount" }
+                logger.info { "Iroha transfer event to ${irohaEvent.dstAccount}, expected ${credential.accountId}" }
 
-                if (irohaEvent.dstAccount == masterAccount) {
+                if (irohaEvent.dstAccount == credential.accountId) {
                     logger.info { "Withdrawal event" }
                     return proofCollector.collectProofForWithdrawal(irohaEvent)
                         .fanout { tokensProvider.isIrohaAnchored(irohaEvent.asset) }
@@ -75,39 +88,94 @@ class WithdrawalServiceImpl(
             }
     }
 
+    /**
+     * Performs rollback. Return all transferred assets.
+     */
     override fun returnIrohaAssets(event: WithdrawalServiceOutputEvent): Result<Unit, Exception> {
+        logger.info("Withdrawal rollback initiated for Iroha tx ${event}")
+        return getTransfers(event)
+            .map { transfers ->
+                transfers.filter { transferAsset ->
+                    transferAsset.destAccountId == credential.accountId
+                }.map { transfer ->
+                    TransferData(
+                        transfer.srcAccountId,
+                        transfer.assetId,
+                        transfer.amount,
+                        "withdrawal rollback " + transfer.description
+                    )
+                }
+            }.map { transferData ->
+                var transactionBuilder = Transaction
+                    .builder(irohaConsumer.creator, System.currentTimeMillis())
+                transferData.forEach { transfer ->
+                    transactionBuilder = transactionBuilder.transferAsset(
+                        credential.accountId,
+                        transfer.dstAccountId,
+                        transfer.assetId,
+                        transfer.description,
+                        transfer.amount
+                    )
+                }
+                transactionBuilder.build()
+            }.map { transaction ->
+                irohaConsumer.send(transaction)
+            }.map { hash ->
+                logger.info("Successfully sent rollback transaction to Iroha, hash: $hash")
+            }
+    }
+
+    /**
+     * Finalize withdrawal:
+     * 1) Subtract asset
+     * 2) send fee to billing account
+     */
+    override fun finalizeWithdrawal(event: WithdrawalServiceOutputEvent): Result<String, Exception> =
+        getTransfers(event)
+            .map { transfers ->
+                val transfer = transfers.first { it.description != feeDescription }
+                val fees = transfers.filter { it.description == feeDescription }
+                var transactionBuilder = Transaction
+                    .builder(irohaConsumer.creator, System.currentTimeMillis())
+                    .subtractAssetQuantity(transfer.assetId, transfer.amount)
+
+                fees.forEach {
+                    transactionBuilder = transactionBuilder.transferAsset(
+                        credential.accountId,
+                        billingAccountId,
+                        it.assetId,
+                        it.description,
+                        it.amount
+                    )
+                }
+                transactionBuilder.build()
+            }.flatMap { tx ->
+                irohaConsumer.send(tx)
+            }
+
+    /**
+     * Get Iroha transaction by hash from WithdrawalServiceOutputEvent
+     */
+    private fun getIrohaTxByHash(event: WithdrawalServiceOutputEvent): Result<TransactionOuterClass.Transaction, Exception> {
         if (event !is WithdrawalServiceOutputEvent.EthRefund) {
             return Result.error(IllegalArgumentException("Unsupported output event type"))
         }
-
-        logger.info("Withdrawal rollback initiated: ${event.proof.irohaHash}")
         return queryHelper.getSingleTransaction(event.proof.irohaHash)
-            .map { tx ->
-                tx.payload.reducedPayload.commandsList.first { command ->
-                    val transferAsset = command.transferAsset
-                    transferAsset?.srcAccountId != "" && transferAsset?.destAccountId == masterAccount
-                }
-            }
-            .map { transferCommand ->
-                val destAccountId = transferCommand?.transferAsset?.srcAccountId
-                    ?: throw IllegalStateException("Unable to identify primary Iroha transaction data")
-
-                ModelUtil.transferAssetIroha(
-                    irohaConsumer,
-                    masterAccount,
-                    destAccountId,
-                    transferCommand.transferAsset.assetId,
-                    "Rollback transaction due to failed withdrawal in Ethereum",
-                    transferCommand.transferAsset.amount
-                )
-                    .fold({ txHash ->
-                        logger.info("Successfully sent rollback transaction to Iroha, hash: $txHash")
-                    }, { ex: Exception ->
-                        logger.error("Error during rollback transfer transaction", ex)
-                        throw ex
-                    })
-            }
     }
+
+    /**
+     * Get transfer commands from Iroha event
+     */
+    fun getTransfers(event: WithdrawalServiceOutputEvent): Result<List<Commands.TransferAsset>, Exception> =
+        getIrohaTxByHash(event).map { tx ->
+            tx.payload.reducedPayload.commandsList.filter { cmd ->
+                cmd.hasTransferAsset()
+            }.map { cmd ->
+                cmd.transferAsset
+            }.filter { transferAsset ->
+                transferAsset.destAccountId == credential.accountId
+            }
+        }
 
     /**
      * Logger

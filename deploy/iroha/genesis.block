@@ -110,6 +110,8 @@
                     "can_get_all_acc_detail",
                     "can_get_blocks",
                     "can_read_assets",
+                    "can_subtract_asset_qty",
+                    "can_transfer",
                     "can_receive",
                     "can_get_all_txs"
                   ]
@@ -564,6 +566,28 @@
                   "assetId": "xor#sora",
                   "description": "initial supply",
                   "amount": "1618033988749894848204586834"
+                }
+              },
+              {
+                "createRole": {
+                  "roleName": "billing",
+                  "permissions": [
+                    "can_transfer",
+                    "can_receive"
+                  ]
+                }
+              },
+              {
+                "createAccount": {
+                  "accountName": "withdrawal_billing",
+                  "domainId": "d3",
+                  "publicKey": "0000000000000000000000000000000000000000000000000000000000000000"
+                }
+              },
+              {
+                "appendRole": {
+                  "accountId": "withdrawal_billing@d3",
+                  "roleName": "billing"
                 }
               }
             ],
