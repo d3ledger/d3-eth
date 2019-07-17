@@ -88,6 +88,7 @@ class WithdrawalIntegrationTest {
         assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
             val masterAccount = depositConfig.notaryCredential.accountId
+            val withdrawalAccountId = depositConfig.withdrawalAccountId
             val amount = "64203"
             val decimalAmount = BigDecimal(amount).scaleByPowerOfTen(ETH_PRECISION)
             val assetId = "ether#ethereum"
@@ -116,12 +117,12 @@ class WithdrawalIntegrationTest {
                 it.value == clientId
             }.keys.first()
 
-            // transfer assets from user to notary master account
+            // transfer assets from user to withdrawal account
             val hash = integrationHelper.transferAssetIrohaFromClient(
                 clientId,
                 integrationHelper.testCredential.keyPair,
                 clientId,
-                masterAccount,
+                withdrawalAccountId,
                 assetId,
                 ethWallet,
                 amount
