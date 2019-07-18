@@ -154,7 +154,6 @@ class WithdrawalServiceInitialization(
                                     logger.error("Withdrawal error, perform rollback", e)
                                     withdrawalService.returnIrohaAssets(event).failure {
                                         logger.error("Rollback error", it)
-                                        System.exit(1)
                                     }
                                 }
                             }

@@ -128,6 +128,9 @@ class WithdrawalServiceImpl(
      * Finalize withdrawal:
      * 1) Subtract asset
      * 2) send fee to billing account
+     *
+     * @param event - withdrawal event
+     * @result hash of finalization transaction in Iroha
      */
     override fun finalizeWithdrawal(event: WithdrawalServiceOutputEvent): Result<String, Exception> =
         getWithdrawalTransfers(event)

@@ -33,6 +33,9 @@ interface WithdrawalService {
 
     /**
      * Finalize withdrawal
+     *
+     * @param event - withdrawal event
+     * @result hash of finalization transaction in Iroha
      */
     fun finalizeWithdrawal(event: WithdrawalServiceOutputEvent): Result<String, Exception>
 }
