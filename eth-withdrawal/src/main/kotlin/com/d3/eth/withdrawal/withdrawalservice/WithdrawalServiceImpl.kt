@@ -44,7 +44,7 @@ class WithdrawalServiceImpl(
         val description: String
     )
 
-    private val billingAccountId = withdrawalServiceConfig.ethWithdrawalBillingAccountId
+    private val billingAccountId = withdrawalServiceConfig.withdrawalBillingAccount
 
     private val irohaConsumer: IrohaConsumer by lazy { IrohaConsumerImpl(credential, irohaAPI) }
 
