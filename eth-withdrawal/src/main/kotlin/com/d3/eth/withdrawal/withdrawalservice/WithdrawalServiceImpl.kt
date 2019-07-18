@@ -92,7 +92,7 @@ class WithdrawalServiceImpl(
      */
     override fun returnIrohaAssets(event: WithdrawalServiceOutputEvent): Result<Unit, Exception> {
         logger.info("Withdrawal rollback initiated for Iroha tx ${event}")
-        return getTransfers(event)
+        return getWithdrawalTransfers(event)
             .map { transfers ->
                 transfers.filter { transferAsset ->
                     transferAsset.destAccountId == credential.accountId
@@ -130,14 +130,19 @@ class WithdrawalServiceImpl(
      * 2) send fee to billing account
      */
     override fun finalizeWithdrawal(event: WithdrawalServiceOutputEvent): Result<String, Exception> =
-        getTransfers(event)
-            .map { transfers ->
-                val transfer = transfers.first { it.description != FEE_DESCRIPTION }
-                val fees = transfers.filter { it.description == FEE_DESCRIPTION }
+        getWithdrawalTransfers(event)
+            .map { transfersTxs ->
+                val transfers = transfersTxs.filter { it.description != FEE_DESCRIPTION }
+                val fees = transfersTxs.filter { it.description == FEE_DESCRIPTION }
                 var transactionBuilder = Transaction
                     .builder(irohaConsumer.creator, System.currentTimeMillis())
-                    .subtractAssetQuantity(transfer.assetId, transfer.amount)
 
+                transfers.forEach {
+                    transactionBuilder = transactionBuilder.subtractAssetQuantity(
+                        it.assetId,
+                        it.amount
+                    )
+                }
                 fees.forEach {
                     transactionBuilder = transactionBuilder.transferAsset(
                         credential.accountId,
@@ -165,7 +170,7 @@ class WithdrawalServiceImpl(
     /**
      * Get transfer commands from Iroha event
      */
-    fun getTransfers(event: WithdrawalServiceOutputEvent): Result<List<Commands.TransferAsset>, Exception> =
+    private fun getWithdrawalTransfers(event: WithdrawalServiceOutputEvent): Result<List<Commands.TransferAsset>, Exception> =
         getIrohaTxByHash(event).map { tx ->
             tx.payload.reducedPayload.commandsList.filter { cmd ->
                 cmd.hasTransferAsset()
