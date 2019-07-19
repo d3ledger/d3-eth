@@ -84,6 +84,15 @@ services:
     networks:
       - d3-network
 
+  dc-postgres:
+    image: postgres
+    container_name: "dc-postgres"
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_USER: test
+    networks:
+      - d3-network
+
   d3-brvs:
     image: nexus.iroha.tech:19002/brvs-deploy/brvs-core:develop
     container_name: d3-brvs
