@@ -6,6 +6,7 @@
 package com.d3.eth.sidechain
 
 import com.d3.commons.sidechain.ChainListener
+import com.d3.commons.sidechain.provider.LastReadBlockProvider
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.github.kittinunf.result.Result
 import io.reactivex.Observable
@@ -14,9 +15,6 @@ import mu.KLogging
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.methods.response.EthBlock
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
 import java.math.BigInteger
 
 /**
@@ -26,19 +24,18 @@ import java.math.BigInteger
  */
 class EthChainListener(
     private val web3: Web3j,
-    private val confirmationPeriod: BigInteger
+    private val confirmationPeriod: BigInteger,
+    private val lastReadBlockProvider: LastReadBlockProvider
 ) : ChainListener<EthBlock> {
 
     init {
         logger.info {
-            "Init EthChainListener with confirmation period $confirmationPeriod"
+            "Init EthChainListener with confirmation period $confirmationPeriod, last read block $lastReadBlockProvider"
         }
     }
 
-    private val file = "last_eth_block_read.txt"
-
     /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
-    var lastBlock = getLastBlockHeight()
+    var lastBlock = lastReadBlockProvider.getLastBlockHeight()
         private set
 
     override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
@@ -72,30 +69,9 @@ class EthChainListener(
                         ), true
                     ).send()
                     logger.info { "Ethereum chain listener got block ${block.block.number}" }
-                    saveLastBlockHeight(lastBlock)
+                    lastReadBlockProvider.saveLastBlockHeight(lastBlock)
                     block
                 }
-        }
-    }
-
-
-    /**
-     * Returns last processed block
-     * Value is read from file
-     */
-    @Synchronized
-    private fun getLastBlockHeight(): BigInteger = File(file).readText().trim().toBigInteger()
-
-    /**
-     * Save last block height in file
-     * @param height - height of block that will be saved
-     */
-    @Synchronized
-    private fun saveLastBlockHeight(height: BigInteger) {
-        FileWriter(File(file)).use { fileWriter ->
-            BufferedWriter(fileWriter).use { writer ->
-                writer.write(height.toString())
-            }
         }
     }
 

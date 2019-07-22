@@ -14,6 +14,7 @@ import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
+import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
 import com.d3.eth.deposit.EthDepositConfig
@@ -61,7 +62,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
 
     val ethListener = EthChainListener(
         contractTestHelper.deployHelper.web3,
-        BigInteger.valueOf(testConfig.ethereum.confirmationPeriod)
+        BigInteger.valueOf(testConfig.ethereum.confirmationPeriod),
+        FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath)
     )
 
     private val tokenProviderIrohaConsumer by lazy {

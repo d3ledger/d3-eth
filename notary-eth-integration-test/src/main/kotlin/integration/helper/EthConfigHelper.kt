@@ -22,7 +22,8 @@ open class EthConfigHelper(
     private val accountHelper: IrohaAccountHelper,
     open val relayRegistryContractAddress: String,
     open val masterContractAddress: String,
-    open val relayImplementaionContractAddress: String
+    open val relayImplementaionContractAddress: String,
+    val lastEthereumReadBlockFilePath: String = "deploy/eth-deposit/last_eth_read_block.txt"
 ) : IrohaConfigHelper() {
 
     /** Ethereum password configs */
@@ -127,6 +128,7 @@ open class EthConfigHelper(
             override val notaryCredential = notaryCredential_
             override val refund = createRefundConfig()
             override val iroha = irohaConfig
+            override val lastEthereumReadBlockFilePath = this@EthConfigHelper.lastEthereumReadBlockFilePath
             override val ethereum = ethereumConfig
             override val withdrawalAccountId = ethDepositConfig.withdrawalAccountId
             override val ethIrohaDepositQueue = testName
