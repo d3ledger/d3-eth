@@ -30,7 +30,8 @@ class EthChainListener(
 
     init {
         logger.info {
-            "Init EthChainListener with confirmation period $confirmationPeriod, last read block $lastReadBlockProvider"
+            "Init EthChainListener with confirmation period $confirmationPeriod, " + "" +
+                    "last read block ${lastReadBlockProvider.getLastBlockHeight()}"
         }
     }
 
