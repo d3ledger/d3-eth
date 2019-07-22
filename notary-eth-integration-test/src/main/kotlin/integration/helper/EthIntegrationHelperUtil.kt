@@ -46,25 +46,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
 
     override val accountHelper by lazy { EthereumAccountHelper(irohaAPI) }
 
-    override val configHelper by lazy {
-        EthConfigHelper(
-            accountHelper,
-            relayRegistryContract.contractAddress,
-            masterContract.contractAddress,
-            contractTestHelper.relayImplementation.contractAddress
-        )
-    }
-
-    val ethRegistrationConfig by lazy { configHelper.createEthRegistrationConfig(testConfig.ethereum) }
-
     /** Ethereum utils */
     private val contractTestHelper by lazy { ContractTestHelper() }
-
-    val ethListener = EthChainListener(
-        contractTestHelper.deployHelper.web3,
-        BigInteger.valueOf(testConfig.ethereum.confirmationPeriod),
-        FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath)
-    )
 
     private val tokenProviderIrohaConsumer by lazy {
         IrohaConsumerImpl(accountHelper.tokenSetterAccount, irohaAPI)
@@ -82,6 +65,23 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         logger.info("master eth wallet ${wallet.contractAddress} was deployed ")
         wallet
     }
+
+    override val configHelper by lazy {
+        EthConfigHelper(
+            accountHelper,
+            relayRegistryContract.contractAddress,
+            masterContract.contractAddress,
+            contractTestHelper.relayImplementation.contractAddress
+        )
+    }
+
+    val ethRegistrationConfig by lazy { configHelper.createEthRegistrationConfig(testConfig.ethereum) }
+
+    val ethListener = EthChainListener(
+        contractTestHelper.deployHelper.web3,
+        BigInteger.valueOf(testConfig.ethereum.confirmationPeriod),
+        FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath)
+    )
 
     /** Provider that is used to store/fetch tokens*/
     val ethTokensProvider by lazy {
