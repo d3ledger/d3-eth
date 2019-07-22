@@ -6,7 +6,6 @@
 package integration.helper
 
 import com.d3.commons.config.*
-import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.util.getRandomString
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.RefundConfig
@@ -23,7 +22,8 @@ open class EthConfigHelper(
     private val accountHelper: EthereumAccountHelper,
     open val relayRegistryContractAddress: String,
     open val masterContractAddress: String,
-    open val relayImplementaionContractAddress: String
+    open val relayImplementaionContractAddress: String,
+    val lastEthereumReadBlockFilePath: String = "deploy/eth-deposit/last_eth_read_block.txt"
 ) : IrohaConfigHelper() {
 
     /** Ethereum password configs */
@@ -128,6 +128,8 @@ open class EthConfigHelper(
             override val notaryCredential = notaryCredential_
             override val refund = createRefundConfig()
             override val iroha = irohaConfig
+            override val lastEthereumReadBlockFilePath =
+                this@EthConfigHelper.lastEthereumReadBlockFilePath + "." + String.getRandomString(5)
             override val ethereum = ethereumConfig
             override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName
@@ -167,7 +169,8 @@ open class EthConfigHelper(
             override val withdrawalCredential =
                 accountHelper.createCredentialRawConfig(accountHelper.withdrawalAccount)
             override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
-            override val withdrawalBillingAccount = accountHelper.ethWithdrawalBillingAccount.accountId
+            override val withdrawalBillingAccount =
+                accountHelper.ethWithdrawalBillingAccount.accountId
             override val ethMasterWallet = masterContractAddress
             override val port = portCounter.incrementAndGet()
             override val iroha = createIrohaConfig()

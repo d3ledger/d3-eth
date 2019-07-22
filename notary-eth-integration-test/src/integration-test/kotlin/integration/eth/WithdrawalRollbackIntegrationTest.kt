@@ -140,8 +140,8 @@ class WithdrawalRollbackIntegrationTest {
             toAddress,
             decimalAmount.toPlainString(),
             feeAssetId,
-            FEE_DESCRIPTION,
-            decimalAmount.toPlainString()
+            decimalAmount.toPlainString(),
+            FEE_DESCRIPTION
         )
 
         Thread.sleep(35_000)

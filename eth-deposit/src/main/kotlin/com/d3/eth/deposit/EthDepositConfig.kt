@@ -40,6 +40,8 @@ interface EthDepositConfig {
 
     val iroha: IrohaConfig
 
+    val lastEthereumReadBlockFilePath: String
+
     val ethereum: EthereumConfig
 
     /** Iroha withdrawal account grant permission to */

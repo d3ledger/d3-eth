@@ -16,6 +16,7 @@ import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
 import com.d3.commons.sidechain.iroha.consumer.MultiSigIrohaConsumer
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
+import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettyScheduledThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
@@ -141,7 +142,8 @@ class EthDepositInitialization(
         val ethHandler = EthChainHandler(web3, ethRelayProvider, ethTokensProvider)
         return EthChainListener(
             web3,
-            BigInteger.valueOf(ethDepositConfig.ethereum.confirmationPeriod)
+            BigInteger.valueOf(ethDepositConfig.ethereum.confirmationPeriod),
+            FileBasedLastReadBlockProvider(ethDepositConfig.lastEthereumReadBlockFilePath)
         ).getBlockObservable()
             .map { observable ->
                 observable.flatMapIterable { ethHandler.parseBlock(it) }

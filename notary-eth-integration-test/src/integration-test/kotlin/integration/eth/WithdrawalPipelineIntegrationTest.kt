@@ -438,8 +438,8 @@ class WithdrawalPipelineIntegrationTest {
                 toAddress,
                 decimalAmount.toPlainString(),
                 xorAssetId,
-                FEE_DESCRIPTION,
-                feeDecimalAmount.toPlainString()
+                feeDecimalAmount.toPlainString(),
+                FEE_DESCRIPTION
             )
             Thread.sleep(10_000)
 
