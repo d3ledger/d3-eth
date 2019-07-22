@@ -56,13 +56,14 @@ class WithdrawalMultinotaryIntegrationTest {
     private val ethereumPasswords =
         loadEthPasswords("eth-deposit", "/eth/ethereum_password.properties").get()
 
+    private val withdrawalAccountId = integrationHelper.accountHelper.withdrawalAccount.accountId
+
     private val timeoutDuration = Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)
 
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethRegistrationService: Job
     private val ethDeposit1: Job
     private val ethDeposit2: Job
-
 
     init {
         val notaryConfig = loadLocalConfigs(
@@ -173,7 +174,7 @@ class WithdrawalMultinotaryIntegrationTest {
                 clientId,
                 integrationHelper.testCredential.keyPair,
                 clientId,
-                masterAccount,
+                withdrawalAccountId,
                 assetId,
                 ethWallet,
                 amount

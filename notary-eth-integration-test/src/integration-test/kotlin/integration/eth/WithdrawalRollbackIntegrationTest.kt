@@ -6,6 +6,7 @@
 package integration.eth
 
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
+import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
@@ -40,8 +41,8 @@ class WithdrawalRollbackIntegrationTest {
     /** Ethereum test address where we want to withdraw to */
     private val toAddress = integrationHelper.configHelper.testConfig.ethTestAccount
 
-    /** Notary account in Iroha */
-    private val notaryAccount = integrationHelper.accountHelper.notaryAccount.accountId
+    /** Withdrawal trigger account */
+    private val withdrawalAccountId = integrationHelper.accountHelper.withdrawalAccount.accountId
 
     private val ethRegistrationService: Job
     private val withdrawalService: Job
@@ -120,28 +121,38 @@ class WithdrawalRollbackIntegrationTest {
 
         val decimalAmount = BigDecimal(amount, ETH_PRECISION)
         val assetId = "ether#ethereum"
+        val feeAssetId = "xor#sora"
 
         // add assets to user
         integrationHelper.addIrohaAssetTo(clientId, assetId, decimalAmount)
+        integrationHelper.addIrohaAssetTo(clientId, feeAssetId, decimalAmount)
 
-        val initialBalance = integrationHelper.getIrohaAccountBalance(clientId, assetId)
+        val initialEthBalance = integrationHelper.getIrohaAccountBalance(clientId, assetId)
+        val initialXorBalance = integrationHelper.getIrohaAccountBalance(clientId, feeAssetId)
 
         // transfer assets from user to notary master account
-        integrationHelper.transferAssetIrohaFromClient(
+        integrationHelper.transferAssetIrohaFromClientWithFee(
             clientId,
             keypair,
             clientId,
-            notaryAccount,
+            withdrawalAccountId,
             assetId,
             toAddress,
+            decimalAmount.toPlainString(),
+            feeAssetId,
+            FEE_DESCRIPTION,
             decimalAmount.toPlainString()
         )
 
         Thread.sleep(35_000)
 
         Assertions.assertEquals(
-            initialBalance,
+            initialEthBalance,
             integrationHelper.getIrohaAccountBalance(clientId, assetId)
+        )
+        Assertions.assertEquals(
+            initialXorBalance,
+            integrationHelper.getIrohaAccountBalance(clientId, feeAssetId)
         )
     }
 }

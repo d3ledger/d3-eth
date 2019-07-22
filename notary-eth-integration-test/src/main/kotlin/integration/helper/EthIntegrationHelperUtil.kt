@@ -43,7 +43,7 @@ import java.util.*
  */
 class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
 
-    override val accountHelper by lazy { IrohaAccountHelper(irohaAPI) }
+    override val accountHelper by lazy { EthereumAccountHelper(irohaAPI) }
 
     override val configHelper by lazy {
         EthConfigHelper(
