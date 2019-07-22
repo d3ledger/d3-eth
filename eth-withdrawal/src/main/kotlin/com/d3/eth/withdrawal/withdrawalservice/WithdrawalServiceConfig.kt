@@ -44,6 +44,9 @@ interface WithdrawalServiceConfig {
     /** Creator of expansion trigger transaction */
     val expansionTriggerCreatorAccountId: String
 
+    /** Account id of withdrawal billing */
+    val withdrawalBillingAccount: String
+
     /** Master contact Ethereum address */
     val ethMasterWallet: String
 

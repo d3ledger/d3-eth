@@ -11,6 +11,7 @@ import com.d3.commons.expansion.ServiceExpansion
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.provider.NotaryPeerListProviderImpl
 import com.d3.commons.sidechain.SideChainEvent
+import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.IrohaChainHandler
 import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -101,7 +102,10 @@ class WithdrawalServiceInitialization(
             .map { observable ->
                 observable.flatMapIterable { (block, _) ->
                     ethereumWithdrawalExpansionStrategy.filterAndExpand(block)
-                    IrohaChainHandler().parseBlock(block)
+                    IrohaChainHandler(
+                        credential.accountId,
+                        FEE_DESCRIPTION
+                    ).parseBlock(block)
                 }
             }
     }
@@ -140,13 +144,17 @@ class WithdrawalServiceInitialization(
                             withdrawalEvents.forEach { event ->
                                 try {
                                     val transactionReceipt = ethConsumer.consume(event)
-                                    // TODO: Add subtraction of assets from master account in Iroha in 'else'
                                     if (transactionReceipt == null || transactionReceipt.status == FAILED_STATUS) {
                                         throw RuntimeException("Ethereum transaction has failed")
+                                    } else {
+                                        withdrawalService.finalizeWithdrawal(event)
+                                            .failure { ex -> throw ex }
                                     }
                                 } catch (e: Exception) {
                                     logger.error("Withdrawal error, perform rollback", e)
-                                    withdrawalService.returnIrohaAssets(event)
+                                    withdrawalService.returnIrohaAssets(event).failure {
+                                        logger.error("Rollback error", it)
+                                    }
                                 }
                             }
                         }.failure { ex ->

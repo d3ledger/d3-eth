@@ -30,4 +30,12 @@ interface WithdrawalService {
      * Behavior in case of rollback failure
      */
     fun returnIrohaAssets(event: WithdrawalServiceOutputEvent): Result<Unit, Exception>
+
+    /**
+     * Finalize withdrawal
+     *
+     * @param event - withdrawal event
+     * @result hash of finalization transaction in Iroha
+     */
+    fun finalizeWithdrawal(event: WithdrawalServiceOutputEvent): Result<String, Exception>
 }
