@@ -39,7 +39,7 @@ class FailedTransactionTest {
 
     init {
         ethDeposit = GlobalScope.launch {
-            integrationHelper.runEthDeposit()
+            integrationHelper.runEthDeposit(ethDepositConfig = integrationHelper.configHelper.createEthDepositConfig())
         }
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
