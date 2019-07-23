@@ -51,6 +51,10 @@ class EthChainListener(
                         createPrettySingleThreadPool("eth-deposit", "eth-event-handler")
                     )
                 )
+                .map {
+                    logger.info { "Observe block ${it.block.number}" }
+                    it
+                }
                 // skip up to confirmationPeriod blocks in case of chain reorganisation
                 .filter { lastBlock < it.block.number }
                 .map {
