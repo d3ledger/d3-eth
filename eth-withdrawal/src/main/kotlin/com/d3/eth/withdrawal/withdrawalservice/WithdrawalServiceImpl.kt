@@ -97,11 +97,12 @@ class WithdrawalServiceImpl(
                 transfers.filter { transferAsset ->
                     transferAsset.destAccountId == credential.accountId
                 }.map { transfer ->
+                    val rollbackDescription = "rollback eth " + transfer.description
                     TransferData(
                         transfer.srcAccountId,
                         transfer.assetId,
                         transfer.amount,
-                        "withdrawal rollback " + transfer.description
+                        rollbackDescription.take(64)
                     )
                 }
             }.map { transferData ->
