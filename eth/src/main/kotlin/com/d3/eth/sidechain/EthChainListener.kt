@@ -36,13 +36,13 @@ class EthChainListener(
     }
 
     /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
-    var lastBlock = lastReadBlockProvider.getLastBlockHeight()
+    var lastBlockNumber = lastReadBlockProvider.getLastBlockHeight()
         private set
 
     override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
         return Result.of {
             web3.replayPastAndFutureBlocksFlowable(
-                DefaultBlockParameter.valueOf(lastBlock.plus(confirmationPeriod)),
+                DefaultBlockParameter.valueOf(lastBlockNumber.plus(confirmationPeriod)),
                 false
             )
                 .toObservable()
@@ -51,27 +51,27 @@ class EthChainListener(
                         createPrettySingleThreadPool("eth-deposit", "eth-event-handler")
                     )
                 )
-                .map {
-                    logger.info { "Observe block ${it.block.number}" }
-                    it
-                }
                 // skip up to confirmationPeriod blocks in case of chain reorganisation
-                .filter { lastBlock < it.block.number }
-                .map {
-                    if (lastBlock != it.block.number.minus(BigInteger.ONE))
-                        throw IllegalArgumentException(
-                            "Wrong block number. Expected ${lastBlock.add(BigInteger.ONE)}, got ${it.block.number}"
-                        )
-                    lastBlock = it.block.number
-                    val block = web3.ethGetBlockByNumber(
-                        DefaultBlockParameter.valueOf(
-                            it.block.number - confirmationPeriod
-                        ), true
-                    ).send()
-                    logger.info { "Ethereum chain listener got block ${block.block.number}" }
-                    lastReadBlockProvider.saveLastBlockHeight(lastBlock)
-                    block
+                .filter { lastBlockNumber < it.block.number }
+                .map { topBlock ->
+                    logger.info { "Ethereum chain listener got block ${topBlock.block.number}" }
+
+                    val topBlockNumber = topBlock.block.number.minus(confirmationPeriod)
+                    val lst = mutableListOf<EthBlock>()
+                    while (lastBlockNumber != topBlockNumber) {
+                        val block = web3.ethGetBlockByNumber(
+                            DefaultBlockParameter.valueOf(lastBlockNumber), true
+                        ).send()
+
+                        logger.info { "Ethereum chain listener loaded block ${block.block.number}" }
+
+                        lst.add(block)
+                        lastBlockNumber.add(BigInteger.ONE)
+                    }
+                    lastReadBlockProvider.saveLastBlockHeight(lastBlockNumber)
+                    lst
                 }
+                .flatMapIterable { blocks -> blocks }
         }
     }
 

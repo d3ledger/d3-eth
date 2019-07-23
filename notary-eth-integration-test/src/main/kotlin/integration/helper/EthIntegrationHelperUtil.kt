@@ -330,7 +330,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      */
     fun waitOneEtherBlock() {
         runBlocking {
-            logger.info { "Waiting for Ethereum block. Last block ${ethListener.lastBlock}" }
+            logger.info { "Waiting for Ethereum block. Last block ${ethListener.lastBlockNumber}" }
             val block = ethListener.getBlock()
             logger.info { "Waiting for Ethereum block ${block.block.number} is over." }
         }
