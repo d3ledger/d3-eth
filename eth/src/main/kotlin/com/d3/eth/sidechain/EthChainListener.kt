@@ -16,6 +16,7 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.methods.response.EthBlock
 import java.math.BigInteger
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Implementation of [ChainListener] for Ethereum sidechain
@@ -35,13 +36,13 @@ class EthChainListener(
     }
 
     /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
-    var lastBlock = lastReadBlockProvider.getLastBlockHeight()
+    var lastBlock = AtomicReference<BigInteger>(lastReadBlockProvider.getLastBlockHeight())
         private set
 
     override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
         return Result.of {
             web3.replayPastAndFutureBlocksFlowable(
-                DefaultBlockParameter.valueOf(lastBlock.plus(confirmationPeriod)),
+                DefaultBlockParameter.valueOf(lastBlock.get().plus(confirmationPeriod)),
                 false
             )
                 .toObservable()
@@ -54,22 +55,22 @@ class EthChainListener(
                     )
                 )
                 // skip up to confirmationPeriod blocks in case of chain reorganisation
-                .filter { lastBlock < it.block.number }
+                .filter { lastBlock.get() < it.block.number }
                 .map {
                     if (lastBlock != it.block.number.minus(BigInteger.ONE))
                         throw IllegalArgumentException(
-                            "Wrong block number. Expected ${lastBlock.add(
-                                BigInteger.ONE
+                            "Wrong block number. Expected ${lastBlock.set(
+                                lastBlock.get().add(BigInteger.ONE)
                             )}, got ${it.block.number}"
                         )
-                    lastBlock = it.block.number
+                    lastBlock.set(it.block.number)
                     val block = web3.ethGetBlockByNumber(
                         DefaultBlockParameter.valueOf(
                             it.block.number - confirmationPeriod
                         ), true
                     ).send()
                     logger.info { "Ethereum chain listener got block ${block.block.number}" }
-                    lastReadBlockProvider.saveLastBlockHeight(lastBlock)
+                    lastReadBlockProvider.saveLastBlockHeight(lastBlock.get())
                     block
                 }
         }
