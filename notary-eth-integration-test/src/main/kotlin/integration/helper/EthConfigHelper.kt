@@ -129,7 +129,7 @@ open class EthConfigHelper(
             override val refund = createRefundConfig()
             override val iroha = irohaConfig
             override val lastEthereumReadBlockFilePath =
-                this@EthConfigHelper.lastEthereumReadBlockFilePath + "." + String.getRandomString(5)
+                this@EthConfigHelper.lastEthereumReadBlockFilePath
             override val ethereum = ethereumConfig
             override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName
