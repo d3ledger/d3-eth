@@ -30,8 +30,8 @@ class EthChainListener(
 
     init {
         logger.info {
-            "Init EthChainListener with confirmation period $confirmationPeriod, " + "" +
-                    "last read block ${lastReadBlockProvider.getLastBlockHeight()}"
+            "Init EthChainListener. Last read block ${lastReadBlockProvider.getLastBlockHeight()}, " +
+                    "confirmation period $confirmationPeriod"
         }
     }
 
@@ -52,24 +52,24 @@ class EthChainListener(
                     )
                 )
                 // skip up to confirmationPeriod blocks in case of chain reorganisation
-                .filter { lastBlockNumber < it.block.number }
+                .filter { lastBlockNumber <= it.block.number }
                 .map { topBlock ->
                     logger.info { "Ethereum chain listener got block ${topBlock.block.number}" }
 
                     val topBlockNumber = topBlock.block.number.minus(confirmationPeriod)
-                    val lst = mutableListOf<EthBlock>()
-                    while (lastBlockNumber != topBlockNumber) {
+                    val blocks = mutableListOf<EthBlock>()
+                    while (lastBlockNumber <= topBlockNumber) {
                         val block = web3.ethGetBlockByNumber(
                             DefaultBlockParameter.valueOf(lastBlockNumber), true
                         ).send()
 
                         logger.info { "Ethereum chain listener loaded block ${block.block.number}" }
 
-                        lst.add(block)
-                        lastBlockNumber.add(BigInteger.ONE)
+                        blocks.add(block)
+                        lastBlockNumber = lastBlockNumber.inc()
                     }
                     lastReadBlockProvider.saveLastBlockHeight(lastBlockNumber)
-                    lst
+                    blocks
                 }
                 .flatMapIterable { blocks -> blocks }
         }
