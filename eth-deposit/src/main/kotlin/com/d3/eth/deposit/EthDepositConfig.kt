@@ -8,6 +8,7 @@ package com.d3.eth.deposit
 import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialRawConfig
+import java.math.BigInteger
 
 /** Configuration of refund endpoint in Notary */
 interface RefundConfig {
@@ -40,7 +41,11 @@ interface EthDepositConfig {
 
     val iroha: IrohaConfig
 
+    /** Path to storage of last read Ethereum block number */
     val lastEthereumReadBlockFilePath: String
+
+    /** Ethereum block number to start listen for */
+    val startEthereumBlock: BigInteger
 
     val ethereum: EthereumConfig
 

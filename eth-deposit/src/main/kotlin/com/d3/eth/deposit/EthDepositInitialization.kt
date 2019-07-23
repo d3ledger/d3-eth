@@ -143,6 +143,7 @@ class EthDepositInitialization(
         return EthChainListener(
             web3,
             BigInteger.valueOf(ethDepositConfig.ethereum.confirmationPeriod),
+            ethDepositConfig.startEthereumBlock,
             FileBasedLastReadBlockProvider(ethDepositConfig.lastEthereumReadBlockFilePath)
         ).getBlockObservable()
             .map { observable ->
