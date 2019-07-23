@@ -14,6 +14,7 @@ import com.d3.eth.registration.relay.RelayRegistrationConfig
 import com.d3.eth.token.ERC20TokenRegistrationConfig
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
+import java.math.BigInteger
 
 /**
  *Class that handles all the configuration objects.
@@ -130,6 +131,7 @@ open class EthConfigHelper(
             override val iroha = irohaConfig
             override val lastEthereumReadBlockFilePath =
                 this@EthConfigHelper.lastEthereumReadBlockFilePath
+            override val startEthereumBlock = BigInteger.ZERO
             override val ethereum = ethereumConfig
             override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName

@@ -80,6 +80,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     val ethListener = EthChainListener(
         contractTestHelper.deployHelper.web3,
         BigInteger.valueOf(testConfig.ethereum.confirmationPeriod),
+        BigInteger.ZERO,
         FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath)
     )
 

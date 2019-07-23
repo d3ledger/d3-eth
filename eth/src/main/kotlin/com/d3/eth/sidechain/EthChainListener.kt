@@ -25,19 +25,20 @@ import java.math.BigInteger
 class EthChainListener(
     private val web3: Web3j,
     private val confirmationPeriod: BigInteger,
+    startBlock: BigInteger,
     private val lastReadBlockProvider: LastReadBlockProvider
 ) : ChainListener<EthBlock> {
 
+    /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
+    var lastBlockNumber = maxOf(lastReadBlockProvider.getLastBlockHeight(), startBlock)
+        private set
+
     init {
         logger.info {
-            "Init EthChainListener. Last read block ${lastReadBlockProvider.getLastBlockHeight()}, " +
+            "Init EthChainListener. Start with block number ${lastBlockNumber}, " +
                     "confirmation period $confirmationPeriod"
         }
     }
-
-    /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
-    var lastBlockNumber = lastReadBlockProvider.getLastBlockHeight()
-        private set
 
     override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
         return Result.of {
