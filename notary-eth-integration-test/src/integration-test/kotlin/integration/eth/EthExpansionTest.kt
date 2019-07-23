@@ -27,7 +27,7 @@ class EthExpansionTest {
 
     init {
         depositService = GlobalScope.launch {
-            integrationHelper.runEthDeposit()
+            integrationHelper.runEthDeposit(ethDepositConfig = integrationHelper.configHelper.createEthDepositConfig())
         }
         withdrawalService = GlobalScope.launch {
             integrationHelper.runEthWithdrawalService(
