@@ -102,7 +102,7 @@ class WithdrawalServiceImpl(
                         transfer.srcAccountId,
                         transfer.assetId,
                         transfer.amount,
-                        rollbackDescription.substring(0, 64)
+                        rollbackDescription.take(64)
                     )
                 }
             }.map { transferData ->
