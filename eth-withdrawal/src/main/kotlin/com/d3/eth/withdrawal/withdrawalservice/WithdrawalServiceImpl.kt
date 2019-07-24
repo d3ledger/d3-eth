@@ -8,6 +8,7 @@ package com.d3.eth.withdrawal.withdrawalservice
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
+import com.d3.commons.sidechain.iroha.ROLLBACK_DESCRIPTION
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
@@ -97,12 +98,12 @@ class WithdrawalServiceImpl(
                 transfers.filter { transferAsset ->
                     transferAsset.destAccountId == credential.accountId
                 }.map { transfer ->
-                    val rollbackDescription = "rollback eth " + transfer.description
+                    val rollbackDescription = "$ROLLBACK_DESCRIPTION: ${transfer.description}"
                     TransferData(
                         transfer.srcAccountId,
                         transfer.assetId,
                         transfer.amount,
-                        rollbackDescription.take(64)
+                        rollbackDescription.take(64).toLowerCase()
                     )
                 }
             }.map { transferData ->
