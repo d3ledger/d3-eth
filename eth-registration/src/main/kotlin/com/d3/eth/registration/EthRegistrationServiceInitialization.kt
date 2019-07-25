@@ -26,7 +26,6 @@ import mu.KLogging
  */
 class EthRegistrationServiceInitialization(
     private val ethRegistrationConfig: EthRegistrationConfig,
-    private val passwordConfig: EthereumPasswords,
     private val irohaAPI: IrohaAPI
 ) {
 
@@ -71,8 +70,6 @@ class EthRegistrationServiceInitialization(
             EthRegistrationStrategyImpl(
                 ethFreeRelayProvider,
                 ethRelayProvider,
-                ethRegistrationConfig,
-                passwordConfig,
                 irohaConsumer,
                 ethRegistrationConfig.notaryIrohaAccount
             )

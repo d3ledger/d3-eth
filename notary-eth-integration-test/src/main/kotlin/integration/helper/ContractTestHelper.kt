@@ -18,6 +18,9 @@ import org.web3j.utils.Numeric
 import java.math.BigInteger
 import kotlin.test.assertEquals
 
+/** Helper class for Ethereum contracts.
+ * Deploys contracts on demand, contains set of functions to work with ethereum contracts.
+ */
 class ContractTestHelper {
     private val testConfig = loadConfigs("test", TestConfig::class.java, "/test.properties").get()
     private val passwordConfig =

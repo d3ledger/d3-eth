@@ -17,6 +17,9 @@ import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
+import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
+import com.d3.eth.env.ETH_MASTER_WALLET_ENV
+import com.d3.eth.provider.EthAddressesProviderSystemEnvOrIrohaDetailsImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.consumer.EthConsumer
@@ -56,6 +59,14 @@ class WithdrawalServiceInitialization(
         )
     }
 
+    private val ethMasterAddress = EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
+        ETH_MASTER_WALLET_ENV,
+        withdrawalConfig.ethMasterAddressStorageAccountId,
+        withdrawalConfig.ethMasterAddressWriterAccountId,
+        ETH_MASTER_ADDRESS_KEY,
+        queryHelper
+    ).getEtereumAddress().get()
+
     private val tokensProvider = EthTokensProviderImpl(
         queryHelper,
         withdrawalConfig.ethAnchoredTokenStorageAccount,
@@ -86,8 +97,9 @@ class WithdrawalServiceInitialization(
         ProofCollector(queryHelper, withdrawalConfig, tokensProvider, notaryPeerListProvider)
 
     private val ethereumWithdrawalExpansionStrategy = EthereumWithdrawalExpansionStrategy(
-        withdrawalConfig,
+        withdrawalConfig.ethereum,
         withdrawalEthereumPasswords,
+        ethMasterAddress,
         expansionService,
         proofCollector
     )

@@ -27,8 +27,4 @@ interface EthRegistrationConfig {
 
     /** Iroha configuration */
     val iroha: IrohaConfig
-
-    val ethRelayRegistryAddress: String
-
-    val ethereum: EthereumConfig
 }

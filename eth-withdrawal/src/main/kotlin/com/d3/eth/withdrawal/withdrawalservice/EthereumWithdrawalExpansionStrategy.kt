@@ -5,6 +5,7 @@
 
 package com.d3.eth.withdrawal.withdrawalservice
 
+import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.expansion.ServiceExpansion
 import com.d3.eth.sidechain.util.DeployHelper
@@ -15,8 +16,9 @@ import org.web3j.utils.Numeric
  * Withdrawal service expansion strategy
  */
 class EthereumWithdrawalExpansionStrategy(
-    private val withdrawalConfig: WithdrawalServiceConfig,
+    private val ethereumConfig: EthereumConfig,
     private val withdrawalEthereumPasswords: EthereumPasswords,
+    private val ethMasterAddress: String,
     private val expansionService: ServiceExpansion,
     private val proofCollector: ProofCollector
 ) {
@@ -35,9 +37,9 @@ class EthereumWithdrawalExpansionStrategy(
             ).get()
 
             val masterContract = DeployHelper(
-                withdrawalConfig.ethereum,
+                ethereumConfig,
                 withdrawalEthereumPasswords
-            ).loadMasterContract(withdrawalConfig.ethMasterWallet)
+            ).loadMasterContract(ethMasterAddress)
 
             masterContract.addPeerByPeer(
                 ethereumPeerAddress,

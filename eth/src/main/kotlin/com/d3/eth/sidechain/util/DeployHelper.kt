@@ -203,7 +203,7 @@ class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPa
                 "initialize",
                 Address(credentials.address) as Type<Any>,
                 Address(relayRegistry) as Type<Any>,
-                DynamicArray<Address>(peers.map { it -> Address(it) }) as Type<Any>
+                DynamicArray<Address>(Address::class.java, peers.map { Address(it) }) as Type<Any>
             )
         proxy.upgradeToAndCall(master.contractAddress, encoded, BigInteger.ZERO).send()
 
