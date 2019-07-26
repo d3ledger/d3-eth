@@ -54,7 +54,7 @@ class EthExpansionTest {
         val masterContract = DeployHelper(
             integrationHelper.configHelper.createEthereumConfig(),
             integrationHelper.configHelper.ethPasswordConfig
-        ).loadMasterContract(integrationHelper.configHelper.masterContractAddress)
+        ).loadMasterContract(integrationHelper.masterContract.contractAddress)
         assertFalse { masterContract.isPeer(ethAddress).send() }
 
         integrationHelper.triggerExpansion(

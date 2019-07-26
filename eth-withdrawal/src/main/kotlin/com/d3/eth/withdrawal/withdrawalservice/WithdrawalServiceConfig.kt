@@ -47,8 +47,11 @@ interface WithdrawalServiceConfig {
     /** Account id of withdrawal billing */
     val withdrawalBillingAccount: String
 
-    /** Master contact Ethereum address */
-    val ethMasterWallet: String
+    /** Address of iroha account that stores address of master smart contract in Ethereum */
+    val ethMasterAddressStorageAccountId: String
+
+    /** Address of iroha account that sets address of master smart contract in Ethereum */
+    val ethMasterAddressWriterAccountId: String
 
     val withdrawalCredential: IrohaCredentialRawConfig
 

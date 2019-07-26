@@ -28,12 +28,17 @@ import java.io.File
 class RelayRegistration(
     private val freeRelayProvider: EthFreeRelayProvider,
     private val relayRegistrationConfig: RelayRegistrationConfig,
+    private val ethMasterAddress: String,
+    private val ethRelayImplementationAddress: String,
     relayCredential: IrohaCredential,
     irohaAPI: IrohaAPI,
     relayRegistrationEthereumPasswords: EthereumPasswords
 ) {
     init {
-        logger.info { "Start relay registration (ethMasterWallet = ${relayRegistrationConfig.ethMasterWallet}, ethRelayImplementationAddress = ${relayRegistrationConfig.ethRelayImplementationAddress})" }
+        logger.info {
+            "Start relay registration (ethMasterAddress = $ethMasterAddress, " +
+                    "ethRelayImplementationAddress = $ethRelayImplementationAddress)"
+        }
     }
 
     /** Ethereum endpoint */
@@ -80,9 +85,9 @@ class RelayRegistration(
     fun deploy(
         relaysToDeploy: Int,
         ethRelayImplementationAddress: String,
-        ethMasterWallet: String
+        ethMasterAddress: String
     ): Result<Unit, Exception> {
-        return checkContracts(ethRelayImplementationAddress, ethMasterWallet)
+        return checkContracts(ethRelayImplementationAddress, ethMasterAddress)
             .map {
                 if (relaysToDeploy > 0)
                     logger.info { "Deploy $relaysToDeploy ethereum relays" }
@@ -91,7 +96,7 @@ class RelayRegistration(
                     val relayWallet =
                         deployHelper.deployUpgradableRelaySmartContract(
                             ethRelayImplementationAddress,
-                            ethMasterWallet
+                            ethMasterAddress
                         )
                             .contractAddress
                     registerRelayIroha(relayWallet).fold(
@@ -117,8 +122,8 @@ class RelayRegistration(
                     val toDeploy = relayRegistrationConfig.number - relays.size
                     deploy(
                         toDeploy,
-                        relayRegistrationConfig.ethRelayImplementationAddress,
-                        relayRegistrationConfig.ethMasterWallet
+                        ethRelayImplementationAddress,
+                        ethMasterAddress
                     )
                 }.failure { throw it }
 

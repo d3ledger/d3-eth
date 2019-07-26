@@ -17,6 +17,8 @@ import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
+import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
+import com.d3.eth.constants.ETH_RELAY_REGISTRY_KEY
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.executeDeposit
 import com.d3.eth.provider.ETH_DOMAIN
@@ -53,29 +55,43 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         IrohaConsumerImpl(accountHelper.tokenSetterAccount, irohaAPI)
     }
 
+    /** Iroha consumer to set Ethereum contract addresses in Iroha */
+    private val ethAddressWriterIrohaConsumer by lazy {
+        IrohaConsumerImpl(accountHelper.ethAddressesWriter, irohaAPI)
+    }
+
     val relayRegistryContract by lazy {
         val contract = contractTestHelper.relayRegistry
+        ModelUtil.setAccountDetail(
+            ethAddressWriterIrohaConsumer,
+            accountHelper.ethAddressesStorage.accountId,
+            ETH_RELAY_REGISTRY_KEY,
+            contract.contractAddress
+        )
         logger.info { "relay registry eth wallet ${contract.contractAddress} was deployed" }
         contract
     }
 
     /** New master ETH master contract*/
     val masterContract by lazy {
-        val wallet = contractTestHelper.master
-        logger.info("master eth wallet ${wallet.contractAddress} was deployed ")
-        wallet
+        val contract = contractTestHelper.master
+        ModelUtil.setAccountDetail(
+            ethAddressWriterIrohaConsumer,
+            accountHelper.ethAddressesStorage.accountId,
+            ETH_MASTER_ADDRESS_KEY,
+            contract.contractAddress
+        )
+        logger.info("master eth wallet ${contract.contractAddress} was deployed ")
+        contract
     }
 
     override val configHelper by lazy {
         EthConfigHelper(
-            accountHelper,
-            relayRegistryContract.contractAddress,
-            masterContract.contractAddress,
-            contractTestHelper.relayImplementation.contractAddress
+            accountHelper
         )
     }
 
-    val ethRegistrationConfig by lazy { configHelper.createEthRegistrationConfig(testConfig.ethereum) }
+    val ethRegistrationConfig by lazy { configHelper.createEthRegistrationConfig() }
 
     val ethListener = EthChainListener(
         contractTestHelper.deployHelper.web3,
@@ -123,8 +139,6 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         EthRegistrationStrategyImpl(
             ethFreeRelayProvider,
             ethRelayProvider,
-            ethRegistrationConfig,
-            configHelper.ethPasswordConfig,
             registrationConsumer,
             accountHelper.notaryAccount.accountId
         )
@@ -134,6 +148,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         RelayRegistration(
             ethFreeRelayProvider,
             configHelper.createRelayRegistrationConfig(),
+            masterContract.contractAddress,
+            relayRegistryContract.contractAddress,
             accountHelper.registrationAccount,
             irohaAPI,
             configHelper.ethPasswordConfig
@@ -412,7 +428,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      * Run ethereum registration config
      */
     fun runEthRegistrationService(registrationConfig: EthRegistrationConfig = ethRegistrationConfig) {
-        executeRegistration(registrationConfig, configHelper.ethPasswordConfig)
+        executeRegistration(registrationConfig)
     }
 
     /**
@@ -428,6 +444,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             RMQConfig::class.java, "rmq.properties"
         )
     ) {
+        masterContract // initialize lazy master contract
         com.d3.eth.withdrawal.withdrawalservice.executeWithdrawal(
             withdrawalServiceConfig,
             configHelper.ethPasswordConfig,

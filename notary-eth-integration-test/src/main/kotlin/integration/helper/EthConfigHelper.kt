@@ -21,9 +21,6 @@ import java.math.BigInteger
  */
 open class EthConfigHelper(
     private val accountHelper: EthereumAccountHelper,
-    open val relayRegistryContractAddress: String,
-    open val masterContractAddress: String,
-    open val relayImplementaionContractAddress: String,
     val lastEthereumReadBlockFilePath: String = "deploy/eth-deposit/last_eth_read_block.txt"
 ) : IrohaConfigHelper() {
 
@@ -78,8 +75,14 @@ open class EthConfigHelper(
         return object : RelayRegistrationConfig {
             override val number = relayRegistrationConfig.number
             override val replenishmentPeriod = relayRegistrationConfig.replenishmentPeriod
-            override val ethMasterWallet = masterContractAddress
-            override val ethRelayImplementationAddress = relayImplementaionContractAddress
+            override val ethMasterAddressStorageAccountId =
+                accountHelper.ethAddressesStorage.accountId
+            override val ethMasterAddressWriterAccountId =
+                accountHelper.ethAddressesWriter.accountId
+            override val ethRelayImplementationAddressStorageAccountId =
+                accountHelper.ethAddressesStorage.accountId
+            override val ethRelayImplementationAddressWriterAccountId =
+                accountHelper.ethAddressesWriter.accountId
             override val notaryIrohaAccount = accountHelper.notaryAccount.accountId
             override val iroha = createIrohaConfig()
             override val ethereum = relayRegistrationConfig.ethereum
@@ -173,7 +176,10 @@ open class EthConfigHelper(
             override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
             override val withdrawalBillingAccount =
                 accountHelper.ethWithdrawalBillingAccount.accountId
-            override val ethMasterWallet = masterContractAddress
+            override val ethMasterAddressStorageAccountId =
+                accountHelper.ethAddressesStorage.accountId
+            override val ethMasterAddressWriterAccountId =
+                accountHelper.ethAddressesWriter.accountId
             override val port = portCounter.incrementAndGet()
             override val iroha = createIrohaConfig()
             override val ethereum = ethereumConfig
@@ -192,10 +198,8 @@ open class EthConfigHelper(
     }
 
     /** Test configuration of Registration with runtime dependencies */
-    fun createEthRegistrationConfig(ethereumConfig: EthereumConfig): EthRegistrationConfig {
+    fun createEthRegistrationConfig(): EthRegistrationConfig {
         return object : EthRegistrationConfig {
-            override val ethRelayRegistryAddress = relayRegistryContractAddress
-            override val ethereum = ethereumConfig
             override val port = portCounter.incrementAndGet()
             override val relayRegistrationIrohaAccount = accountHelper.registrationAccount.accountId
             override val notaryIrohaAccount = accountHelper.notaryAccount.accountId

@@ -23,8 +23,6 @@ import mu.KLogging
 class EthRegistrationStrategyImpl(
     private val ethFreeRelayProvider: EthFreeRelayProvider,
     private val ethRelayProvider: EthRelayProvider,
-    ethRegistrationConfig: EthRegistrationConfig,
-    ethPasswordConfig: EthereumPasswords,
     private val irohaConsumer: IrohaConsumer,
     private val notaryIrohaAccount: String
 ) : RegistrationStrategy {
@@ -41,8 +39,6 @@ class EthRegistrationStrategyImpl(
             notaryIrohaAccount,
             CURRENCY_WALLET
         )
-
-    private val deployHelper = DeployHelper(ethRegistrationConfig.ethereum, ethPasswordConfig)
 
     /**
      * Register new notary client

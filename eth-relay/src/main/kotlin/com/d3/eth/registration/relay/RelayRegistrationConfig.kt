@@ -7,7 +7,6 @@ package com.d3.eth.registration.relay
 
 import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
-import com.d3.commons.config.IrohaCredentialConfig
 import com.d3.commons.config.IrohaCredentialRawConfig
 
 /**
@@ -21,11 +20,17 @@ interface RelayRegistrationConfig {
     /** How often run registration of new relays in seconds */
     val replenishmentPeriod: Long
 
-    /** Address of master smart contract in Ethereum */
-    val ethMasterWallet: String
+    /** Address of iroha account that stores address of master smart contract in Ethereum */
+    val ethMasterAddressStorageAccountId: String
 
-    /** Address of implementation of Relay contract in Ethereum */
-    val ethRelayImplementationAddress: String
+    /** Address of iroha account that sets address of master smart contract in Ethereum */
+    val ethMasterAddressWriterAccountId: String
+
+    /** Address of iroha account that stores address of implementation of Relay contract in Ethereum */
+    val ethRelayImplementationAddressStorageAccountId: String
+
+    /** Address of iroha account that sets address of implementation of Relay contract in Ethereum */
+    val ethRelayImplementationAddressWriterAccountId: String
 
     /** Notary Iroha account that stores relay register */
     val notaryIrohaAccount: String
