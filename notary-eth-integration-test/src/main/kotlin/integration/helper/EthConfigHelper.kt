@@ -21,7 +21,6 @@ import java.math.BigInteger
  */
 open class EthConfigHelper(
     private val accountHelper: EthereumAccountHelper,
-    open val relayImplementaionContractAddress: String,
     val lastEthereumReadBlockFilePath: String = "deploy/eth-deposit/last_eth_read_block.txt"
 ) : IrohaConfigHelper() {
 

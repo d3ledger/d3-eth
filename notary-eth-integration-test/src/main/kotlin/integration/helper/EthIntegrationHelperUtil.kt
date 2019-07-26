@@ -87,8 +87,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
 
     override val configHelper by lazy {
         EthConfigHelper(
-            accountHelper,
-            contractTestHelper.relayImplementation.contractAddress
+            accountHelper
         )
     }
 
@@ -445,6 +444,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             RMQConfig::class.java, "rmq.properties"
         )
     ) {
+        masterContract // initialize lazy master contract
         com.d3.eth.withdrawal.withdrawalservice.executeWithdrawal(
             withdrawalServiceConfig,
             configHelper.ethPasswordConfig,

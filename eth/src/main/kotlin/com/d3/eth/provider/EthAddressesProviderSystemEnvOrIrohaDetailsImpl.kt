@@ -15,14 +15,14 @@ import mu.KLogging
  * @param environmentVariableName - environment variable with contract address
  * @param ethContractAddressStorageAccountId - storage Iroha account id
  * @param ethContractAddressWriterAccountId - writer Iroha account id
- * @param key - Iroha key for detail
+ * @param detailsKey - Iroha key for detail
  * @param irohaQueryHelper - Iroha query helper implementaion
  */
 class EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
     private val environmentVariableName: String,
     private val ethContractAddressStorageAccountId: String,
     private val ethContractAddressWriterAccountId: String,
-    private val key: String,
+    private val detailsKey: String,
     private val irohaQueryHelper: IrohaQueryHelper
 ) : EthAddressesProvider {
 
@@ -33,7 +33,13 @@ class EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
                 ethContractAddressStorageAccountId,
                 ethContractAddressWriterAccountId
             ).map {
-                val res = it.get(key)!!
+                if (!it.containsKey(detailsKey))
+                    throw IllegalArgumentException(
+                        "Ethereum address not foun neither in $environmentVariableName " +
+                                "nor in Iroha account details of $ethContractAddressStorageAccountId, " +
+                                "writer $ethContractAddressWriterAccountId, key $detailsKey"
+                    )
+                val res = it.get(detailsKey)!!
                 logger.debug { "Load Ethereum contract address from Iroha: $res" }
                 res
             }

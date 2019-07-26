@@ -59,14 +59,6 @@ class WithdrawalServiceInitialization(
         )
     }
 
-    private val ethMasterAddress = EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
-        ETH_MASTER_WALLET_ENV,
-        withdrawalConfig.ethMasterAddressStorageAccountId,
-        withdrawalConfig.ethMasterAddressWriterAccountId,
-        ETH_MASTER_ADDRESS_KEY,
-        queryHelper
-    ).getEtereumAddress().get()
-
     private val tokensProvider = EthTokensProviderImpl(
         queryHelper,
         withdrawalConfig.ethAnchoredTokenStorageAccount,
@@ -96,30 +88,35 @@ class WithdrawalServiceInitialization(
     private val proofCollector =
         ProofCollector(queryHelper, withdrawalConfig, tokensProvider, notaryPeerListProvider)
 
-    private val ethereumWithdrawalExpansionStrategy = EthereumWithdrawalExpansionStrategy(
-        withdrawalConfig.ethereum,
-        withdrawalEthereumPasswords,
-        ethMasterAddress,
-        expansionService,
-        proofCollector
-    )
-
     /**
      * Init Iroha chain listener
      * @return Observable on Iroha sidechain events
      */
-    private fun initIrohaChain(): Result<Observable<SideChainEvent.IrohaEvent>, Exception> {
+    private fun initIrohaChain() = EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
+        ETH_MASTER_WALLET_ENV,
+        withdrawalConfig.ethMasterAddressStorageAccountId,
+        withdrawalConfig.ethMasterAddressWriterAccountId,
+        ETH_MASTER_ADDRESS_KEY,
+        queryHelper
+    ).getEtereumAddress().map { ethMasterAddress ->
+        EthereumWithdrawalExpansionStrategy(
+            withdrawalConfig.ethereum,
+            withdrawalEthereumPasswords,
+            ethMasterAddress,
+            expansionService,
+            proofCollector
+        )
+    }.flatMap { ethereumWithdrawalExpansionStrategy ->
         logger.info { "Init Iroha chain listener" }
-        return chainListener.getBlockObservable()
-            .map { observable ->
-                observable.flatMapIterable { (block, _) ->
-                    ethereumWithdrawalExpansionStrategy.filterAndExpand(block)
-                    IrohaChainHandler(
-                        credential.accountId,
-                        FEE_DESCRIPTION
-                    ).parseBlock(block)
-                }
+        chainListener.getBlockObservable().map { observable ->
+            observable.flatMapIterable { (block, _) ->
+                ethereumWithdrawalExpansionStrategy.filterAndExpand(block)
+                IrohaChainHandler(
+                    credential.accountId,
+                    FEE_DESCRIPTION
+                ).parseBlock(block)
             }
+        }
     }
 
     /**

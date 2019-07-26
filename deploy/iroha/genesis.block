@@ -622,7 +622,7 @@
                 }
               }
             ],
-            "creatorAccountId": "admin@notary",
+            "creatorAccountId": "superuser@bootstrap",
             "quorum": 1
           }
         }
