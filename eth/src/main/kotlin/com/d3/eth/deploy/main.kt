@@ -7,13 +7,20 @@
 
 package com.d3.eth.deploy
 
-import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.config.loadLocalConfigs
+import com.d3.commons.model.IrohaCredential
+import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
+import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
+import com.d3.commons.sidechain.iroha.util.ModelUtil
+import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
+import com.d3.eth.constants.ETH_RELAY_IMPLEMENTATION_ADDRESS_KEY
+import com.d3.eth.constants.ETH_RELAY_REGISTRY_KEY
 import com.d3.eth.sidechain.util.DeployHelperBuilder
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.map
+import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
 import java.io.File
 
@@ -31,40 +38,65 @@ fun main(args: Array<String>) {
         System.exit(1)
     }
 
-    loadLocalConfigs("predeploy.ethereum", EthereumConfig::class.java, "predeploy.properties")
+    loadLocalConfigs("predeploy", PredeployConfig::class.java, "predeploy.properties")
         .fanout { loadEthPasswords("predeploy", "/eth/ethereum_password.properties") }
-        .map { (ethereumConfig, passwordConfig) ->
-            DeployHelperBuilder(
-                ethereumConfig,
+        .map { (predeployConfig, passwordConfig) ->
+            val irohaApi = IrohaAPI(predeployConfig.iroha.hostname, predeployConfig.iroha.port)
+            val irohaConsumer =
+                IrohaConsumerImpl(IrohaCredential(predeployConfig.irohaCredential), irohaApi)
+            val deployHelper = DeployHelperBuilder(
+                predeployConfig.ethereum,
                 passwordConfig
             )
                 .setFastTransactionManager()
                 .build()
-        }
-        .map { deployHelper ->
+
             val relayRegistry = deployHelper.deployUpgradableRelayRegistrySmartContract()
-            File("relay_registry_eth_address").printWriter().use {
-                it.print(relayRegistry.contractAddress)
-            }
+            saveContract(
+                relayRegistry.contractAddress,
+                irohaConsumer,
+                predeployConfig.ethContractAddressStorageAccountId,
+                ETH_RELAY_REGISTRY_KEY
+            )
 
             val master = deployHelper.deployUpgradableMasterSmartContract(
                 relayRegistry.contractAddress,
                 args.toList()
             )
-            File("master_eth_address").printWriter().use {
-                it.print(master.contractAddress)
-            }
-            File("sora_token_eth_address").printWriter().use {
-                it.print(master.xorTokenInstance().send())
-            }
+            saveContract(
+                master.contractAddress,
+                irohaConsumer,
+                predeployConfig.ethContractAddressStorageAccountId,
+                ETH_MASTER_ADDRESS_KEY
+            )
 
             val relayImplementation = deployHelper.deployRelaySmartContract(master.contractAddress)
-            File("relay_implementation_address").printWriter().use {
-                it.print(relayImplementation.contractAddress)
-            }
+            saveContract(
+                relayImplementation.contractAddress,
+                irohaConsumer,
+                predeployConfig.ethContractAddressStorageAccountId,
+                ETH_RELAY_IMPLEMENTATION_ADDRESS_KEY
+            )
         }
         .failure { ex ->
             logger.error("Cannot deploy smart contract", ex)
             System.exit(1)
         }
+}
+
+/**
+ * Save contract address both to file and Iroha account details
+ */
+private fun saveContract(
+    contractAddress: String,
+    irohaConsumer: IrohaConsumer,
+    storageAccountId: String,
+    key: String
+) {
+    ModelUtil.setAccountDetail(
+        irohaConsumer,
+        storageAccountId,
+        key,
+        contractAddress
+    ).failure { throw it }
 }
