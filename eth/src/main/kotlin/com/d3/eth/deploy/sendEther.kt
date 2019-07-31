@@ -10,12 +10,13 @@ package com.d3.eth.deploy
 import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.config.loadLocalConfigs
+import com.d3.eth.provider.ETH_PRECISION
 import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.map
 import mu.KLogging
-import java.math.BigInteger
+import java.math.BigDecimal
 
 private val logger = KLogging().logger
 
@@ -29,9 +30,8 @@ fun main(args: Array<String>) {
         System.exit(1)
     }
     val addr = args[0]
-    val amount = BigInteger(args[1])
-    logger.info { "Send ether $amount from genesis to $addr" }
-
+    val amount = BigDecimal(args[1])
+    logger.info { "Send $amount ether from genesis to $addr" }
 
     loadLocalConfigs("predeploy.ethereum", EthereumConfig::class.java, "predeploy.properties")
         .fanout { loadEthPasswords("predeploy", "/eth/ethereum_password.properties") }
@@ -43,11 +43,10 @@ fun main(args: Array<String>) {
         }
         .map { deployHelper ->
             deployHelper.sendEthereum(
-                amount.multiply(BigInteger.valueOf(1000000000000000000)),
+                amount.scaleByPowerOfTen(ETH_PRECISION).toBigInteger(),
                 addr
             )
             logger.info { "Ether was sent" }
-
         }
         .failure { ex ->
             logger.error("Cannot send eth", ex)
