@@ -35,7 +35,7 @@ class EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
             ).map {
                 if (!it.containsKey(detailsKey))
                     throw IllegalArgumentException(
-                        "Ethereum address not foun neither in $environmentVariableName " +
+                        "Ethereum address not found neither in $environmentVariableName " +
                                 "nor in Iroha account details of $ethContractAddressStorageAccountId, " +
                                 "writer $ethContractAddressWriterAccountId, key $detailsKey"
                     )
