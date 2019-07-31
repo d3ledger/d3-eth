@@ -7,10 +7,8 @@
 
 package com.d3.eth.registration
 
-import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.config.loadLocalConfigs
 import com.github.kittinunf.result.failure
-import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
