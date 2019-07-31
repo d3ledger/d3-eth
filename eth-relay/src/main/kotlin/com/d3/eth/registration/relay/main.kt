@@ -13,8 +13,6 @@ import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
 import com.d3.eth.constants.ETH_RELAY_IMPLEMENTATION_ADDRESS_KEY
-import com.d3.eth.env.ETH_MASTER_WALLET_ENV
-import com.d3.eth.env.ETH_RELAY_IMPLEMENTATION_ADDRESS_ENV
 import com.d3.eth.provider.EthAddressesProviderSystemEnvOrIrohaDetailsImpl
 import com.d3.eth.provider.EthFreeRelayProvider
 import com.github.kittinunf.result.*
@@ -23,6 +21,10 @@ import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
 
 private val logger = KLogging().logger
+
+// TODO restore these parameters in configs
+const val master_address_env = "RELAY-REGISTRATION_ETHMASTERWALLET"
+const val relay_implementation_env = "RELAY-REGISTRATION_ETHRELAYIMPLEMENTATIONADDRESS"
 
 /**
  * Entry point for deployment of relay smart contracts that will be used in client registration.
@@ -61,7 +63,7 @@ fun main(args: Array<String>) {
                     IrohaQueryHelperImpl(irohaAPI, credential.accountId, credential.keyPair)
 
                 val ethMasterAddress = EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
-                    ETH_MASTER_WALLET_ENV,
+                    master_address_env,
                     relayRegistrationConfig.ethMasterAddressStorageAccountId,
                     relayRegistrationConfig.ethMasterAddressWriterAccountId,
                     ETH_MASTER_ADDRESS_KEY,
@@ -69,7 +71,7 @@ fun main(args: Array<String>) {
                 ).getEtereumAddress().get()
 
                 val ethRelayImplementationAddress = EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
-                    ETH_RELAY_IMPLEMENTATION_ADDRESS_ENV,
+                    relay_implementation_env,
                     relayRegistrationConfig.ethRelayImplementationAddressStorageAccountId,
                     relayRegistrationConfig.ethRelayImplementationAddressWriterAccountId,
                     ETH_RELAY_IMPLEMENTATION_ADDRESS_KEY,

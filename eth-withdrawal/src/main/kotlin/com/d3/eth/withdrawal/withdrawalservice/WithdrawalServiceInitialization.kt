@@ -18,7 +18,6 @@ import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
 import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
-import com.d3.eth.env.ETH_MASTER_WALLET_ENV
 import com.d3.eth.provider.EthAddressesProviderSystemEnvOrIrohaDetailsImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.vacuum.RelayVacuumConfig
@@ -31,6 +30,9 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
+
+// TODO restore these parameters in configs
+const val master_address_env = "WITHDRAWAL_ETHMASTERWALLET"
 
 /**
  * @param withdrawalConfig - configuration for withdrawal service
@@ -93,7 +95,7 @@ class WithdrawalServiceInitialization(
      * @return Observable on Iroha sidechain events
      */
     private fun initIrohaChain() = EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
-        ETH_MASTER_WALLET_ENV,
+        master_address_env,
         withdrawalConfig.ethMasterAddressStorageAccountId,
         withdrawalConfig.ethMasterAddressWriterAccountId,
         ETH_MASTER_ADDRESS_KEY,
