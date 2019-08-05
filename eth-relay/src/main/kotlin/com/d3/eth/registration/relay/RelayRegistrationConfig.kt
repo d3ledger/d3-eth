@@ -20,17 +20,11 @@ interface RelayRegistrationConfig {
     /** How often run registration of new relays in seconds */
     val replenishmentPeriod: Long
 
-    /** Address of iroha account that stores address of master smart contract in Ethereum */
-    val ethMasterAddressStorageAccountId: String
+    /** Address of master smart contract in Ethereum */
+    val ethMasterAddress: String
 
-    /** Address of iroha account that sets address of master smart contract in Ethereum */
-    val ethMasterAddressWriterAccountId: String
-
-    /** Address of iroha account that stores address of implementation of Relay contract in Ethereum */
-    val ethRelayImplementationAddressStorageAccountId: String
-
-    /** Address of iroha account that sets address of implementation of Relay contract in Ethereum */
-    val ethRelayImplementationAddressWriterAccountId: String
+    /** Address of implementation of Relay contract in Ethereum */
+    val ethRelayImplementationAddress: String
 
     /** Notary Iroha account that stores relay register */
     val notaryIrohaAccount: String
