@@ -23,10 +23,9 @@ fun main(args: Array<String>) {
         "eth-registration",
         EthRegistrationConfig::class.java,
         "registration.properties"
-    )
-        .map { registrationConfig ->
-            executeRegistration(registrationConfig)
-        }
+    ).map { registrationConfig ->
+        executeRegistration(registrationConfig)
+    }
 }
 
 fun executeRegistration(ethRegistrationConfig: EthRegistrationConfig) {
