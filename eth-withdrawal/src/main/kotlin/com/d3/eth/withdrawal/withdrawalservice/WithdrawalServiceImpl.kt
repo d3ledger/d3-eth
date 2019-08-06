@@ -6,11 +6,11 @@
 package com.d3.eth.withdrawal.withdrawalservice
 
 import com.d3.commons.model.IrohaCredential
+import com.d3.commons.service.RollbackService
 import com.d3.commons.service.WithdrawalFinalizationDetails
 import com.d3.commons.service.WithdrawalFinalizer
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
-import com.d3.commons.sidechain.iroha.ROLLBACK_DESCRIPTION
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
@@ -22,7 +22,6 @@ import com.github.kittinunf.result.map
 import io.reactivex.Observable
 import iroha.protocol.TransactionOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
-import jp.co.soramitsu.iroha.java.Transaction
 import mu.KLogging
 import java.math.BigDecimal
 
@@ -39,19 +38,13 @@ class WithdrawalServiceImpl(
     private val proofCollector: ProofCollector
 ) : WithdrawalService {
 
-    /** Transfer data */
-    data class TransferData(
-        val dstAccountId: String,
-        val assetId: String,
-        val amount: String,
-        val description: String
-    )
-
     private val irohaConsumer: IrohaConsumer by lazy { IrohaConsumerImpl(credential, irohaAPI) }
 
     init {
         logger.info { "Init withdrawal service, irohaCredentials = ${credential.accountId}, notaryAccount = ${credential.accountId}'" }
     }
+
+    private val rollbackService = RollbackService(irohaConsumer)
 
     private val withdrawalFinalizer =
         WithdrawalFinalizer(irohaConsumer, withdrawalServiceConfig.withdrawalBillingAccount)
@@ -97,25 +90,20 @@ class WithdrawalServiceImpl(
     override fun returnIrohaAssets(event: WithdrawalServiceOutputEvent): Result<Unit, Exception> {
         logger.info("Withdrawal rollback initiated for Iroha tx ${event}")
         return getWithdrawalDetails(event)
-            .map { withdrawalDetails ->
-                Transaction
-                    .builder(irohaConsumer.creator, withdrawalDetails.withdrawalTime)
-                    .transferAsset(
-                        withdrawalDetails.destinationAddress,
-                        withdrawalDetails.srcAccountId,
-                        withdrawalDetails.withdrawalAssetId,
-                        "$ROLLBACK_DESCRIPTION: ${event}",
-                        withdrawalDetails.withdrawalAmount
-                    )
-                    .transferAsset(
-                        withdrawalDetails.destinationAddress,
-                        withdrawalDetails.srcAccountId,
-                        withdrawalDetails.feeAssetId,
-                        "$ROLLBACK_DESCRIPTION: ${event}".take(64),
-                        withdrawalDetails.feeAmount
-                    ).build()
-            }.map { transaction ->
-                irohaConsumer.send(transaction)
+            .flatMap { withdrawalDetails ->
+
+                println("rollback WithdrawalFinalizationDetails $withdrawalDetails")
+                println("creator " + irohaConsumer.creator)
+                println("return tx: from ${withdrawalDetails.srcAccountId} " + "" +
+                        "to ${withdrawalDetails.destinationAddress}" +
+                        "amount ${withdrawalDetails.withdrawalAmount} " +
+                        "asset ${withdrawalDetails.withdrawalAssetId}")
+                println("fee tx: from ${withdrawalDetails.srcAccountId} " + "" +
+                        "to ${withdrawalDetails.destinationAddress}" +
+                        "amount ${withdrawalDetails.feeAmount} " +
+                        "asset ${withdrawalDetails.feeAssetId}")
+
+                rollbackService.rollback(withdrawalDetails, "Ethereum rollback")
             }.map { hash ->
                 logger.info("Successfully sent rollback transaction to Iroha, hash: $hash")
             }
