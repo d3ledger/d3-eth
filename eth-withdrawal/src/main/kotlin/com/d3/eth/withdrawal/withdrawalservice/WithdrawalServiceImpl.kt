@@ -155,7 +155,7 @@ class WithdrawalServiceImpl(
                 feeAssetId,
                 transfers.first().srcAccountId,
                 tx.payload.reducedPayload.createdTime,
-                transfers.first().destAccountId
+                transfers.first().description
             )
         }
 
