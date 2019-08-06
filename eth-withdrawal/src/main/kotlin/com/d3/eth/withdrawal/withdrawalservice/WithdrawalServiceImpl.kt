@@ -91,18 +91,6 @@ class WithdrawalServiceImpl(
         logger.info("Withdrawal rollback initiated for Iroha tx ${event}")
         return getWithdrawalDetails(event)
             .flatMap { withdrawalDetails ->
-
-                println("rollback WithdrawalFinalizationDetails $withdrawalDetails")
-                println("creator " + irohaConsumer.creator)
-                println("return tx: from ${withdrawalDetails.srcAccountId} " + "" +
-                        "to ${withdrawalDetails.destinationAddress}" +
-                        "amount ${withdrawalDetails.withdrawalAmount} " +
-                        "asset ${withdrawalDetails.withdrawalAssetId}")
-                println("fee tx: from ${withdrawalDetails.srcAccountId} " + "" +
-                        "to ${withdrawalDetails.destinationAddress}" +
-                        "amount ${withdrawalDetails.feeAmount} " +
-                        "asset ${withdrawalDetails.feeAssetId}")
-
                 rollbackService.rollback(withdrawalDetails, "Ethereum rollback")
             }.map { hash ->
                 logger.info("Successfully sent rollback transaction to Iroha, hash: $hash")
@@ -148,10 +136,11 @@ class WithdrawalServiceImpl(
             val transfers = transferAndFee.getOrDefault(false, emptyList())
             if (transfers.isEmpty())
                 throw IllegalStateException("Withddrawal tx not found.")
+
             // check fees
             var feeAmount = BigDecimal.ZERO
             var feeAssetId = ""
-            val fees = transferAndFee.getOrDefault(false, emptyList())
+            val fees = transferAndFee.getOrDefault(true, emptyList())
             if (fees.size > 1)
                 throw IllegalStateException("Too many fees in transaction.")
             if (fees.size == 1) {
