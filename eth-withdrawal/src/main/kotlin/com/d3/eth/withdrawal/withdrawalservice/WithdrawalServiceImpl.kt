@@ -6,9 +6,11 @@
 package com.d3.eth.withdrawal.withdrawalservice
 
 import com.d3.commons.model.IrohaCredential
+import com.d3.commons.service.RollbackService
+import com.d3.commons.service.WithdrawalFinalizationDetails
+import com.d3.commons.service.WithdrawalFinalizer
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
-import com.d3.commons.sidechain.iroha.ROLLBACK_DESCRIPTION
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
@@ -18,11 +20,10 @@ import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import io.reactivex.Observable
-import iroha.protocol.Commands
 import iroha.protocol.TransactionOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
-import jp.co.soramitsu.iroha.java.Transaction
 import mu.KLogging
+import java.math.BigDecimal
 
 /**
  * Implementation of Withdrawal Service
@@ -37,21 +38,16 @@ class WithdrawalServiceImpl(
     private val proofCollector: ProofCollector
 ) : WithdrawalService {
 
-    /** Transfer data */
-    data class TransferData(
-        val dstAccountId: String,
-        val assetId: String,
-        val amount: String,
-        val description: String
-    )
-
-    private val billingAccountId = withdrawalServiceConfig.withdrawalBillingAccount
-
     private val irohaConsumer: IrohaConsumer by lazy { IrohaConsumerImpl(credential, irohaAPI) }
 
     init {
         logger.info { "Init withdrawal service, irohaCredentials = ${credential.accountId}, notaryAccount = ${credential.accountId}'" }
     }
+
+    private val rollbackService = RollbackService(irohaConsumer)
+
+    private val withdrawalFinalizer =
+        WithdrawalFinalizer(irohaConsumer, withdrawalServiceConfig.withdrawalBillingAccount)
 
     /**
      * Handle IrohaEvent
@@ -93,34 +89,9 @@ class WithdrawalServiceImpl(
      */
     override fun returnIrohaAssets(event: WithdrawalServiceOutputEvent): Result<Unit, Exception> {
         logger.info("Withdrawal rollback initiated for Iroha tx ${event}")
-        return getWithdrawalTransfers(event)
-            .map { transfers ->
-                transfers.filter { transferAsset ->
-                    transferAsset.destAccountId == credential.accountId
-                }.map { transfer ->
-                    val rollbackDescription = "$ROLLBACK_DESCRIPTION: ${transfer.description}"
-                    TransferData(
-                        transfer.srcAccountId,
-                        transfer.assetId,
-                        transfer.amount,
-                        rollbackDescription.take(64).toLowerCase()
-                    )
-                }
-            }.map { transferData ->
-                var transactionBuilder = Transaction
-                    .builder(irohaConsumer.creator, System.currentTimeMillis())
-                transferData.forEach { transfer ->
-                    transactionBuilder = transactionBuilder.transferAsset(
-                        credential.accountId,
-                        transfer.dstAccountId,
-                        transfer.assetId,
-                        transfer.description,
-                        transfer.amount
-                    )
-                }
-                transactionBuilder.build()
-            }.map { transaction ->
-                irohaConsumer.send(transaction)
+        return getWithdrawalDetails(event)
+            .flatMap { withdrawalDetails ->
+                rollbackService.rollback(withdrawalDetails, "Ethereum rollback")
             }.map { hash ->
                 logger.info("Successfully sent rollback transaction to Iroha, hash: $hash")
             }
@@ -135,32 +106,7 @@ class WithdrawalServiceImpl(
      * @result hash of finalization transaction in Iroha
      */
     override fun finalizeWithdrawal(event: WithdrawalServiceOutputEvent): Result<String, Exception> =
-        getWithdrawalTransfers(event)
-            .map { transfersTxs ->
-                val transfers = transfersTxs.filter { it.description != FEE_DESCRIPTION }
-                val fees = transfersTxs.filter { it.description == FEE_DESCRIPTION }
-                var transactionBuilder = Transaction
-                    .builder(irohaConsumer.creator, System.currentTimeMillis())
-
-                transfers.forEach {
-                    transactionBuilder = transactionBuilder.subtractAssetQuantity(
-                        it.assetId,
-                        it.amount
-                    )
-                }
-                fees.forEach {
-                    transactionBuilder = transactionBuilder.transferAsset(
-                        credential.accountId,
-                        billingAccountId,
-                        it.assetId,
-                        it.description,
-                        it.amount
-                    )
-                }
-                transactionBuilder.build()
-            }.flatMap { tx ->
-                irohaConsumer.send(tx)
-            }
+        getWithdrawalDetails(event).flatMap { withdrawalFinalizer.finalize(it) }
 
     /**
      * Get Iroha transaction by hash from WithdrawalServiceOutputEvent
@@ -175,15 +121,42 @@ class WithdrawalServiceImpl(
     /**
      * Get transfer commands from Iroha event
      */
-    private fun getWithdrawalTransfers(event: WithdrawalServiceOutputEvent): Result<List<Commands.TransferAsset>, Exception> =
+    private fun getWithdrawalDetails(event: WithdrawalServiceOutputEvent): Result<WithdrawalFinalizationDetails, Exception> =
         getIrohaTxByHash(event).map { tx ->
-            tx.payload.reducedPayload.commandsList.filter { cmd ->
+            val transferAndFee = tx.payload.reducedPayload.commandsList.filter { cmd ->
                 cmd.hasTransferAsset()
             }.map { cmd ->
                 cmd.transferAsset
             }.filter { transferAsset ->
                 transferAsset.destAccountId == credential.accountId
+            }.groupBy { transfers ->
+                transfers.description == FEE_DESCRIPTION
             }
+            // check transfers
+            val transfers = transferAndFee.getOrDefault(false, emptyList())
+            if (transfers.isEmpty())
+                throw IllegalStateException("Withddrawal tx not found.")
+
+            // check fees
+            var feeAmount = BigDecimal.ZERO
+            var feeAssetId = ""
+            val fees = transferAndFee.getOrDefault(true, emptyList())
+            if (fees.size > 1)
+                throw IllegalStateException("Too many fees in transaction.")
+            if (fees.size == 1) {
+                feeAmount = fees.first().amount.toBigDecimal()
+                feeAssetId = fees.first().assetId
+            }
+
+            WithdrawalFinalizationDetails(
+                transfers.first().amount.toBigDecimal(),
+                transfers.first().assetId,
+                feeAmount,
+                feeAssetId,
+                transfers.first().srcAccountId,
+                tx.payload.reducedPayload.createdTime,
+                transfers.first().description
+            )
         }
 
     /**

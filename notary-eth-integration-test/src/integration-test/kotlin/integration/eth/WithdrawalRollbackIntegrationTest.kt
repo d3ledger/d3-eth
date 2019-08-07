@@ -12,6 +12,7 @@ import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
 import com.d3.eth.provider.ETH_PRECISION
 import integration.helper.EthIntegrationHelperUtil
+import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.KeyPair
+import java.time.Duration
 
 /**
  * Integration tests for withdrawal rollback service.
@@ -95,64 +97,66 @@ class WithdrawalRollbackIntegrationTest {
      */
     @Test
     fun testWithdrawalRollbackPipeline() {
-        val amount = BigInteger.valueOf(2502800000000)
+        Assertions.assertTimeoutPreemptively(Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)) {
+            val amount = BigInteger.valueOf(2502800000000)
 
-        // deploy free relay
-        integrationHelper.deployRelays(1)
+            // deploy free relay
+            integrationHelper.deployRelays(1)
 
-        // make sure master has enough assets
-        integrationHelper.sendEth(amount, integrationHelper.masterContract.contractAddress)
+            // make sure master has enough assets
+            integrationHelper.sendEth(amount, integrationHelper.masterContract.contractAddress)
 
-        // register client in Iroha
-        var res = integrationHelper.sendRegistrationRequest(
-            clientName,
-            keypair.public.toHexString(),
-            registrationConfig.port
-        )
-        Assertions.assertEquals(200, res.statusCode)
+            // register client in Iroha
+            var res = integrationHelper.sendRegistrationRequest(
+                clientName,
+                keypair.public.toHexString(),
+                registrationConfig.port
+            )
+            Assertions.assertEquals(200, res.statusCode)
 
-        // register client in Ethereum
-        res = integrationHelper.sendRegistrationRequest(
-            clientName,
-            keypair.public.toHexString(),
-            ethRegistrationConfig.port
-        )
-        Assertions.assertEquals(200, res.statusCode)
+            // register client in Ethereum
+            res = integrationHelper.sendRegistrationRequest(
+                clientName,
+                keypair.public.toHexString(),
+                ethRegistrationConfig.port
+            )
+            Assertions.assertEquals(200, res.statusCode)
 
-        val decimalAmount = BigDecimal(amount, ETH_PRECISION)
-        val assetId = "ether#ethereum"
-        val feeAssetId = "xor#sora"
+            val decimalAmount = BigDecimal(amount, ETH_PRECISION)
+            val assetId = "ether#ethereum"
+            val feeAssetId = "xor#sora"
 
-        // add assets to user
-        integrationHelper.addIrohaAssetTo(clientId, assetId, decimalAmount)
-        integrationHelper.addIrohaAssetTo(clientId, feeAssetId, decimalAmount)
+            // add assets to user
+            integrationHelper.addIrohaAssetTo(clientId, assetId, decimalAmount)
+            integrationHelper.addIrohaAssetTo(clientId, feeAssetId, decimalAmount)
 
-        val initialEthBalance = integrationHelper.getIrohaAccountBalance(clientId, assetId)
-        val initialXorBalance = integrationHelper.getIrohaAccountBalance(clientId, feeAssetId)
+            val initialEthBalance = integrationHelper.getIrohaAccountBalance(clientId, assetId)
+            val initialXorBalance = integrationHelper.getIrohaAccountBalance(clientId, feeAssetId)
 
-        // transfer assets from user to notary master account
-        integrationHelper.transferAssetIrohaFromClientWithFee(
-            clientId,
-            keypair,
-            clientId,
-            withdrawalAccountId,
-            assetId,
-            toAddress,
-            decimalAmount.toPlainString(),
-            feeAssetId,
-            decimalAmount.toPlainString(),
-            FEE_DESCRIPTION
-        )
+            // transfer assets from user to notary master account
+            integrationHelper.transferAssetIrohaFromClientWithFee(
+                clientId,
+                keypair,
+                clientId,
+                withdrawalAccountId,
+                assetId,
+                toAddress,
+                decimalAmount.toPlainString(),
+                feeAssetId,
+                decimalAmount.toPlainString(),
+                FEE_DESCRIPTION
+            )
 
-        Thread.sleep(35_000)
+            Thread.sleep(35_000)
 
-        Assertions.assertEquals(
-            initialEthBalance,
-            integrationHelper.getIrohaAccountBalance(clientId, assetId)
-        )
-        Assertions.assertEquals(
-            initialXorBalance,
-            integrationHelper.getIrohaAccountBalance(clientId, feeAssetId)
-        )
+            Assertions.assertEquals(
+                initialEthBalance,
+                integrationHelper.getIrohaAccountBalance(clientId, assetId)
+            )
+            Assertions.assertEquals(
+                initialXorBalance,
+                integrationHelper.getIrohaAccountBalance(clientId, feeAssetId)
+            )
+        }
     }
 }
