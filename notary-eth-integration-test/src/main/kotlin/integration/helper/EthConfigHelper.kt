@@ -21,6 +21,9 @@ import java.math.BigInteger
  */
 open class EthConfigHelper(
     private val accountHelper: EthereumAccountHelper,
+    open val relayRegistryContractAddress: String,
+    open val masterContractAddress: String,
+    open val relayImplementaionContractAddress: String,
     val lastEthereumReadBlockFilePath: String = "deploy/eth-deposit/last_eth_read_block.txt"
 ) : IrohaConfigHelper() {
 
@@ -75,14 +78,8 @@ open class EthConfigHelper(
         return object : RelayRegistrationConfig {
             override val number = relayRegistrationConfig.number
             override val replenishmentPeriod = relayRegistrationConfig.replenishmentPeriod
-            override val ethMasterAddressStorageAccountId =
-                accountHelper.ethAddressesStorage.accountId
-            override val ethMasterAddressWriterAccountId =
-                accountHelper.ethAddressesWriter.accountId
-            override val ethRelayImplementationAddressStorageAccountId =
-                accountHelper.ethAddressesStorage.accountId
-            override val ethRelayImplementationAddressWriterAccountId =
-                accountHelper.ethAddressesWriter.accountId
+            override val ethMasterAddress = masterContractAddress
+            override val ethRelayImplementationAddress = relayImplementaionContractAddress
             override val notaryIrohaAccount = accountHelper.notaryAccount.accountId
             override val iroha = createIrohaConfig()
             override val ethereum = relayRegistrationConfig.ethereum
@@ -176,10 +173,7 @@ open class EthConfigHelper(
             override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
             override val withdrawalBillingAccount =
                 accountHelper.ethWithdrawalBillingAccount.accountId
-            override val ethMasterAddressStorageAccountId =
-                accountHelper.ethAddressesStorage.accountId
-            override val ethMasterAddressWriterAccountId =
-                accountHelper.ethAddressesWriter.accountId
+            override val ethMasterAddress = masterContractAddress
             override val port = portCounter.incrementAndGet()
             override val iroha = createIrohaConfig()
             override val ethereum = ethereumConfig

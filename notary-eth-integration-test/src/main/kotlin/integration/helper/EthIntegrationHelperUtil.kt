@@ -87,7 +87,10 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
 
     override val configHelper by lazy {
         EthConfigHelper(
-            accountHelper
+            accountHelper,
+            relayRegistryContract.contractAddress,
+            masterContract.contractAddress,
+            contractTestHelper.relayImplementation.contractAddress
         )
     }
 

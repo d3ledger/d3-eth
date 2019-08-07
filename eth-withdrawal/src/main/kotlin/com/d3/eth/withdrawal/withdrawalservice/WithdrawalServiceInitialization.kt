@@ -17,8 +17,6 @@ import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
-import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
-import com.d3.eth.provider.EthAddressesProviderSystemEnvOrIrohaDetailsImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.consumer.EthConsumer
@@ -94,25 +92,17 @@ class WithdrawalServiceInitialization(
      * Init Iroha chain listener
      * @return Observable on Iroha sidechain events
      */
-    private fun initIrohaChain() = EthAddressesProviderSystemEnvOrIrohaDetailsImpl(
-        master_address_env,
-        withdrawalConfig.ethMasterAddressStorageAccountId,
-        withdrawalConfig.ethMasterAddressWriterAccountId,
-        ETH_MASTER_ADDRESS_KEY,
-        queryHelper
-    ).getEtereumAddress().map { ethMasterAddress ->
-        EthereumWithdrawalExpansionStrategy(
-            withdrawalConfig.ethereum,
-            withdrawalEthereumPasswords,
-            ethMasterAddress,
-            expansionService,
-            proofCollector
-        )
-    }.flatMap { ethereumWithdrawalExpansionStrategy ->
+    private fun initIrohaChain(): Result<Observable<SideChainEvent.IrohaEvent>, Exception> {
         logger.info { "Init Iroha chain listener" }
-        chainListener.getBlockObservable().map { observable ->
+        return chainListener.getBlockObservable().map { observable ->
             observable.flatMapIterable { (block, _) ->
-                ethereumWithdrawalExpansionStrategy.filterAndExpand(block)
+                EthereumWithdrawalExpansionStrategy(
+                    withdrawalConfig.ethereum,
+                    withdrawalEthereumPasswords,
+                    withdrawalConfig.ethMasterAddress,
+                    expansionService,
+                    proofCollector
+                ).filterAndExpand(block)
                 IrohaChainHandler(
                     credential.accountId,
                     FEE_DESCRIPTION
