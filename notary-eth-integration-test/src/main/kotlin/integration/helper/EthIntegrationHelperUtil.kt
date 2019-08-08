@@ -5,8 +5,8 @@
 
 package integration.helper
 
+import com.d3.chainadapter.client.RMQConfig
 import com.d3.commons.config.EthereumPasswords
-import com.d3.commons.config.RMQConfig
 import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.expansion.ExpansionDetails
 import com.d3.commons.expansion.ExpansionUtils

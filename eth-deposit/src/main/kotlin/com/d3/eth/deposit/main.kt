@@ -7,6 +7,7 @@
 
 package com.d3.eth.deposit
 
+import com.d3.chainadapter.client.RMQConfig
 import com.d3.commons.config.*
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl

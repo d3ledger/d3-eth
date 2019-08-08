@@ -8,6 +8,9 @@ dependencies {
     compile 'com.wavesplatform:wavesj:0.4'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    // Chain adapter
+    compile "com.github.d3ledger.chain-adapter:chain-adapter-client:$chain_adapter_client_version"
 }
 
 

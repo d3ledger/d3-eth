@@ -5,15 +5,15 @@
 
 package com.d3.eth.withdrawal.withdrawalservice
 
+import com.d3.chainadapter.client.RMQConfig
+import com.d3.chainadapter.client.ReliableIrohaChainListener
 import com.d3.commons.config.EthereumPasswords
-import com.d3.commons.config.RMQConfig
 import com.d3.commons.expansion.ServiceExpansion
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.provider.NotaryPeerListProviderImpl
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.IrohaChainHandler
-import com.d3.commons.sidechain.iroha.ReliableIrohaChainListener
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
