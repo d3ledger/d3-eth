@@ -252,13 +252,26 @@ class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPa
      * @return Relay contract
      */
     fun loadRelayContract(address: String): Relay {
-        val relay = Relay.load(
+        return Relay.load(
             address,
             web3,
             transactionManager,
             StaticGasProvider(gasPrice, gasLimit)
         )
-        return relay
+    }
+
+    /**
+     * Load RelayRegistry contract implementation
+     * @param address - address of relay registry contract
+     * @return RelayRegistry contract
+     */
+    fun loadRelayRegistryContract(address: String): RelayRegistry {
+        return RelayRegistry.load(
+            address,
+            web3,
+            transactionManager,
+            StaticGasProvider(gasPrice, gasLimit)
+        )
     }
 
     /**
