@@ -5,13 +5,11 @@
 
 package com.d3.eth.registration
 
-import com.d3.commons.config.EthereumPasswords
-import com.d3.commons.registration.IrohaAccountRegistrator
 import com.d3.commons.registration.RegistrationStrategy
+import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.eth.provider.EthFreeRelayProvider
 import com.d3.eth.provider.EthRelayProvider
-import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
@@ -34,7 +32,7 @@ class EthRegistrationStrategyImpl(
     private val CURRENCY_WALLET = "ethereum_wallet"
 
     private val ethereumAccountRegistrator =
-        IrohaAccountRegistrator(
+        SideChainRegistrator(
             irohaConsumer,
             notaryIrohaAccount,
             CURRENCY_WALLET
@@ -63,9 +61,7 @@ class EthRegistrationStrategyImpl(
                 // register with relay in Iroha
                 ethereumAccountRegistrator.register(
                     freeEthWallet,
-                    accountName,
-                    domainId,
-                    publicKey
+                    "$accountName@$domainId"
                 ) { "$accountName@$domainId" }
             }
     }
