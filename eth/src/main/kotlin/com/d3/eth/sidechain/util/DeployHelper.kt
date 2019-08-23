@@ -106,13 +106,15 @@ class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPa
      * Sends given amount of ether from some predefined account to given account
      * @param amount amount of ether to send
      * @param to target account
+     * @return transaction hash
      */
-    fun sendEthereum(amount: BigInteger, to: String) {
+    fun sendEthereum(amount: BigInteger, to: String): String {
         val transfer = Transfer(web3, transactionManager)
         val transactionHash =
             transfer.sendFunds(to, BigDecimal(amount), Convert.Unit.WEI, gasPrice, gasLimit).send()
                 .transactionHash
         logger.info("ETH $amount were sent to $to; tx hash $transactionHash")
+        return transactionHash
     }
 
     /**

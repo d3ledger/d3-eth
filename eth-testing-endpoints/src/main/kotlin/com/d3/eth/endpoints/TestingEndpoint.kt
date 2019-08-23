@@ -90,7 +90,7 @@ class TestingEndpoint(
         server.start(wait = false)
     }
 
-    private fun sendEth(testDeposit: TestDeposit): Result<Unit, Exception> {
+    private fun sendEth(testDeposit: TestDeposit): Result<String, Exception> {
         return Result.of {
             deployHelper.sendEthereum(
                 BigInteger(testDeposit.amount).multiply(BigInteger.valueOf(1000000000000000000)),
