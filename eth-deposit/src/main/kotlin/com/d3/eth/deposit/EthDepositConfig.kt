@@ -5,9 +5,9 @@
 
 package com.d3.eth.deposit
 
-import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialRawConfig
+import integration.eth.config.EthereumConfig
 import java.math.BigInteger
 
 /** Configuration of refund endpoint in Notary */

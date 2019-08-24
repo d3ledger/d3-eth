@@ -5,9 +5,9 @@
 
 package com.d3.eth.deploy
 
-import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialRawConfig
+import integration.eth.config.EthereumConfig
 
 /** Configs for Predeploy of Ethereum contracts */
 interface PredeployConfig {

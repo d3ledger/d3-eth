@@ -5,16 +5,15 @@
 
 package com.d3.eth.withdrawal.consumer
 
-import com.d3.commons.config.EthereumConfig
-import com.d3.commons.config.EthereumPasswords
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.vacuum.executeVacuum
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceOutputEvent
 import contract.Relay
+import integration.eth.config.EthereumConfig
+import integration.eth.config.EthereumPasswords
 import mu.KLogging
 import org.web3j.protocol.core.methods.response.TransactionReceipt
-import org.web3j.tx.gas.StaticGasProvider
 import org.web3j.utils.Numeric
 import java.math.BigInteger
 
@@ -39,12 +38,7 @@ class EthConsumer(
                     "relay ${event.proof.relay}\n"
         }
 
-        val relay = Relay.load(
-            event.proof.relay,
-            deployHelper.web3,
-            deployHelper.credentials,
-            StaticGasProvider(deployHelper.gasPrice, deployHelper.gasLimit)
-        )
+        val relay = deployHelper.loadRelayContract(event.proof.relay)
 
         return if (event.isIrohaAnchored) {
             withdrawIrohaAnchored(relay, event)

@@ -7,12 +7,12 @@
 
 package com.d3.eth.deploy
 
-import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
+import integration.eth.config.loadEthPasswords
 import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
 import com.d3.eth.constants.ETH_RELAY_IMPLEMENTATION_ADDRESS_KEY
 import com.d3.eth.constants.ETH_RELAY_REGISTRY_KEY
@@ -22,7 +22,6 @@ import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
-import java.io.File
 
 private val logger = KLogging().logger
 

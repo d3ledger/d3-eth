@@ -6,11 +6,11 @@
 package longevity
 
 import com.d3.commons.config.IrohaCredentialRawConfig
-import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.hex
 import com.d3.eth.provider.ETH_PRECISION
 import com.github.kittinunf.result.Result
+import integration.eth.config.loadEthPasswords
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.NotaryClient
 import jp.co.soramitsu.iroha.java.Utils

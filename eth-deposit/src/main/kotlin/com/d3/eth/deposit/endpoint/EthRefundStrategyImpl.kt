@@ -5,8 +5,6 @@
 
 package com.d3.eth.deposit.endpoint
 
-import com.d3.commons.config.EthereumConfig
-import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -16,14 +14,14 @@ import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.hashToWithdraw
-import com.d3.eth.sidechain.util.signUserData
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.flatMap
+import integration.eth.config.EthereumConfig
+import integration.eth.config.EthereumPasswords
 import iroha.protocol.TransactionOuterClass.Transaction
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
-import org.web3j.crypto.ECKeyPair
 import java.math.BigDecimal
 
 class NotaryException(reason: String) : Exception(reason)
@@ -49,8 +47,7 @@ class EthRefundStrategyImpl(
 
     private val withdrawalAccountId = depositConfig.withdrawalAccountId
 
-    private var ecKeyPair: ECKeyPair =
-        DeployHelper(ethereumConfig, ethereumPasswords).credentials.ecKeyPair
+    private val deployHelper = DeployHelper(ethereumConfig, ethereumPasswords)
 
     override fun performRefund(request: EthRefundRequest): EthNotaryResponse {
         logger.info("Check tx ${request.irohaTx} for refund")
@@ -172,7 +169,7 @@ class EthRefundStrategyImpl(
                     ethRefund.relayAddress
                 )
 
-            val signature = signUserData(ecKeyPair, finalHash)
+            val signature = deployHelper.signUserData(finalHash)
             EthNotaryResponse.Successful(signature)
         }
     }

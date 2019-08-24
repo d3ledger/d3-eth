@@ -6,7 +6,6 @@
 package integration.eth
 
 import com.d3.commons.config.IrohaCredentialRawConfig
-import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
@@ -14,6 +13,7 @@ import com.d3.commons.util.hex
 import com.d3.commons.util.toHexString
 import com.d3.eth.provider.ETH_PRECISION
 import com.d3.eth.sidechain.util.DeployHelper
+import integration.eth.config.loadEthPasswords
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment

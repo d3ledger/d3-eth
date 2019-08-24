@@ -5,9 +5,9 @@
 
 package com.d3.eth.withdrawal.withdrawalservice
 
-import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialRawConfig
+import integration.eth.config.EthereumConfig
 
 /** Configuration of withdrawal service */
 interface WithdrawalServiceConfig {

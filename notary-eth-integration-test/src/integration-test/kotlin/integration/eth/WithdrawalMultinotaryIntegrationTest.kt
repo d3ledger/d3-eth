@@ -5,7 +5,6 @@
 
 package integration.eth
 
-import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
@@ -22,6 +21,7 @@ import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.d3.eth.sidechain.util.hashToWithdraw
 import com.d3.eth.sidechain.util.signUserData
 import com.squareup.moshi.Moshi
+import integration.eth.config.loadEthPasswords
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
@@ -71,7 +71,7 @@ class WithdrawalMultinotaryIntegrationTest {
             EthDepositConfig::class.java,
             "deposit.properties"
         ).get()
-        val ethKeyPath = notaryConfig.ethereum.credentialsPath
+        val ethKeyPath = ethereumPasswords.credentialsPath
 
         // create 1st deposit config
         val ethereumConfig1 = integrationHelper.configHelper.createEthereumConfig(ethKeyPath)
@@ -80,7 +80,7 @@ class WithdrawalMultinotaryIntegrationTest {
 
         // run 1st instance of deposit
         depositConfig1 =
-                integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig1)
+            integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig1)
         ethDeposit1 = GlobalScope.launch {
             integrationHelper.runEthDeposit(ethDepositConfig = depositConfig1)
         }
@@ -89,10 +89,11 @@ class WithdrawalMultinotaryIntegrationTest {
         val ethereumConfig2 =
             integrationHelper.configHelper.createEthereumConfig(ethKeyPath.split(".key").first() + "2.key")
         depositConfig2 =
-                integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig2)
+            integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig2)
 
         val notary2IrohaPublicKey = keyPair2.public.toHexString()
-        val notary2EthereumCredentials = DeployHelper(ethereumConfig2, ethereumPasswords).credentials
+        val notary2EthereumCredentials =
+            DeployHelper(ethereumConfig2, ethereumPasswords).credentials
         val notary2EthereumAddress = notary2EthereumCredentials.address
         ethKeyPair2 = notary2EthereumCredentials.ecKeyPair
         val notary2Name = "notary_name_" + String.getRandomString(5)
