@@ -62,7 +62,7 @@ class DepositMultiIntegrationTest {
 
         val ethereumPasswords = loadEthPasswords("test", "/eth/ethereum_password.properties").get()
         val ethereumConfig =
-            integrationHelper.configHelper.createEthereumConfig("deploy/ethereum/keys/local/notary1.key")
+            integrationHelper.configHelper.createEthereumConfig()
         val depositConfig =
             integrationHelper.configHelper.createEthDepositConfig(
                 ethereumConfig = ethereumConfig,

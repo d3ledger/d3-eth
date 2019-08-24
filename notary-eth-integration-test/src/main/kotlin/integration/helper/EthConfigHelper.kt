@@ -18,6 +18,7 @@ import com.d3.eth.registration.relay.RelayRegistrationConfig
 import com.d3.eth.token.ERC20TokenRegistrationConfig
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
+import integration.eth.config.EthereumPasswords
 import java.math.BigInteger
 
 /**
@@ -237,12 +238,26 @@ open class EthConfigHelper(
      * @param credentialsPath path to Ethereum credentials file (.key)
      * @return EthereumConfig object
      */
-    fun createEthereumConfig(credentialsPath: String = ethPasswordConfig.credentialsPath): EthereumConfig {
+    fun createEthereumConfig(): EthereumConfig {
         return object : EthereumConfig {
             override val confirmationPeriod = ethDepositConfig.ethereum.confirmationPeriod
             override val gasLimit = ethDepositConfig.ethereum.gasLimit
             override val gasPrice = ethDepositConfig.ethereum.gasPrice
             override val url = ethDepositConfig.ethereum.url
+        }
+    }
+
+    /**
+     * Creates new Ethereum passwords config with given credentials path
+     * @param credentialsPath path to Ethereum credentials file (.key)
+     * @return EthereumConfig object
+     */
+    fun createEthereumPasswords(credentialsPath: String = ethPasswordConfig.credentialsPath) : EthereumPasswords {
+        return object: EthereumPasswords {
+            override val credentialsPath = credentialsPath
+            override val credentialsPassword = ethPasswordConfig.credentialsPassword
+            override val nodeLogin = ethPasswordConfig.nodeLogin
+            override val nodePassword = ethPasswordConfig.nodePassword
         }
     }
 
