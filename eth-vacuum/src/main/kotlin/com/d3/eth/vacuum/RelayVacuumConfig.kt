@@ -5,10 +5,9 @@
 
 package com.d3.eth.vacuum
 
-import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
-import com.d3.commons.config.IrohaCredentialConfig
 import com.d3.commons.config.IrohaCredentialRawConfig
+import integration.eth.config.EthereumConfig
 
 interface RelayVacuumConfig {
 

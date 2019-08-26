@@ -8,8 +8,11 @@
 package com.d3.eth.withdrawal.withdrawalservice
 
 import com.d3.chainadapter.client.RMQConfig
-import com.d3.commons.config.*
+import com.d3.commons.config.loadLocalConfigs
+import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.model.IrohaCredential
+import integration.eth.config.EthereumPasswords
+import integration.eth.config.loadEthPasswords
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.github.kittinunf.result.*
 import jp.co.soramitsu.iroha.java.IrohaAPI

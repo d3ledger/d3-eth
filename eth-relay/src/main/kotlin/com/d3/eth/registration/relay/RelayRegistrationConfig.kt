@@ -5,9 +5,9 @@
 
 package com.d3.eth.registration.relay
 
-import com.d3.commons.config.EthereumConfig
 import com.d3.commons.config.IrohaConfig
 import com.d3.commons.config.IrohaCredentialRawConfig
+import integration.eth.config.EthereumConfig
 
 /**
  * Interface represents configs for relay registration service for cfg4k

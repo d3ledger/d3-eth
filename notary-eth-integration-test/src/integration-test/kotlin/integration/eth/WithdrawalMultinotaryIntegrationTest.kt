@@ -5,8 +5,6 @@
 
 package integration.eth
 
-import com.d3.commons.config.loadEthPasswords
-import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
@@ -22,6 +20,7 @@ import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.d3.eth.sidechain.util.hashToWithdraw
 import com.d3.eth.sidechain.util.signUserData
 import com.squareup.moshi.Moshi
+import integration.eth.config.loadEthPasswords
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
@@ -66,33 +65,32 @@ class WithdrawalMultinotaryIntegrationTest {
     private val ethDeposit2: Job
 
     init {
-        val notaryConfig = loadLocalConfigs(
-            "eth-deposit",
-            EthDepositConfig::class.java,
-            "deposit.properties"
-        ).get()
-        val ethKeyPath = notaryConfig.ethereum.credentialsPath
+        val ethKeyPath = ethereumPasswords.credentialsPath
 
         // create 1st deposit config
-        val ethereumConfig1 = integrationHelper.configHelper.createEthereumConfig(ethKeyPath)
-
-        keypair1 = DeployHelper(ethereumConfig1, ethereumPasswords).credentials.ecKeyPair
+        depositConfig1 = integrationHelper.configHelper.createEthDepositConfig()
+        val ethereumPasswordsConfig1 =
+            integrationHelper.configHelper.createEthereumPasswords(ethKeyPath)
 
         // run 1st instance of deposit
-        depositConfig1 =
-                integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig1)
+        keypair1 =
+            DeployHelper(depositConfig1.ethereum, ethereumPasswordsConfig1).credentials.ecKeyPair
+
         ethDeposit1 = GlobalScope.launch {
-            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig1)
+            integrationHelper.runEthDeposit(
+                ethDepositConfig = depositConfig1,
+                ethereumPasswords = ethereumPasswordsConfig1
+            )
         }
 
         // create 2nd deposit config
-        val ethereumConfig2 =
-            integrationHelper.configHelper.createEthereumConfig(ethKeyPath.split(".key").first() + "2.key")
-        depositConfig2 =
-                integrationHelper.configHelper.createEthDepositConfig(ethereumConfig = ethereumConfig2)
+        val ethereumPasswordsConfig2 =
+            integrationHelper.configHelper.createEthereumPasswords(ethKeyPath.split(".key").first() + "2.key")
+        depositConfig2 = integrationHelper.configHelper.createEthDepositConfig()
 
         val notary2IrohaPublicKey = keyPair2.public.toHexString()
-        val notary2EthereumCredentials = DeployHelper(ethereumConfig2, ethereumPasswords).credentials
+        val notary2EthereumCredentials =
+            DeployHelper(depositConfig2.ethereum, ethereumPasswordsConfig2).credentials
         val notary2EthereumAddress = notary2EthereumCredentials.address
         ethKeyPair2 = notary2EthereumCredentials.ecKeyPair
         val notary2Name = "notary_name_" + String.getRandomString(5)
@@ -111,7 +109,10 @@ class WithdrawalMultinotaryIntegrationTest {
 
         // run 2nd instance of deposit
         ethDeposit2 = GlobalScope.launch {
-            integrationHelper.runEthDeposit(ethDepositConfig = depositConfig2)
+            integrationHelper.runEthDeposit(
+                ethDepositConfig = depositConfig2,
+                ethereumPasswords = ethereumPasswordsConfig2
+            )
         }
 
         // run registration

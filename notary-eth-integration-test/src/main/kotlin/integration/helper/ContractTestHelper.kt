@@ -5,11 +5,10 @@
 
 package integration.helper
 
-import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.config.loadConfigs
 import com.d3.eth.sidechain.util.*
 import contract.SoraToken
-import integration.TestConfig
+import integration.eth.config.EthereumPasswords
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Hash
 import org.web3j.crypto.Keys
@@ -22,7 +21,8 @@ import kotlin.test.assertEquals
  * Deploys contracts on demand, contains set of functions to work with ethereum contracts.
  */
 class ContractTestHelper {
-    private val testConfig = loadConfigs("test", TestConfig::class.java, "/test.properties").get()
+    private val testConfig =
+        loadConfigs("test", TestEthereumConfig::class.java, "/test.properties").get()
     private val passwordConfig =
         loadConfigs(
             "test",

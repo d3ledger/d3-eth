@@ -7,9 +7,9 @@
 
 package com.d3.eth.deploy
 
-import com.d3.commons.config.EthereumConfig
-import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.config.loadLocalConfigs
+import integration.eth.config.EthereumConfig
+import integration.eth.config.loadEthPasswords
 import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.fanout

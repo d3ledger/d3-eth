@@ -6,11 +6,11 @@
 package longevity
 
 import com.d3.commons.config.IrohaCredentialRawConfig
-import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.hex
 import com.d3.eth.provider.ETH_PRECISION
 import com.github.kittinunf.result.Result
+import integration.eth.config.loadEthPasswords
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.NotaryClient
 import jp.co.soramitsu.iroha.java.Utils
@@ -40,7 +40,7 @@ class LongevityTest {
     private val clients = (0..totalClients - 1).map { clientNumber ->
         NotaryClient(
             integrationHelper,
-            integrationHelper.configHelper.createEthereumConfig("deploy/ethereum/keys/local/client$clientNumber.key"),
+            integrationHelper.configHelper.createEthereumConfig(),
             loadEthPasswords("client$clientNumber", "/eth/ethereum_password.properties").get()
         )
     }
@@ -63,7 +63,7 @@ class LongevityTest {
                 loadEthPasswords("notary$it", "/eth/ethereum_password.properties").get()
 
             val ethereumConfig =
-                integrationHelper.configHelper.createEthereumConfig("deploy/ethereum/keys/local/notary$it.key")
+                integrationHelper.configHelper.createEthereumConfig()
 
             val depositConfig =
                 integrationHelper.configHelper.createEthDepositConfig(

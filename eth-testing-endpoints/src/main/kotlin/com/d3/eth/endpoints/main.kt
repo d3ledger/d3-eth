@@ -7,11 +7,11 @@
 
 package com.d3.eth.endpoints
 
-import com.d3.commons.config.EthereumConfig
-import com.d3.commons.config.loadEthPasswords
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
+import integration.eth.config.EthereumConfig
+import integration.eth.config.loadEthPasswords
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.github.kittinunf.result.Result
@@ -23,8 +23,11 @@ import mu.KLogging
 
 private val logger = KLogging().logger
 
-private val endpointConfig =
-    loadRawLocalConfigs("endpoints", TestingEndpointConfig::class.java, "testing_endpoints.properties")
+private val endpointConfig = loadRawLocalConfigs(
+    "endpoints",
+    TestingEndpointConfig::class.java,
+    "testing_endpoints.properties"
+)
 
 /**
  * Main entry point of Testing endpoints deployment module

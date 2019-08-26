@@ -7,7 +7,6 @@ package com.d3.eth.deposit
 
 import com.d3.chainadapter.client.RMQConfig
 import com.d3.chainadapter.client.ReliableIrohaChainListener
-import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.notary.Notary
 import com.d3.commons.notary.NotaryImpl
@@ -20,6 +19,7 @@ import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettyScheduledThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
+import integration.eth.config.EthereumPasswords
 import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
@@ -62,7 +62,7 @@ class EthDepositInitialization(
 ) {
     private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(
         passwordsConfig.credentialsPassword,
-        ethDepositConfig.ethereum.credentialsPath
+        passwordsConfig.credentialsPath
     ).ecKeyPair
 
     private val queryHelper = IrohaQueryHelperImpl(irohaAPI, notaryCredential)
@@ -87,7 +87,7 @@ class EthDepositInitialization(
             "Init deposit ethAddress=" +
                     WalletUtils.loadCredentials(
                         passwordsConfig.credentialsPassword,
-                        ethDepositConfig.ethereum.credentialsPath
+                        passwordsConfig.credentialsPath
                     ).address
         }
     }

@@ -5,10 +5,10 @@
 
 package com.d3.eth.registration.relay
 
-import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
+import integration.eth.config.EthereumPasswords
 import com.d3.eth.provider.EthFreeRelayProvider
 import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.Result

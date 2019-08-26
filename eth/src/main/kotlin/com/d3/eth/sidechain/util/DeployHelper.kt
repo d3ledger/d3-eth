@@ -5,11 +5,11 @@
 
 package com.d3.eth.sidechain.util
 
-import com.d3.commons.config.EthereumConfig
-import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.util.createPrettyScheduledThreadPool
 import com.d3.eth.helper.encodeFunction
 import contract.*
+import integration.eth.config.EthereumConfig
+import integration.eth.config.EthereumPasswords
 import mu.KLogging
 import okhttp3.*
 import org.web3j.abi.datatypes.Address
@@ -35,10 +35,15 @@ const val ENDPOINT_ETHEREUM = "eth"
  * Authenticator class for basic access authentication
  * @param ethereumPasswords config with Ethereum node credentials
  */
-class BasicAuthenticator(private val ethereumPasswords: EthereumPasswords) : Authenticator {
+class BasicAuthenticator(private val nodeLogin: String?, private val nodePassword: String?) :
+    Authenticator {
+    constructor(ethereumPasswords: EthereumPasswords) : this(
+        ethereumPasswords.nodeLogin,
+        ethereumPasswords.nodePassword
+    )
+
     override fun authenticate(route: Route, response: Response): Request {
-        val credential =
-            Credentials.basic(ethereumPasswords.nodeLogin!!, ethereumPasswords.nodePassword!!)
+        val credential = Credentials.basic(nodeLogin!!, nodePassword!!)
         return response.request().newBuilder().header("Authorization", credential).build()
     }
 }
@@ -46,18 +51,39 @@ class BasicAuthenticator(private val ethereumPasswords: EthereumPasswords) : Aut
 /**
  * Build DeployHelper in more granular level
  * @param ethereumConfig config with Ethereum network parameters
- * @param ethereumPasswords config with Ethereum passwords
+ * @param nodeLogin - Ethereum node login
+ * @param nodePassword - Ethereum node password
+ * @param credentials - Ethereum credentials
  */
-class DeployHelperBuilder(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPasswords) {
+class DeployHelperBuilder(
+    ethereumConfig: EthereumConfig,
+    nodeLogin: String?,
+    nodePassword: String?,
+    val credentials: org.web3j.crypto.Credentials
+) {
+    /**
+     * Helper class for contracts deploying
+     * @param ethereumConfig config with Ethereum network parameters
+     * @param ethereumPasswords config with Ethereum passwords
+     */
+    constructor(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPasswords) :
+            this(
+                ethereumConfig,
+                ethereumPasswords.nodeLogin!!,
+                ethereumPasswords.nodePassword!!,
+                WalletUtils.loadCredentials(
+                    ethereumPasswords.credentialsPassword,
+                    ethereumPasswords.credentialsPath
+                )
+            )
 
-    private val deployHelper = DeployHelper(ethereumConfig, ethereumPasswords)
+    private val deployHelper = DeployHelper(ethereumConfig, nodeLogin, nodePassword, credentials)
 
     /**
      * Specify fast transaction manager to send multiple transactions one by one.
      */
     fun setFastTransactionManager(): DeployHelperBuilder {
-        deployHelper.transactionManager =
-            FastRawTransactionManager(deployHelper.web3, deployHelper.credentials)
+        deployHelper.transactionManager = FastRawTransactionManager(deployHelper.web3, credentials)
         return this
     }
 
@@ -69,27 +95,41 @@ class DeployHelperBuilder(ethereumConfig: EthereumConfig, ethereumPasswords: Eth
 /**
  * Helper class for contracts deploying
  * @param ethereumConfig config with Ethereum network parameters
- * @param ethereumPasswords config with Ethereum passwords
+ * @param nodeLogin - Ethereum node login
+ * @param nodePassword
  */
-class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPasswords) {
+class DeployHelper(
+    ethereumConfig: EthereumConfig,
+    nodeLogin: String?,
+    nodePassword: String?,
+    val credentials: org.web3j.crypto.Credentials
+) {
+    /**
+     * Helper class for contracts deploying
+     * @param ethereumConfig config with Ethereum network parameters
+     * @param ethereumPasswords config with Ethereum passwords
+     */
+    constructor(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPasswords) :
+            this(
+                ethereumConfig,
+                ethereumPasswords.nodeLogin,
+                ethereumPasswords.nodePassword,
+                WalletUtils.loadCredentials(
+                    ethereumPasswords.credentialsPassword,
+                    ethereumPasswords.credentialsPath
+                )
+            )
+
     val web3: Web3j
 
     init {
         val builder = OkHttpClient().newBuilder()
-        builder.authenticator(BasicAuthenticator(ethereumPasswords))
+        builder.authenticator(BasicAuthenticator(nodeLogin, nodePassword))
         builder.readTimeout(1200, TimeUnit.SECONDS)
         builder.writeTimeout(1200, TimeUnit.SECONDS)
         web3 = Web3j.build(
             HttpService(ethereumConfig.url, builder.build(), false), DEFAULT_BLOCK_TIME.toLong(),
             createPrettyScheduledThreadPool(DeployHelper::class.simpleName!!, "web3j")
-        )
-    }
-
-    /** credentials of ethereum user */
-    val credentials by lazy {
-        WalletUtils.loadCredentials(
-            ethereumPasswords.credentialsPassword,
-            ethereumConfig.credentialsPath
         )
     }
 
@@ -459,6 +499,13 @@ class DeployHelper(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPa
         )
         relayRegistry.addNewRelayAddress(freeEthWallet, emptyList()).send()
     }
+
+    /**
+     * Signs user-provided data with predefined account deployed on local Parity node
+     * @param toSign data to sign
+     * @return signed data
+     */
+    fun signUserData(toSign: String) = signUserData(credentials.ecKeyPair, toSign)
 
     /**
      * Logger

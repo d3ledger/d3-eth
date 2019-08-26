@@ -41,7 +41,7 @@ class WithdrawalRollbackIntegrationTest {
     private val ethRegistrationConfig = integrationHelper.ethRegistrationConfig
 
     /** Ethereum test address where we want to withdraw to */
-    private val toAddress = integrationHelper.configHelper.testConfig.ethTestAccount
+    private val toAddress = integrationHelper.ethTestConfig.ethTestAccount
 
     /** Withdrawal trigger account */
     private val withdrawalAccountId = integrationHelper.accountHelper.withdrawalAccount.accountId

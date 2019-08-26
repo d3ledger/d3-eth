@@ -5,8 +5,12 @@
 
 package integration.helper
 
-import com.d3.commons.config.*
+import com.d3.commons.config.IrohaConfig
+import com.d3.commons.config.IrohaCredentialRawConfig
+import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.util.getRandomString
+import integration.eth.config.EthereumConfig
+import integration.eth.config.loadEthPasswords
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.RefundConfig
 import com.d3.eth.registration.EthRegistrationConfig
@@ -14,6 +18,7 @@ import com.d3.eth.registration.relay.RelayRegistrationConfig
 import com.d3.eth.token.ERC20TokenRegistrationConfig
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
+import integration.eth.config.EthereumPasswords
 import java.math.BigInteger
 
 /**
@@ -37,10 +42,6 @@ open class EthConfigHelper(
             EthDepositConfig::class.java,
             "deposit.properties"
         ).get()
-    }
-
-    fun getTestCredentialConfig(): IrohaCredentialConfig {
-        return testConfig.testCredentialConfig
     }
 
     /** Creates config for ERC20 tokens registration */
@@ -104,7 +105,6 @@ open class EthConfigHelper(
         irohaConfig: IrohaConfig = createIrohaConfig(),
         ethereumConfig: EthereumConfig = object : EthereumConfig {
             override val url = ethDepositConfig.ethereum.url
-            override val credentialsPath = testConfig.ethereum.credentialsPath
             override val gasPrice = ethDepositConfig.ethereum.gasPrice
             override val gasLimit = ethDepositConfig.ethereum.gasLimit
             override val confirmationPeriod = ethDepositConfig.ethereum.confirmationPeriod
@@ -184,7 +184,6 @@ open class EthConfigHelper(
     fun getBrokenEthereumConfig(withdrawalServiceConfig: WithdrawalServiceConfig): EthereumConfig {
         return object : EthereumConfig {
             override val url = withdrawalServiceConfig.ethereum.url
-            override val credentialsPath = withdrawalServiceConfig.ethereum.credentialsPath
             override val gasPrice = 0L
             override val gasLimit = 0L
             override val confirmationPeriod = 0L
@@ -239,13 +238,26 @@ open class EthConfigHelper(
      * @param credentialsPath path to Ethereum credentials file (.key)
      * @return EthereumConfig object
      */
-    fun createEthereumConfig(credentialsPath: String = ethDepositConfig.ethereum.credentialsPath): EthereumConfig {
+    fun createEthereumConfig(): EthereumConfig {
         return object : EthereumConfig {
             override val confirmationPeriod = ethDepositConfig.ethereum.confirmationPeriod
-            override val credentialsPath = credentialsPath
             override val gasLimit = ethDepositConfig.ethereum.gasLimit
             override val gasPrice = ethDepositConfig.ethereum.gasPrice
             override val url = ethDepositConfig.ethereum.url
+        }
+    }
+
+    /**
+     * Creates new Ethereum passwords config with given credentials path
+     * @param credentialsPath path to Ethereum credentials file (.key)
+     * @return EthereumConfig object
+     */
+    fun createEthereumPasswords(credentialsPath: String = ethPasswordConfig.credentialsPath) : EthereumPasswords {
+        return object: EthereumPasswords {
+            override val credentialsPath = credentialsPath
+            override val credentialsPassword = ethPasswordConfig.credentialsPassword
+            override val nodeLogin = ethPasswordConfig.nodeLogin
+            override val nodePassword = ethPasswordConfig.nodePassword
         }
     }
 

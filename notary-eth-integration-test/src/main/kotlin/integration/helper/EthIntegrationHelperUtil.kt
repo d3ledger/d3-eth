@@ -6,7 +6,7 @@
 package integration.helper
 
 import com.d3.chainadapter.client.RMQConfig
-import com.d3.commons.config.EthereumPasswords
+import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.expansion.ExpansionDetails
 import com.d3.commons.expansion.ExpansionUtils
@@ -34,6 +34,7 @@ import com.d3.eth.token.EthTokenInfo
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import com.github.kittinunf.result.success
+import integration.eth.config.EthereumPasswords
 import kotlinx.coroutines.runBlocking
 import mu.KLogging
 import java.math.BigInteger
@@ -45,6 +46,10 @@ import java.util.*
  * Class lazily creates new master contract in Ethereum and master account in Iroha.
  */
 class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
+
+    val ethTestConfig =
+        loadConfigs("test", TestEthereumConfig::class.java, "/test.properties").get()
+
 
     override val accountHelper by lazy { EthereumAccountHelper(irohaAPI) }
 
@@ -98,7 +103,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
 
     val ethListener = EthChainListener(
         contractTestHelper.deployHelper.web3,
-        BigInteger.valueOf(testConfig.ethereum.confirmationPeriod),
+        BigInteger.valueOf(ethTestConfig.ethereum.confirmationPeriod),
         BigInteger.ZERO,
         FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath)
     )

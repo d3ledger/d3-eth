@@ -5,9 +5,9 @@
 
 package com.d3.eth.withdrawal.withdrawalservice
 
-import com.d3.commons.config.EthereumConfig
-import com.d3.commons.config.EthereumPasswords
 import com.d3.commons.expansion.ServiceExpansion
+import integration.eth.config.EthereumConfig
+import integration.eth.config.EthereumPasswords
 import com.d3.eth.sidechain.util.DeployHelper
 import iroha.protocol.BlockOuterClass
 import org.web3j.utils.Numeric
