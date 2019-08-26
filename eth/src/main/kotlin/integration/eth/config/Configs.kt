@@ -9,7 +9,7 @@ import com.d3.commons.config.loadConfigs
 import com.github.kittinunf.result.Result
 
 //Environment variable that holds Ethereum credentials path
-const val ETH_CREDENTIALS_PATH_ENV = " ETH_CREDENTIALS_PATH"
+const val ETH_CREDENTIALS_PATH_ENV = "ETH_CREDENTIALS_PATH"
 //Environment variable that holds Ethereum credentials password
 const val ETH_CREDENTIALS_PASSWORD_ENV = "ETH_CREDENTIALS_PASSWORD"
 //Environment variable that holds Ethereum node login
