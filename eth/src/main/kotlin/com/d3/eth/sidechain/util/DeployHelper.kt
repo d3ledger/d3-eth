@@ -69,8 +69,8 @@ class DeployHelperBuilder(
     constructor(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPasswords) :
             this(
                 ethereumConfig,
-                ethereumPasswords.nodeLogin!!,
-                ethereumPasswords.nodePassword!!,
+                ethereumPasswords.nodeLogin,
+                ethereumPasswords.nodePassword,
                 WalletUtils.loadCredentials(
                     ethereumPasswords.credentialsPassword,
                     ethereumPasswords.credentialsPath
