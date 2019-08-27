@@ -62,5 +62,17 @@ services:
     networks:
       - d3-network
 
+  d3-eth-testing:
+    image: nexus.iroha.tech:19002/d3-deploy/eth-testing-endpoints:develop
+    container_name: d3-eth-testing
+    restart: on-failure
+    volumes:
+      - ../configs:/configs
+      - ../deploy/ethereum/keys:/deploy/ethereum/keys
+    ports:
+      - 18982:18982
+    networks:
+      - d3-network
+
 networks:
   d3-network:

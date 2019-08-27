@@ -18,3 +18,6 @@ Passwords for Ethereum network may be set in 3 different ways:
 Configurations have the following priority:
 
 Command line args > Environment variables > Properties file
+
+## Testing Ethereum
+There is a dedicated endpoint for testing purposes. Visit [Swagger](http://127.0.0.1:18982/apidocs) for more details.
