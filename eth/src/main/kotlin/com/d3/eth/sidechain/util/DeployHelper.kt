@@ -20,16 +20,17 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.JsonRpc2_0Web3j.DEFAULT_BLOCK_TIME
 import org.web3j.protocol.http.HttpService
-import org.web3j.tx.FastRawTransactionManager
 import org.web3j.tx.RawTransactionManager
 import org.web3j.tx.Transfer
 import org.web3j.tx.gas.StaticGasProvider
 import org.web3j.utils.Convert
+import java.io.IOException
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
 const val ENDPOINT_ETHEREUM = "eth"
+const val ATTEMPTS_DEFAULT = 240
 
 /**
  * Authenticator class for basic access authentication
@@ -59,12 +60,14 @@ class DeployHelperBuilder(
     ethereumConfig: EthereumConfig,
     nodeLogin: String?,
     nodePassword: String?,
-    val credentials: org.web3j.crypto.Credentials
+    val credentials: org.web3j.crypto.Credentials,
+    private val attempts: Int
 ) {
     /**
      * Helper class for contracts deploying
      * @param ethereumConfig config with Ethereum network parameters
      * @param ethereumPasswords config with Ethereum passwords
+     * @param attempts attempts amount to poll transaction status
      */
     constructor(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPasswords) :
             this(
@@ -74,16 +77,21 @@ class DeployHelperBuilder(
                 WalletUtils.loadCredentials(
                     ethereumPasswords.credentialsPassword,
                     ethereumPasswords.credentialsPath
-                )
+                ),
+                ATTEMPTS_DEFAULT
             )
 
-    private val deployHelper = DeployHelper(ethereumConfig, nodeLogin, nodePassword, credentials)
+    private val deployHelper = DeployHelper(ethereumConfig, nodeLogin, nodePassword, credentials, attempts)
 
     /**
      * Specify fast transaction manager to send multiple transactions one by one.
      */
     fun setFastTransactionManager(): DeployHelperBuilder {
-        deployHelper.transactionManager = FastRawTransactionManager(deployHelper.web3, credentials)
+        deployHelper.transactionManager = AttemptsCustomizableFastRawTransactionManager(
+            deployHelper.web3,
+            credentials,
+            attempts
+        )
         return this
     }
 
@@ -97,12 +105,14 @@ class DeployHelperBuilder(
  * @param ethereumConfig config with Ethereum network parameters
  * @param nodeLogin - Ethereum node login
  * @param nodePassword
+ * @param attempts attempts amount to poll transaction status
  */
 class DeployHelper(
     ethereumConfig: EthereumConfig,
     nodeLogin: String?,
     nodePassword: String?,
-    val credentials: org.web3j.crypto.Credentials
+    val credentials: org.web3j.crypto.Credentials,
+    attempts: Int
 ) {
     /**
      * Helper class for contracts deploying
@@ -117,7 +127,8 @@ class DeployHelper(
                 WalletUtils.loadCredentials(
                     ethereumPasswords.credentialsPassword,
                     ethereumPasswords.credentialsPath
-                )
+                ),
+                ATTEMPTS_DEFAULT
             )
 
     val web3: Web3j
@@ -134,7 +145,7 @@ class DeployHelper(
     }
 
     /** transaction manager */
-    var transactionManager = RawTransactionManager(web3, credentials)
+    var transactionManager = RawTransactionManager(web3, credentials, attempts, DEFAULT_BLOCK_TIME)
 
     /** Gas price */
     val gasPrice = BigInteger.valueOf(ethereumConfig.gasPrice)
@@ -511,4 +522,47 @@ class DeployHelper(
      * Logger
      */
     companion object : KLogging()
+}
+
+/**
+ * Simple RawTransactionManager derivative that manages nonces to facilitate multiple transactions
+ * per block. The implementation allows to set the attempts amount to modify default timeout.
+ */
+class AttemptsCustomizableFastRawTransactionManager(
+    web3j: Web3j,
+    credentials: org.web3j.crypto.Credentials,
+    attempts: Int
+) : RawTransactionManager(
+    web3j,
+    credentials,
+    attempts,
+    DEFAULT_BLOCK_TIME
+) {
+
+    @Volatile
+    var currentNonce = BigInteger.valueOf(-1)!!
+        private set
+
+    @Synchronized
+    @Throws(IOException::class)
+    override fun getNonce(): BigInteger {
+        currentNonce = if (currentNonce.signum() == -1) {
+            // obtain lock
+            super.getNonce()
+        } else {
+            currentNonce.add(BigInteger.ONE)
+        }
+        return currentNonce
+    }
+
+    @Synchronized
+    @Throws(IOException::class)
+    fun resetNonce() {
+        currentNonce = super.getNonce()
+    }
+
+    @Synchronized
+    fun setNonce(value: BigInteger) {
+        currentNonce = value
+    }
 }
