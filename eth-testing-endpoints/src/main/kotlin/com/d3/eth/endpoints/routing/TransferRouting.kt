@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.d3.eth.endpoints.routing
 
 import com.d3.eth.endpoints.dto.EthTransferRequest
@@ -19,7 +24,6 @@ import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
-
 
 private const val ETH_ASSET = "ether#ethereum"
 private val logger = KLogging().logger

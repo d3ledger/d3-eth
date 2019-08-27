@@ -61,7 +61,6 @@ class TestingEndpoint(
         server.start(wait = false)
     }
 
-
     override fun close() = server.stop(5, 5, TimeUnit.SECONDS)
 
     /**

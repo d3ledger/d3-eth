@@ -1,5 +1,9 @@
-package com.d3.eth.endpoints.dto
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
+package com.d3.eth.endpoints.dto
 
 data class EthDepositRequest(val address: String, val amount: String)
 
