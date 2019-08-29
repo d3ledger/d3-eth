@@ -404,7 +404,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             "http://127.0.0.1:${port}/users",
             data = mapOf(
                 "name" to name,
-                "pubkey" to pubkey
+                "pubkey" to pubkey,
+                "domain" to D3_DOMAIN
             )
         )
     }
