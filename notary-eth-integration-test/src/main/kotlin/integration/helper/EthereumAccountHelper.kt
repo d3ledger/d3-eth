@@ -13,14 +13,14 @@ import jp.co.soramitsu.iroha.java.IrohaAPI
 class EthereumAccountHelper(irohaApi: IrohaAPI) : IrohaAccountHelper(irohaApi) {
 
     /** Withdrawal account */
-    val withdrawalAccount = createTesterAccount("eth_wthdr_srv", "withdrawal")
+    val withdrawalAccount = createTesterAccount("eth_wthdr_srv", listOf("withdrawal"))
 
     /** Withdrawal billing account to send fee to */
-    val ethWithdrawalBillingAccount = createTesterAccount("eth_wthdr_bln", "billing")
+    val ethWithdrawalBillingAccount = createTesterAccount("eth_wthdr_bln", listOf("billing"))
 
     /** Account that stores Ethereum addresses */
     val ethAddressesStorage = createTesterAccount("eth_addr_storage")
 
     /** Account that sets Ethereum addresses */
-    val ethAddressesWriter = createTesterAccount("eth_addr_writer", "tester")
+    val ethAddressesWriter = createTesterAccount("eth_addr_writer", listOf("tester"))
 }
