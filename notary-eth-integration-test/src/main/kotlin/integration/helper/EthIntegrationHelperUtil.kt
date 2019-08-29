@@ -10,7 +10,6 @@ import com.d3.commons.config.loadConfigs
 import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.expansion.ExpansionDetails
 import com.d3.commons.expansion.ExpansionUtils
-import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -342,7 +341,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         name: String,
         keypair: KeyPair = ModelUtil.generateKeypair()
     ): String {
-        ethRegistrationStrategy.register(name, CLIENT_DOMAIN, keypair.public.toHexString())
+        ethRegistrationStrategy.register(name, D3_DOMAIN, keypair.public.toHexString())
             .fold({ registeredEthWallet ->
                 logger.info("registered client $name with relay $registeredEthWallet")
                 return registeredEthWallet
@@ -405,7 +404,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             "http://127.0.0.1:${port}/users",
             data = mapOf(
                 "name" to name,
-                "pubkey" to pubkey
+                "pubkey" to pubkey,
+                "domain" to D3_DOMAIN
             )
         )
     }

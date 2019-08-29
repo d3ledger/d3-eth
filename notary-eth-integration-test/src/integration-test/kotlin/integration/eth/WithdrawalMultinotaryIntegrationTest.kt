@@ -5,7 +5,6 @@
 
 package integration.eth
 
-import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
@@ -21,6 +20,7 @@ import com.d3.eth.sidechain.util.hashToWithdraw
 import com.d3.eth.sidechain.util.signUserData
 import com.squareup.moshi.Moshi
 import integration.eth.config.loadEthPasswords
+import integration.helper.D3_DOMAIN
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
@@ -156,7 +156,7 @@ class WithdrawalMultinotaryIntegrationTest {
                 registrationTestEnvironment.registrationConfig.port
             )
             Assertions.assertEquals(200, res.statusCode)
-            val clientId = "$client@$CLIENT_DOMAIN"
+            val clientId = "$client@$D3_DOMAIN"
             integrationHelper.registerClientInEth(
                 client,
                 integrationHelper.testCredential.keyPair

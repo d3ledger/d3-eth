@@ -5,12 +5,12 @@
 
 package integration.eth
 
-import com.d3.commons.sidechain.iroha.CLIENT_DOMAIN
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
 import com.d3.eth.provider.ETH_PRECISION
+import integration.helper.D3_DOMAIN
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import integration.registration.RegistrationServiceTestEnvironment
@@ -76,7 +76,7 @@ class WithdrawalRollbackIntegrationTest {
     fun setup() {
         // generate client name and key
         clientName = String.getRandomString(9)
-        clientId = "$clientName@$CLIENT_DOMAIN"
+        clientId = "$clientName@$D3_DOMAIN"
         keypair = ModelUtil.generateKeypair()
     }
 
