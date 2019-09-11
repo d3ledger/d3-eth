@@ -23,6 +23,8 @@ class EthFreeRelayProvider(
     private val registrationIrohaAccount: String
 ) {
 
+    private val freeRelayPredicate = { _: String, value: String -> value == "free" }
+
     init {
         logger.info {
             "Init free relay provider with holder account '$notaryIrohaAccount' and setter account '$registrationIrohaAccount'"
@@ -30,14 +32,18 @@ class EthFreeRelayProvider(
     }
 
     /**
-     * Get first free ethereum relay wallet.
-     * @return free ethereum relay wallet
+     * Get first free Ethereum relay wallet.
+     * @return free Ethereum relay wallet
      */
     fun getRelay(): Result<String, Exception> {
-        return getRelays().map { freeWallets ->
-            if (freeWallets.isEmpty())
+        return queryHelper.getAccountDetailsFirst(
+            notaryIrohaAccount,
+            registrationIrohaAccount,
+            freeRelayPredicate
+        ).map { freeWallet ->
+            if (!freeWallet.isPresent)
                 throw IllegalStateException("EthFreeRelayProvider - no free relay wallets created by $registrationIrohaAccount")
-            freeWallets.first()
+            freeWallet.get().key
         }
     }
 
@@ -46,12 +52,25 @@ class EthFreeRelayProvider(
      * @return free Ethereum relay wallets
      */
     fun getRelays(): Result<Set<String>, Exception> {
-        return queryHelper.getAccountDetails(
+        return queryHelper.getAccountDetailsFilter(
             notaryIrohaAccount,
-            registrationIrohaAccount
+            registrationIrohaAccount,
+            freeRelayPredicate
         ).map { relays ->
-            relays.filterValues { irohaAccount -> irohaAccount == "free" }.keys
+            relays.keys
         }
+    }
+
+    /**
+     * Get number of all free Ethereum relay wallets
+     * @return number of free Ethereum relay wallets
+     */
+    fun getRelaysCount(): Result<Int, Exception> {
+        return queryHelper.getAccountDetailsCount(
+            notaryIrohaAccount,
+            registrationIrohaAccount,
+            freeRelayPredicate
+        )
     }
 
     /**

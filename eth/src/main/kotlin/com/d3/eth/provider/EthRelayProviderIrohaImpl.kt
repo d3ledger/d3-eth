@@ -29,28 +29,31 @@ class EthRelayProviderIrohaImpl(
         }
     }
 
+    private val nonFreeRelayPredicate = { _: String, value: String -> value != "free" }
+
     /**
      * Gets all non free relay wallets
      *
      * @return map<eth_wallet -> iroha_account> in success case or exception otherwise
      */
     override fun getRelays(): Result<Map<String, String>, Exception> {
-        return queryHelper.getAccountDetails(
+        return queryHelper.getAccountDetailsFilter(
             notaryAccount,
-            registrationAccount
-        ).map { relays ->
-            relays.filterValues { it != "free" }
-        }
+            registrationAccount,
+            nonFreeRelayPredicate
+        )
     }
 
     /** Get relay belonging to [irohaAccountId] */
     override fun getRelayByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> {
-        return getRelays().map { relays ->
-            val filtered = relays.filter { it.value == irohaAccountId }.keys
-            if (filtered.isEmpty())
+        return queryHelper.getAccountDetailsFirst(
+            notaryAccount,
+            registrationAccount
+        ) { _, value -> value == irohaAccountId }.map { relay ->
+            if (!relay.isPresent)
                 Optional.empty()
             else
-                Optional.of(filtered.first())
+                Optional.of(relay.get().key)
         }
     }
 

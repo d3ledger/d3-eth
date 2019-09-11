@@ -70,10 +70,7 @@ class EthRegistrationStrategyImpl(
      * Return number of free relays.
      */
     override fun getFreeAddressNumber(): Result<Int, Exception> {
-        return ethFreeRelayProvider.getRelays()
-            .map { freeRelays ->
-                freeRelays.size
-            }
+        return ethFreeRelayProvider.getRelaysCount()
     }
 
     /**
