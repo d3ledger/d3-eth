@@ -121,7 +121,7 @@ class EthTokensProviderImpl(
                 if (!tokenAddress.isPresent) {
                     throw IllegalArgumentException("Token $assetId not found")
                 } else {
-                    tokenAddress.get().first
+                    tokenAddress.get().key
                 }
             }
     }

@@ -43,7 +43,7 @@ class EthFreeRelayProvider(
         ).map { freeWallet ->
             if (!freeWallet.isPresent)
                 throw IllegalStateException("EthFreeRelayProvider - no free relay wallets created by $registrationIrohaAccount")
-            freeWallet.get().first
+            freeWallet.get().key
         }
     }
 

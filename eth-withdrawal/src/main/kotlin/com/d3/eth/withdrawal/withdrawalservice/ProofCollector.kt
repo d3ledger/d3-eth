@@ -212,7 +212,7 @@ class ProofCollector(
             if (!relay.isPresent)
                 throw Exception("No relay address in account details $acc bind to $name")
             else
-                relay.get().first
+                relay.get().key
         }
     }
 

@@ -53,7 +53,7 @@ class EthRelayProviderIrohaImpl(
             if (!relay.isPresent)
                 Optional.empty()
             else
-                Optional.of(relay.get().first)
+                Optional.of(relay.get().key)
         }
     }
 
