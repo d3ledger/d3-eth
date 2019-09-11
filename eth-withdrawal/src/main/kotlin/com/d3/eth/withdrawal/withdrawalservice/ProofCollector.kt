@@ -205,15 +205,14 @@ class ProofCollector(
     }
 
     private fun findInAccDetail(acc: String, name: String): Result<String, Exception> {
-        return queryHelper.getAccountDetails(
+        return queryHelper.getAccountDetailsFirst(
             acc,
             withdrawalServiceConfig.registrationIrohaAccount
-        ).map { relays ->
-            val keys = relays.filterValues { it == name }.keys
-            if (keys.isEmpty())
+        ) { _, value -> value == name }.map { relay ->
+            if (!relay.isPresent)
                 throw Exception("No relay address in account details $acc bind to $name")
             else
-                keys.first()
+                relay.get().first
         }
     }
 

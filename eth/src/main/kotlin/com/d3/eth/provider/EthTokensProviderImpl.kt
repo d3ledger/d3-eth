@@ -8,6 +8,7 @@ package com.d3.eth.provider
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.fanout
+import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import mu.KLogging
 
@@ -102,20 +103,27 @@ class EthTokensProviderImpl(
     override fun getTokenAddress(assetId: String): Result<String, Exception> {
         return if (assetId == "$ETH_NAME#$ETH_DOMAIN")
             Result.of { ETH_ADDRESS }
-        else irohaQueryHelper.getAccountDetails(
+        else irohaQueryHelper.getAccountDetailsFirst(
             ethAnchoredTokenStorageAccount,
             ethAnchoredTokenSetterAccount
-        ).fanout {
-            irohaQueryHelper.getAccountDetails(
-                irohaAnchoredTokenStorageAccount,
-                irohaAnchoredTokenSetterAccount
-            )
-        }.map { (ethAnchored, irohaAnchored) ->
-            val res = ethAnchored.plus(irohaAnchored).filterValues { it == assetId }
-            if (res.isEmpty())
-                throw IllegalArgumentException("Token $assetId not found")
-            res.keys.first()
-        }
+        ) { _, value -> value == assetId }
+            .flatMap { tokenAddress ->
+                if (tokenAddress.isPresent) {
+                    Result.of { tokenAddress }
+                } else {
+                    irohaQueryHelper.getAccountDetailsFirst(
+                        irohaAnchoredTokenStorageAccount,
+                        irohaAnchoredTokenSetterAccount
+                    ) { _, value -> value == assetId }
+                }
+            }
+            .map { tokenAddress ->
+                if (!tokenAddress.isPresent) {
+                    throw IllegalArgumentException("Token $assetId not found")
+                } else {
+                    tokenAddress.get().first
+                }
+            }
     }
 
     /**
@@ -124,18 +132,18 @@ class EthTokensProviderImpl(
     override fun isIrohaAnchored(assetId: String): Result<Boolean, Exception> {
         if (assetId == "$ETH_NAME#$ETH_DOMAIN")
             return Result.of { false }
-        return irohaQueryHelper.getAccountDetails(
+        return irohaQueryHelper.getAccountDetailsFirst(
             ethAnchoredTokenStorageAccount,
             ethAnchoredTokenSetterAccount
-        ).fanout {
-            irohaQueryHelper.getAccountDetails(
+        ) { _, value -> value == assetId }.fanout {
+            irohaQueryHelper.getAccountDetailsFirst(
                 irohaAnchoredTokenStorageAccount,
                 irohaAnchoredTokenSetterAccount
-            )
+            ) { _, value -> value == assetId }
         }.map { (ethAnchored, irohaAnchored) ->
-            if (irohaAnchored.containsValue(assetId))
+            if (irohaAnchored.isPresent)
                 return@map true
-            if (!ethAnchored.containsValue(assetId))
+            if (!ethAnchored.isPresent)
                 throw IllegalArgumentException("Token $assetId not found")
             false
         }

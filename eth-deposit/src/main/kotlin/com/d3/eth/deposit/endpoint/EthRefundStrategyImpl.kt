@@ -92,10 +92,8 @@ class EthRefundStrategyImpl(
                     val value = commands.setAccountDetail.value
                     val destEthAddress = ""
                     logger.info { "Rollback case ($key, $value)" }
-
-                    val relayAddress = relayProvider.getRelays().get().filter {
-                        it.value == commands.transferAsset.srcAccountId
-                    }.keys.first()
+                    //TODO ask Alexei
+                    val relayAddress = relayProvider.getRelayByAccountId(commands.transferAsset.srcAccountId).get().get()
 
                     EthRefund(
                         destEthAddress,
