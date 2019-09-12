@@ -11,6 +11,8 @@ import com.github.kittinunf.result.map
 import mu.KLogging
 import java.util.*
 
+const val ETH_WALLET = "ethereum_wallet"
+
 /**
  * Implementation of [EthRelayProvider] with Iroha storage.
  *
@@ -46,14 +48,15 @@ class EthRelayProviderIrohaImpl(
 
     /** Get relay belonging to [irohaAccountId] */
     override fun getRelayByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> {
-        return queryHelper.getAccountDetailsFirst(
-            notaryAccount,
-            registrationAccount
-        ) { _, value -> value == irohaAccountId }.map { relay ->
+        return queryHelper.getAccountDetails(
+            irohaAccountId,
+            registrationAccount,
+            ETH_WALLET
+        ).map { relay ->
             if (!relay.isPresent)
                 Optional.empty()
             else
-                Optional.of(relay.get().key)
+                Optional.of(relay.get())
         }
     }
 
