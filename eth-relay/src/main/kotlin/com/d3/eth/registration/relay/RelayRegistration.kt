@@ -117,9 +117,9 @@ class RelayRegistration(
             while (true) {
                 logger.info { "Relay replenishment triggered" }
 
-                freeRelayProvider.getRelays().flatMap { relays ->
-                    logger.info { "Free relays: ${relays.size}" }
-                    val toDeploy = relayRegistrationConfig.number - relays.size
+                freeRelayProvider.getRelaysCount().flatMap { relaysCount ->
+                    logger.info { "Free relays: $relaysCount" }
+                    val toDeploy = relayRegistrationConfig.number - relaysCount
                     deploy(
                         toDeploy,
                         ethRelayImplementationAddress,
