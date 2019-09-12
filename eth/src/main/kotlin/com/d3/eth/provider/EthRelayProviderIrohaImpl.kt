@@ -7,7 +7,8 @@ package com.d3.eth.provider
 
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
 import com.github.kittinunf.result.Result
-import com.github.kittinunf.result.map
+import iroha.protocol.QryResponses
+import jp.co.soramitsu.iroha.java.ErrorResponseException
 import mu.KLogging
 import java.util.*
 
@@ -47,17 +48,27 @@ class EthRelayProviderIrohaImpl(
     }
 
     /** Get relay belonging to [irohaAccountId] */
-    override fun getRelayByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> {
-        return queryHelper.getAccountDetails(
+    override fun getRelayByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> = Result.of {
+        queryHelper.getAccountDetails(
             irohaAccountId,
             registrationAccount,
             ETH_WALLET
-        ).map { relay ->
-            if (!relay.isPresent)
-                Optional.empty()
-            else
-                Optional.of(relay.get())
-        }
+        ).fold(
+            { relay ->
+                if (!relay.isPresent) {
+                    Optional.empty()
+                } else {
+                    Optional.of(relay.get())
+                }
+            }, { ex ->
+                if (ex is ErrorResponseException && ex.errorResponse.reason == QryResponses.ErrorResponse.Reason.NO_ACCOUNT_DETAIL) {
+                    // if no account was found
+                    Optional.empty()
+                } else {
+                    // if another error or exception occurred
+                    throw ex
+                }
+            })
     }
 
     /**
