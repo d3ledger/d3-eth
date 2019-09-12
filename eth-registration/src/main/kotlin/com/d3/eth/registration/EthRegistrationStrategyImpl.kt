@@ -8,11 +8,11 @@ package com.d3.eth.registration
 import com.d3.commons.registration.RegistrationStrategy
 import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
+import com.d3.eth.provider.ETH_WALLET
 import com.d3.eth.provider.EthFreeRelayProvider
 import com.d3.eth.provider.EthRelayProvider
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
-import com.github.kittinunf.result.map
 import mu.KLogging
 
 /**
@@ -29,13 +29,11 @@ class EthRegistrationStrategyImpl(
         logger.info { "Init EthRegistrationStrategyImpl with irohaCreator=${irohaConsumer.creator}, notaryIrohaAccount=$notaryIrohaAccount" }
     }
 
-    private val CURRENCY_WALLET = "ethereum_wallet"
-
     private val ethereumAccountRegistrator =
         SideChainRegistrator(
             irohaConsumer,
             notaryIrohaAccount,
-            CURRENCY_WALLET
+            ETH_WALLET
         )
 
     /**
