@@ -10,8 +10,10 @@ plugins {
 }
 
 dependencies {
-    compile project(":eth")
+    implementation project(":eth")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
 }
 
 apply plugin: 'application'

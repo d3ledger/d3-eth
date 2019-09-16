@@ -10,8 +10,13 @@ plugins {
 }
 
 dependencies {
-    compile project(":eth")
+    implementation project(":eth")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
+    implementation "com.github.soramitsu.chain-adapter:chain-adapter-client:$chain_adapter_client_version"
+
+    implementation 'org.web3j:core:4.2.0'
 }
 
 apply plugin: 'application'
