@@ -14,7 +14,7 @@ dependencies {
     implementation project(":eth")
     implementation project(":eth-deposit")
     implementation project(":eth-vacuum")
-    
+
     implementation project(":notary-eth-integration-test")
 
     implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
