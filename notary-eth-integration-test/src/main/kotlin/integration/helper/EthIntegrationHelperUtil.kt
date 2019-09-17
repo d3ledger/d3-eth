@@ -49,7 +49,6 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     val ethTestConfig =
         loadConfigs("test", TestEthereumConfig::class.java, "/test.properties").get()
 
-
     override val accountHelper by lazy { EthereumAccountHelper(irohaAPI) }
 
     /** Ethereum utils */

@@ -1,16 +1,13 @@
 dependencies {
-    compile "com.github.d3ledger.notary:notary-commons:$notary_version"
+    implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
 
     // Eth library
-    compile 'org.web3j:core:4.2.0'
-
-    // Waves library
-    compile 'com.wavesplatform:wavesj:0.4'
+    implementation "org.web3j:core:$web3j_version"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
     // Chain adapter
-    compile "com.github.soramitsu.chain-adapter:chain-adapter-client:$chain_adapter_client_version"
+    implementation "com.github.soramitsu.chain-adapter:chain-adapter-client:$chain_adapter_client_version"
 }
 
 

@@ -1,5 +1,9 @@
 dependencies {
-    compile project(":eth")
+    implementation project(":eth")
+
+    implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
+
+    implementation "org.web3j:core:$web3j_version"
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'

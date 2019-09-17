@@ -40,12 +40,16 @@ task integrationTest(type: Test) {
 check.dependsOn integrationTest
 
 dependencies {
-    compile project(":eth-erc20-registration")
-    compile project(":eth-registration")
-    compile project(":eth-relay")
-    compile project(":eth-deposit")
-    compile project(":eth-withdrawal")
+    implementation project(":eth")
+    implementation project(":eth-erc20-registration")
+    implementation project(":eth-registration")
+    implementation project(":eth-relay")
+    implementation project(":eth-deposit")
+    implementation project(":eth-vacuum")
+    implementation project(":eth-withdrawal")
 
-    compile "com.github.d3ledger.notary:notary-registration:$notary_version"
-    compile "com.github.d3ledger.notary:notary-iroha-integration-test:$notary_version"
+    implementation "com.github.d3ledger.notary:notary-registration:$notary_version"
+    implementation "com.github.d3ledger.notary:notary-iroha-integration-test:$notary_version"
+
+    implementation "org.web3j:core:$web3j_version"
 }

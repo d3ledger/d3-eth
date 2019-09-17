@@ -1,5 +1,7 @@
 dependencies {
-    compile project(":eth")
+    implementation project(":eth")
+
+    implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
 }
 
 task runERC20TokenRegistration(type: JavaExec) {
