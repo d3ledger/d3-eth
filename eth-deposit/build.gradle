@@ -16,7 +16,7 @@ dependencies {
     implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
     implementation "com.github.soramitsu.chain-adapter:chain-adapter-client:$chain_adapter_client_version"
 
-    implementation 'org.web3j:core:4.2.0'
+    implementation "org.web3j:core:$web3j_version"
 }
 
 apply plugin: 'application'

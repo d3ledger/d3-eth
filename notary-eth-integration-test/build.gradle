@@ -51,5 +51,5 @@ dependencies {
     implementation "com.github.d3ledger.notary:notary-registration:$notary_version"
     implementation "com.github.d3ledger.notary:notary-iroha-integration-test:$notary_version"
 
-    implementation 'org.web3j:core:4.2.0'
+    implementation "org.web3j:core:$web3j_version"
 }

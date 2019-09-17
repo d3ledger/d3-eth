@@ -19,7 +19,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    implementation 'org.web3j:core:4.2.0'
+    implementation "org.web3j:core:$web3j_version"
 }
 
 apply plugin: 'application'

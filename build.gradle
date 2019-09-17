@@ -3,6 +3,8 @@ buildscript {
     ext.ktor_version = '1.0.0'
     ext.notary_version = '1a605fee92f53b55d074f87787c2ceca9acec687'
     ext.chain_adapter_client_version= 'd63c4af76aa589fbc545e1859122f66764771b64'
+    ext.web3j_version = '4.2.0'
+
     repositories {
         mavenCentral()
         jcenter()
