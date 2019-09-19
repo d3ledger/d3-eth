@@ -9,7 +9,7 @@ import com.d3.commons.registration.RegistrationStrategy
 import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.eth.provider.ETH_WALLET
-import com.d3.eth.provider.EthFreeRelayProvider
+import com.d3.eth.provider.EthFreeClientAddressProvider
 import com.d3.eth.provider.EthRelayProvider
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
@@ -19,7 +19,7 @@ import mu.KLogging
  * Effective implementation of [RegistrationStrategy]
  */
 class EthRegistrationStrategyImpl(
-    private val ethFreeRelayProvider: EthFreeRelayProvider,
+    private val ethFreeRelayProvider: EthFreeClientAddressProvider,
     private val ethRelayProvider: EthRelayProvider,
     private val irohaConsumer: IrohaConsumer,
     private val notaryIrohaAccount: String
@@ -54,7 +54,7 @@ class EthRegistrationStrategyImpl(
             .flatMap { assignedRelays ->
                 if (assignedRelays.isPresent)
                     throw IllegalArgumentException("Client $accountName@$domainId has already been registered with relay: ${assignedRelays.get()}")
-                ethFreeRelayProvider.getRelay()
+                ethFreeRelayProvider.getAddress()
             }.flatMap { freeEthWallet ->
                 // register with relay in Iroha
                 ethereumAccountRegistrator.register(
@@ -68,7 +68,7 @@ class EthRegistrationStrategyImpl(
      * Return number of free relays.
      */
     override fun getFreeAddressNumber(): Result<Int, Exception> {
-        return ethFreeRelayProvider.getRelaysCount()
+        return ethFreeRelayProvider.getAddressCount()
     }
 
     /**

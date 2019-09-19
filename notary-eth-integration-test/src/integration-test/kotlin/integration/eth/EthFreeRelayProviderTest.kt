@@ -66,7 +66,7 @@ class EthFreeRelayProviderTest {
                     integrationHelper.accountHelper.notaryAccount.accountId,
                     creator
                 )
-            val result = freeWalletsProvider.getRelay()
+            val result = freeWalletsProvider.getAddress()
 
             assertEquals(ethFreeWallet, result.get())
         }
@@ -83,7 +83,7 @@ class EthFreeRelayProviderTest {
 
         val freeWalletsProvider =
             EthFreeRelayProvider(integrationHelper.queryHelper, creator, wrongMasterAccount)
-        freeWalletsProvider.getRelay()
+        freeWalletsProvider.getAddress()
             .success { fail { "should return Exception" } }
     }
 

@@ -10,9 +10,7 @@ dependencies {
     implementation "com.github.soramitsu.chain-adapter:chain-adapter-client:$chain_adapter_client_version"
 }
 
-
 apply plugin: 'kotlin'
-
 
 /*
  * Send Ether from contract with internal transaction

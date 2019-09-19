@@ -21,7 +21,7 @@ class EthFreeRelayProvider(
     private val queryHelper: IrohaQueryHelper,
     private val notaryIrohaAccount: String,
     private val registrationIrohaAccount: String
-) {
+) : EthFreeClientAddressProvider {
 
     private val freeRelayPredicate = { _: String, value: String -> value == "free" }
 
@@ -31,11 +31,7 @@ class EthFreeRelayProvider(
         }
     }
 
-    /**
-     * Get first free Ethereum relay wallet.
-     * @return free Ethereum relay wallet
-     */
-    fun getRelay(): Result<String, Exception> {
+    override fun getAddress(): Result<String, Exception> {
         return queryHelper.getAccountDetailsFirst(
             notaryIrohaAccount,
             registrationIrohaAccount,
@@ -45,6 +41,18 @@ class EthFreeRelayProvider(
                 throw IllegalStateException("EthFreeRelayProvider - no free relay wallets created by $registrationIrohaAccount")
             freeWallet.get().key
         }
+    }
+
+    /**
+     * Get number of all free Ethereum relay wallets
+     * @return number of free Ethereum relay wallets
+     */
+    override fun getAddressCount(): Result<Int, Exception> {
+        return queryHelper.getAccountDetailsCount(
+            notaryIrohaAccount,
+            registrationIrohaAccount,
+            freeRelayPredicate
+        )
     }
 
     /**
@@ -59,18 +67,6 @@ class EthFreeRelayProvider(
         ).map { relays ->
             relays.keys
         }
-    }
-
-    /**
-     * Get number of all free Ethereum relay wallets
-     * @return number of free Ethereum relay wallets
-     */
-    fun getRelaysCount(): Result<Int, Exception> {
-        return queryHelper.getAccountDetailsCount(
-            notaryIrohaAccount,
-            registrationIrohaAccount,
-            freeRelayPredicate
-        )
     }
 
     /**

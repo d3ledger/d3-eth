@@ -166,7 +166,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      * Get address of first free relay.
      */
     fun getFreeRelay(): String {
-        return ethFreeRelayProvider.getRelay().get()
+        return ethFreeRelayProvider.getAddress().get()
     }
 
     /**
@@ -341,11 +341,13 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         keypair: KeyPair = ModelUtil.generateKeypair()
     ): String {
         ethRegistrationStrategy.register(name, D3_DOMAIN, keypair.public.toHexString())
-            .fold({ registeredEthWallet ->
-                logger.info("registered client $name with relay $registeredEthWallet")
-                return registeredEthWallet
-            },
-                { ex -> throw RuntimeException("$name was not registered", ex) })
+            .fold(
+                { registeredEthWallet ->
+                    logger.info("registered client $name with relay $registeredEthWallet")
+                    return registeredEthWallet
+                },
+                { ex -> throw RuntimeException("$name was not registered", ex) }
+            )
     }
 
     /**

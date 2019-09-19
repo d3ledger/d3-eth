@@ -8,13 +8,13 @@ package com.d3.eth.registration.relay
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
-import integration.eth.config.EthereumPasswords
 import com.d3.eth.provider.EthFreeRelayProvider
 import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
+import integration.eth.config.EthereumPasswords
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -117,7 +117,7 @@ class RelayRegistration(
             while (true) {
                 logger.info { "Relay replenishment triggered" }
 
-                freeRelayProvider.getRelaysCount().flatMap { relaysCount ->
+                freeRelayProvider.getAddressCount().flatMap { relaysCount ->
                     logger.info { "Free relays: $relaysCount" }
                     val toDeploy = relayRegistrationConfig.number - relaysCount
                     deploy(
