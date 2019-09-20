@@ -11,6 +11,7 @@ import com.github.kittinunf.result.Result
  * Provide free client Ethereum addresses
  */
 interface EthFreeClientAddressProvider {
+
     /**
      * Get free client address
      */

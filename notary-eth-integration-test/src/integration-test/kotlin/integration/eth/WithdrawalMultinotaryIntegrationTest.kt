@@ -166,7 +166,7 @@ class WithdrawalMultinotaryIntegrationTest {
                 integrationHelper.queryHelper,
                 masterAccount,
                 integrationHelper.accountHelper.registrationAccount.accountId
-            ).getRelays().get().filter {
+            ).getAddresses().get().filter {
                 it.value == clientId
             }.keys.first()
 

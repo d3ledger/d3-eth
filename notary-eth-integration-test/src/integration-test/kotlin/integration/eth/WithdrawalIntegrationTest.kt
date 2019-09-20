@@ -102,7 +102,7 @@ class WithdrawalIntegrationTest {
                 ModelUtil.generateKeypair().public.toHexString(),
                 registrationTestEnvironment.registrationConfig.port
             )
-            Assertions.assertEquals(200, res.statusCode)
+            assertEquals(200, res.statusCode)
             val clientId = "$client@$D3_DOMAIN"
             integrationHelper.registerClientInEth(
                 client,
@@ -113,7 +113,7 @@ class WithdrawalIntegrationTest {
                 integrationHelper.queryHelper,
                 masterAccount,
                 integrationHelper.accountHelper.registrationAccount.accountId
-            ).getRelays().get().filter {
+            ).getAddresses().get().filter {
                 it.value == clientId
             }.keys.first()
 

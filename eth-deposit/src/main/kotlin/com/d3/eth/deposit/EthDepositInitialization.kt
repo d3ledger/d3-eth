@@ -23,7 +23,7 @@ import integration.eth.config.EthereumPasswords
 import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
-import com.d3.eth.provider.EthRelayProvider
+import com.d3.eth.provider.EthAddressProvider
 import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
@@ -57,7 +57,7 @@ class EthDepositInitialization(
     private val ethDepositConfig: EthDepositConfig,
     private val passwordsConfig: EthereumPasswords,
     rmqConfig: RMQConfig,
-    private val ethRelayProvider: EthRelayProvider,
+    private val ethRelayProvider: EthAddressProvider,
     private val ethTokensProvider: EthTokensProvider
 ) {
     private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(

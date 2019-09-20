@@ -8,15 +8,15 @@ package com.d3.eth.provider
 import com.github.kittinunf.result.Result
 import java.util.*
 
-/** Interface of an instance that provides deployed ethereum relays */
-interface EthRelayProvider {
+/** Interface that provides relation between deployed Ethereum addresses and iroha accounts */
+interface EthAddressProvider {
 
-    /** Returns relays in form of (ethereum wallet -> iroha user name) */
-    fun getRelays(): Result<Map<String, String>, Exception>
+    /** Return all addresses in form of (ethereum address -> Iroha account id) */
+    fun getAddresses(): Result<Map<String, String>, Exception>
 
     /**
      * Get relay belonging to [irohaAccountId]
-     * @return relay or null if relay is absent
+     * @return address or [Optional.empty] if address is absent
      */
     fun getRelayByAccountId(irohaAccountId: String): Result<Optional<String>, Exception>
 }

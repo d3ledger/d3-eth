@@ -48,7 +48,7 @@ class RelayVacuum(
      * Returns all non free relays
      */
     private fun getAllRelays(): Result<List<Relay>, Exception> {
-        return ethRelayProvider.getRelays().map { wallets ->
+        return ethRelayProvider.getAddresses().map { wallets ->
             wallets.keys.map { ethPublicKey ->
                 deployHelper.loadRelayContract(ethPublicKey)
             }

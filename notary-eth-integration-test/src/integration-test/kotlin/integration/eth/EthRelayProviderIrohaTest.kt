@@ -38,7 +38,7 @@ class EthRelayProviderIrohaTest {
 
     /**
      * @given ethereum relay wallets are stored in the system
-     * @when getRelays() is called
+     * @when getAddresses() is called
      * @then not free wallets are returned in a map
      */
     @Test
@@ -64,7 +64,7 @@ class EthRelayProviderIrohaTest {
                 integrationHelper.queryHelper,
                 relayStorage,
                 relaySetter
-            ).getRelays()
+            ).getAddresses()
                 .fold(
                     { assertEquals(valid, it) },
                     { ex -> fail("cannot get relays", ex) }
@@ -74,7 +74,7 @@ class EthRelayProviderIrohaTest {
 
     /**
      * @given There is no relay accounts registered (we use test accountId as relay holder)
-     * @when getRelays() is called
+     * @when getAddresses() is called
      * @then empty map is returned
      */
     @Test
@@ -85,7 +85,7 @@ class EthRelayProviderIrohaTest {
                 integrationHelper.queryHelper,
                 integrationHelper.testCredential.accountId,
                 relaySetter
-            ).getRelays()
+            ).getAddresses()
                 .fold(
                     { assert(it.isEmpty()) },
                     { ex -> fail("result has exception", ex) }

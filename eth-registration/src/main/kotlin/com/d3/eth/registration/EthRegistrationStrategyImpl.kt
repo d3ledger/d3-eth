@@ -10,7 +10,7 @@ import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.eth.provider.ETH_WALLET
 import com.d3.eth.provider.EthFreeClientAddressProvider
-import com.d3.eth.provider.EthRelayProvider
+import com.d3.eth.provider.EthAddressProvider
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import mu.KLogging
@@ -20,7 +20,7 @@ import mu.KLogging
  */
 class EthRegistrationStrategyImpl(
     private val ethFreeRelayProvider: EthFreeClientAddressProvider,
-    private val ethRelayProvider: EthRelayProvider,
+    private val ethRelayProvider: EthAddressProvider,
     private val irohaConsumer: IrohaConsumer,
     private val notaryIrohaAccount: String
 ) : RegistrationStrategy {

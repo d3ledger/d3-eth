@@ -340,11 +340,11 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         name: String,
         keypair: KeyPair = ModelUtil.generateKeypair()
     ): String {
-        ethRegistrationStrategy.register(name, D3_DOMAIN, keypair.public.toHexString())
+        return ethRegistrationStrategy.register(name, D3_DOMAIN, keypair.public.toHexString())
             .fold(
                 { registeredEthWallet ->
                     logger.info("registered client $name with relay $registeredEthWallet")
-                    return registeredEthWallet
+                    registeredEthWallet
                 },
                 { ex -> throw RuntimeException("$name was not registered", ex) }
             )
@@ -372,7 +372,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     /**
      * Returns wallets registered by master account in Iroha
      */
-    fun getRegisteredEthWallets(): Set<String> = ethRelayProvider.getRelays().get().keys
+    fun getRegisteredEthWallets(): Set<String> = ethRelayProvider.getAddresses().get().keys
 
     /**
      * Add list of [relays].

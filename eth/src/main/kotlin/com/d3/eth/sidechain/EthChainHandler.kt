@@ -25,7 +25,7 @@ import java.math.BigInteger
  */
 class EthChainHandler(
     val web3: Web3j,
-    val ethRelayProvider: EthRelayProvider,
+    val ethRelayProvider: EthAddressProvider,
     val ethTokensProvider: EthTokensProvider
 ) :
     ChainHandler<EthBlock> {
@@ -146,7 +146,7 @@ class EthChainHandler(
     override fun parseBlock(block: EthBlock): List<SideChainEvent.PrimaryBlockChainEvent> {
         logger.info { "Ethereum chain handler for block ${block.block.number}" }
 
-        return ethRelayProvider.getRelays().fanout {
+        return ethRelayProvider.getAddresses().fanout {
             ethTokensProvider.getEthAnchoredTokens().fanout {
                 ethTokensProvider.getIrohaAnchoredTokens()
             }
