@@ -5,6 +5,7 @@
 
 package com.d3.eth.registration.relay
 
+import com.d3.commons.model.D3ErrorException
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
@@ -125,7 +126,13 @@ class RelayRegistration(
                         ethRelayImplementationAddress,
                         ethMasterAddress
                     )
-                }.failure { throw it }
+                }.failure {
+                    throw D3ErrorException.warning(
+                        failedOperation = RELAY_REGISTRATION_OPERATION,
+                        description = "Cannot get relays",
+                        errorCause = it
+                    )
+                }
 
                 runBlocking { delay(relayRegistrationConfig.replenishmentPeriod * 1000) }
             }

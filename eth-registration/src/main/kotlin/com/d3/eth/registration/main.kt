@@ -12,13 +12,14 @@ import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
+import kotlin.system.exitProcess
 
 private val logger = KLogging().logger
-
+const val REGISTRATION_OPERATION = "Ethereum user registration"
 /**
  * Entry point for Registration Service
  */
-fun main(args: Array<String>) {
+fun main() {
     loadLocalConfigs(
         "eth-registration",
         EthRegistrationConfig::class.java,
@@ -29,7 +30,7 @@ fun main(args: Array<String>) {
 }
 
 fun executeRegistration(ethRegistrationConfig: EthRegistrationConfig) {
-    logger.info { "Run ETH registration service" }
+    logger.info("Run ETH registration service")
     val irohaNetwork =
         IrohaAPI(ethRegistrationConfig.iroha.hostname, ethRegistrationConfig.iroha.port)
 
@@ -37,6 +38,6 @@ fun executeRegistration(ethRegistrationConfig: EthRegistrationConfig) {
         .failure { ex ->
             logger.error("cannot run eth registration", ex)
             irohaNetwork.close()
-            System.exit(1)
+            exitProcess(1)
         }
 }

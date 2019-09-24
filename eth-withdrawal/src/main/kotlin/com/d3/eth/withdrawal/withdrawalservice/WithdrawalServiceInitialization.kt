@@ -8,6 +8,7 @@ package com.d3.eth.withdrawal.withdrawalservice
 import com.d3.chainadapter.client.RMQConfig
 import com.d3.chainadapter.client.ReliableIrohaChainListener
 import com.d3.commons.expansion.ServiceExpansion
+import com.d3.commons.model.D3ErrorException
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.provider.NotaryPeerListProviderImpl
 import com.d3.commons.sidechain.SideChainEvent
@@ -28,6 +29,7 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
+import kotlin.system.exitProcess
 
 // TODO restore these parameters in configs
 const val master_address_env = "WITHDRAWAL_ETHMASTERWALLET"
@@ -146,10 +148,18 @@ class WithdrawalServiceInitialization(
                                 try {
                                     val transactionReceipt = ethConsumer.consume(event)
                                     if (transactionReceipt == null || transactionReceipt.status == FAILED_STATUS) {
-                                        throw RuntimeException("Ethereum transaction has failed")
+                                        throw D3ErrorException.fatal(
+                                            WITHDRAWAL_OPERATION,
+                                            "Ethereum transaction has failed"
+                                        )
                                     } else {
                                         withdrawalService.finalizeWithdrawal(event)
-                                            .failure { ex -> throw ex }
+                                            .failure { ex ->
+                                                throw D3ErrorException.fatal(
+                                                    WITHDRAWAL_OPERATION,
+                                                    "Cannot finalize withdrawal"
+                                                )
+                                            }
                                     }
                                 } catch (e: Exception) {
                                     logger.error("Withdrawal error, perform rollback", e)
@@ -164,7 +174,7 @@ class WithdrawalServiceInitialization(
                         //TODO call ack()
                     }, { ex ->
                         logger.error("Withdrawal observable error", ex)
-                        System.exit(1)
+                        exitProcess(1)
                     }
                 )
             Unit

@@ -5,6 +5,7 @@
 
 package com.d3.eth.withdrawal.withdrawalservice
 
+import com.d3.commons.model.D3ErrorException
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.service.RollbackService
 import com.d3.commons.service.WithdrawalFinalizationDetails
@@ -135,14 +136,20 @@ class WithdrawalServiceImpl(
             // check transfers
             val transfers = transferAndFee.getOrDefault(false, emptyList())
             if (transfers.isEmpty())
-                throw IllegalStateException("Withddrawal tx not found.")
+                throw D3ErrorException.warning(
+                    failedOperation = WITHDRAWAL_OPERATION,
+                    description = "Withdrawal tx not found"
+                )
 
             // check fees
             var feeAmount = BigDecimal.ZERO
             var feeAssetId = ""
             val fees = transferAndFee.getOrDefault(true, emptyList())
             if (fees.size > 1)
-                throw IllegalStateException("Too many fees in transaction.")
+                throw D3ErrorException.warning(
+                    failedOperation = WITHDRAWAL_OPERATION,
+                    description = "Too many fees in transaction"
+                )
             if (fees.size == 1) {
                 feeAmount = fees.first().amount.toBigDecimal()
                 feeAssetId = fees.first().assetId
