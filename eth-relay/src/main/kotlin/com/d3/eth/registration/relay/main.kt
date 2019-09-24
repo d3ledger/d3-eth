@@ -16,8 +16,11 @@ import com.github.kittinunf.result.*
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
+import kotlin.system.exitProcess
 
 private val logger = KLogging().logger
+
+const val RELAY_REGISTRATION_OPERATION = "Ethereum relay registration"
 
 /**
  * Entry point for deployment of relay smart contracts that will be used in client registration.
@@ -79,7 +82,7 @@ fun main(args: Array<String>) {
             }
         }.failure { ex ->
             logger.error("Cannot run relay deployer", ex)
-            System.exit(1)
+            exitProcess(1)
         }
     }
 }
