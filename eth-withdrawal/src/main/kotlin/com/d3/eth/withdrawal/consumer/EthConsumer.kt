@@ -5,9 +5,11 @@
 
 package com.d3.eth.withdrawal.consumer
 
+import com.d3.commons.model.D3ErrorException
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.vacuum.executeVacuum
+import com.d3.eth.withdrawal.withdrawalservice.WITHDRAWAL_OPERATION
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceOutputEvent
 import contract.Relay
 import integration.eth.config.EthereumConfig
@@ -100,7 +102,11 @@ class EthConsumer(
                             return withdraw(relay, event)
                         },
                         { ex ->
-                            throw ex
+                            throw D3ErrorException.fatal(
+                                failedOperation = WITHDRAWAL_OPERATION,
+                                description = "Cannot execute vacuum",
+                                errorCause = ex
+                            )
                         }
                     )
                 }

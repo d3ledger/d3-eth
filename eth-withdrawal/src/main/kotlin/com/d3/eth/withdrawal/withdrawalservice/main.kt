@@ -22,13 +22,14 @@ import mu.KLogging
 private val logger = KLogging().logger
 
 private const val RELAY_VACUUM_PREFIX = "relay-vacuum"
+const val WITHDRAWAL_OPERATION = "Ethereum withdrawal"
 
 const val ETH_WITHDRAWAL_SERVICE_NAME = "eth-withdrawal"
 
 /**
  * Main entry point of Withdrawal Service app
  */
-fun main(args: Array<String>) {
+fun main() {
     loadLocalConfigs("withdrawal", WithdrawalServiceConfig::class.java, "withdrawal.properties")
         .fanout { loadEthPasswords("withdrawal", "/eth/ethereum_password.properties") }
         .map { (withdrawalConfig, passwordConfig) ->

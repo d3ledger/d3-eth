@@ -5,6 +5,7 @@
 
 package com.d3.eth.registration
 
+import com.d3.commons.model.D3ErrorException
 import com.d3.commons.registration.RegistrationStrategy
 import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
@@ -53,7 +54,10 @@ class EthRegistrationStrategyImpl(
         return ethRelayProvider.getRelayByAccountId("$accountName@$domainId")
             .flatMap { assignedRelays ->
                 if (assignedRelays.isPresent)
-                    throw IllegalArgumentException("Client $accountName@$domainId has already been registered with relay: ${assignedRelays.get()}")
+                    throw D3ErrorException.warning(
+                        failedOperation = REGISTRATION_OPERATION,
+                        description = "Client $accountName@$domainId has already been registered with relay: ${assignedRelays.get()}"
+                    )
                 ethFreeRelayProvider.getAddress()
             }.flatMap { freeEthWallet ->
                 // register with relay in Iroha

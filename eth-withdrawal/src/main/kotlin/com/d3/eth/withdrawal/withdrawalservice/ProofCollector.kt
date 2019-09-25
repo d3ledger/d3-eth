@@ -5,6 +5,7 @@
 
 package com.d3.eth.withdrawal.withdrawalservice
 
+import com.d3.commons.model.D3ErrorException
 import com.d3.commons.provider.NotaryPeerListProvider
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
@@ -87,12 +88,12 @@ class ProofCollector(
                 try {
                     res = khttp.get("$peer/ethereum/proof/add_peer/$irohaTxHash")
                 } catch (e: Exception) {
-                    WithdrawalServiceImpl.logger.warn { "Exception was thrown while refund server request: server $peer" }
-                    WithdrawalServiceImpl.logger.warn { e.localizedMessage }
+                    logger.warn { "Exception was thrown while refund server request: server $peer" }
+                    logger.warn { e.localizedMessage }
                     return@forEach
                 }
                 if (res.statusCode != 200) {
-                    WithdrawalServiceImpl.logger.warn { "Error happened while refund server request: server $peer, error ${res.statusCode}" }
+                    logger.warn { "Error happened while refund server request: server $peer, error ${res.statusCode}" }
                     return@forEach
                 }
 
@@ -102,7 +103,7 @@ class ProofCollector(
 
                 when (response) {
                     is EthNotaryResponse.Error -> {
-                        WithdrawalServiceImpl.logger.warn { "EthNotaryResponse.Error: ${response.reason}" }
+                        logger.warn { "EthNotaryResponse.Error: ${response.reason}" }
                         return@forEach
                     }
 
@@ -117,7 +118,10 @@ class ProofCollector(
             }
 
             if (vv.size == 0) {
-                throw Exception("Not a single valid response was received from any refund server")
+                throw D3ErrorException.fatal(
+                    failedOperation = WITHDRAWAL_OPERATION,
+                    description = "Not a single valid response was received from any refund server"
+                )
             }
 
             AddPeerProof(
@@ -139,7 +143,10 @@ class ProofCollector(
                 val hash = event.hash
                 val amount = event.amount
                 if (!event.asset.contains("#ethereum") && !event.asset.contains("#sora")) {
-                    throw Exception("Incorrect asset name in Iroha event: " + event.asset)
+                    throw D3ErrorException.warning(
+                        failedOperation = WITHDRAWAL_OPERATION,
+                        description = "Incorrect asset name in Iroha event: " + event.asset
+                    )
                 }
 
                 val address = event.description
@@ -148,17 +155,16 @@ class ProofCollector(
                 val ss = ArrayList<ByteArray>()
 
                 notaryPeerListProvider.getPeerList().forEach { peer ->
-                    WithdrawalServiceImpl.logger.info { "Query $peer for proof for hash $hash" }
+                    logger.info { "Query $peer for proof for hash $hash" }
                     val res: khttp.responses.Response
                     try {
                         res = khttp.get("$peer/eth/$hash")
                     } catch (e: Exception) {
-                        WithdrawalServiceImpl.logger.warn { "Exception was thrown while refund server request: server $peer" }
-                        WithdrawalServiceImpl.logger.warn { e.localizedMessage }
+                        logger.warn("Exception was thrown while refund server request: server $peer", e)
                         return@forEach
                     }
                     if (res.statusCode != 200) {
-                        WithdrawalServiceImpl.logger.warn { "Error happened while refund server request: server $peer, error ${res.statusCode}" }
+                        logger.warn { "Error happened while refund server request: server $peer, error ${res.statusCode}" }
                         return@forEach
                     }
 
@@ -172,7 +178,7 @@ class ProofCollector(
 
                     when (response) {
                         is EthNotaryResponse.Error -> {
-                            WithdrawalServiceImpl.logger.warn { "EthNotaryResponse.Error: ${response.reason}" }
+                            logger.warn { "EthNotaryResponse.Error: ${response.reason}" }
                             return@forEach
                         }
 
@@ -186,7 +192,10 @@ class ProofCollector(
                     }
                 }
                 if (vv.size == 0) {
-                    throw Exception("Not a single valid response was received from any refund server")
+                    throw D3ErrorException.warning(
+                        failedOperation = WITHDRAWAL_OPERATION,
+                        description = "Not a single valid response was received from any refund server"
+                    )
                 }
 
                 val (coinAddress, precision) = tokenInfo
@@ -210,7 +219,10 @@ class ProofCollector(
             withdrawalServiceConfig.registrationIrohaAccount
         ) { _, value -> value == name }.map { relay ->
             if (!relay.isPresent)
-                throw Exception("No relay address in account details $acc bind to $name")
+                throw D3ErrorException.fatal(
+                    failedOperation = WITHDRAWAL_OPERATION,
+                    description = "No relay address in account details $acc bind to $name"
+                )
             else
                 relay.get().key
         }

@@ -5,11 +5,14 @@
 
 package com.d3.eth.deposit.endpoint
 
+import com.d3.commons.model.D3ErrorException
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.iroha.util.isWithdrawalTransaction
+import com.d3.eth.deposit.DEPOSIT_OPERATION
 import com.d3.eth.deposit.EthDepositConfig
+import com.d3.eth.deposit.REFUND_OPERATION
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.util.DeployHelper
@@ -23,8 +26,6 @@ import iroha.protocol.TransactionOuterClass.Transaction
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
 import java.math.BigDecimal
-
-class NotaryException(reason: String) : Exception(reason)
 
 /**
  * Class performs effective implementation of refund strategy for Ethereum
@@ -93,7 +94,8 @@ class EthRefundStrategyImpl(
                     val destEthAddress = ""
                     logger.info { "Rollback case ($key, $value)" }
                     //TODO ask Alexei
-                    val relayAddress = relayProvider.getRelayByAccountId(commands.transferAsset.srcAccountId).get().get()
+                    val relayAddress =
+                        relayProvider.getRelayByAccountId(commands.transferAsset.srcAccountId).get().get()
 
                     EthRefund(
                         destEthAddress,
@@ -135,16 +137,28 @@ class EthRefundStrategyImpl(
                                     tokenInfo.first,
                                     decimalAmount,
                                     request.irohaTx,
-                                    relayAddress.orElseThrow { Exception("Relay addres  not found for user ${withdrawalCommand.srcAccountId}") }
+                                    relayAddress.orElseThrow {
+                                        D3ErrorException.fatal(
+                                            failedOperation = REFUND_OPERATION,
+                                            description = "Relay address not found for user ${withdrawalCommand.srcAccountId}"
+                                        )
+                                    }
                                 )
                             },
-                            { throw it }
+                            {
+                                throw D3ErrorException.fatal(
+                                    failedOperation = REFUND_OPERATION,
+                                    description = "Cannot get relay by account id ${withdrawalCommand.srcAccountId}",
+                                    errorCause = it
+                                )
+                            }
                         )
                 }
                 else -> {
-                    val errorMsg = "Transaction doesn't contain expected commands."
-                    logger.error { errorMsg }
-                    throw NotaryException(errorMsg)
+                    throw D3ErrorException.warning(
+                        failedOperation = REFUND_OPERATION,
+                        description = "Transaction doesn't contain expected commands"
+                    )
                 }
             }
         }

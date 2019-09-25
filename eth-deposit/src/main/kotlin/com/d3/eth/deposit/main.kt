@@ -20,15 +20,18 @@ import com.github.kittinunf.result.*
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
+import kotlin.system.exitProcess
 
 private val logger = KLogging().logger
 
+const val DEPOSIT_OPERATION="Ethereum deposit"
+const val REFUND_OPERATION="Ethereum refund"
 const val ETH_DEPOSIT_SERVICE_NAME = "eth-deposit"
 
 /**
  * Application entry point
  */
-fun main(args: Array<String>) {
+fun main() {
     loadLocalConfigs("eth-deposit", EthDepositConfig::class.java, "deposit.properties")
         .fanout { loadEthPasswords("eth-deposit", "/eth/ethereum_password.properties") }
         .map { (depositConfig, ethereumPasswords) ->
@@ -41,7 +44,7 @@ fun main(args: Array<String>) {
         }
         .failure { ex ->
             logger.error("Cannot run eth deposit", ex)
-            System.exit(1)
+            exitProcess(1)
         }
 }
 
