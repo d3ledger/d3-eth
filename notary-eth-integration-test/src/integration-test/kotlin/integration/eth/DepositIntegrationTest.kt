@@ -24,6 +24,8 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Duration
 
+val waitForTime = 15_000L
+
 /**
  * Integration tests for deposit case.
  */
@@ -94,11 +96,8 @@ class DepositIntegrationTest {
                 integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
             val amount = BigInteger.valueOf(1_234_000_000_000)
             // send ETH
-
-            integrationHelper.purgeAndwaitOneIrohaBlock {
-                integrationHelper.sendEth(amount, relayWallet)
-            }
-            Thread.sleep(13_000)
+            integrationHelper.sendEth(amount, relayWallet)
+            Thread.sleep(waitForTime)
 
             Assertions.assertEquals(
                 BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
@@ -139,10 +138,8 @@ class DepositIntegrationTest {
             )
 
             // Send again 1234000000000 Ethereum network
-            integrationHelper.purgeAndwaitOneIrohaBlock {
-                integrationHelper.sendEth(amount, relayWallet)
-            }
-            Thread.sleep(3_000)
+            integrationHelper.sendEth(amount, relayWallet)
+            Thread.sleep(waitForTime)
 
             Assertions.assertEquals(
                 BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
@@ -175,10 +172,8 @@ class DepositIntegrationTest {
             val amount = BigInteger.valueOf(51)
 
             // send ETH
-            integrationHelper.purgeAndwaitOneIrohaBlock {
-                integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
-            }
-            Thread.sleep(7_000)
+            integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
+            Thread.sleep(waitForTime)
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),
@@ -215,10 +210,8 @@ class DepositIntegrationTest {
             )
 
             // Send again
-            integrationHelper.purgeAndwaitOneIrohaBlock {
-                integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
-            }
-            Thread.sleep(17_000)
+            integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
+            Thread.sleep(waitForTime)
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),
