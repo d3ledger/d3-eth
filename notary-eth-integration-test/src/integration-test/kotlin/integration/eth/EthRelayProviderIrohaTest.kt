@@ -99,7 +99,7 @@ class EthRelayProviderIrohaTest {
             integrationHelper.queryHelper,
             integrationHelper.testCredential.accountId,
             relaySetter
-        ).getRelayByAccountId("nonexist@domain")
+        ).getAddressByAccountId("nonexist@domain")
         assertFalse(res.get().isPresent)
     }
 }

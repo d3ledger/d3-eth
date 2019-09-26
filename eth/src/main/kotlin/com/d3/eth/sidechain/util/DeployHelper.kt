@@ -81,7 +81,8 @@ class DeployHelperBuilder(
                 ATTEMPTS_DEFAULT
             )
 
-    private val deployHelper = DeployHelper(ethereumConfig, nodeLogin, nodePassword, credentials, attempts)
+    private val deployHelper =
+        DeployHelper(ethereumConfig, nodeLogin, nodePassword, credentials, attempts)
 
     /**
      * Specify fast transaction manager to send multiple transactions one by one.
@@ -459,14 +460,14 @@ class DeployHelper(
      */
     fun sendERC20(tokenAddress: String, toAddress: String, amount: BigInteger) {
         val token =
-            contract.BasicCoin.load(
+            BasicCoin.load(
                 tokenAddress,
                 web3,
                 transactionManager,
                 StaticGasProvider(gasPrice, gasLimit)
             )
-        token.transfer(toAddress, amount).send()
-        logger.info { "ERC20 $amount with address $tokenAddress were sent to $toAddress" }
+        val tx = token.transfer(toAddress, amount).send()
+        logger.info { "ERC20 $amount with address $tokenAddress were sent to $toAddress, hash ${tx.transactionHash}" }
     }
 
     /**
@@ -477,7 +478,7 @@ class DeployHelper(
      */
     fun getERC20Balance(tokenAddress: String, whoAddress: String): BigInteger {
         val token =
-            contract.BasicCoin.load(
+            BasicCoin.load(
                 tokenAddress,
                 web3,
                 transactionManager,

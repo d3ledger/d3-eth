@@ -65,13 +65,8 @@ class EthRegistrationTest {
      */
     @Test
     fun correctRegistration() {
-        // deploy free relay
-        integrationHelper.deployRelays(1)
-        val freeRelay = integrationHelper.getFreeRelay()
-
         val name = String.getRandomString(7)
         val pubkey = Ed25519Sha3().generateKeypair().public.toHexString()
-        val clientId = "$name@d3"
 
         // register in Iroha
         var res = registrationServiceEnvironment.register(name, pubkey)
@@ -83,9 +78,6 @@ class EthRegistrationTest {
             ethRegistrationConfig.port
         )
         assertEquals(200, res.statusCode)
-
-        // check relay address
-        assertEquals(freeRelay, integrationHelper.getRelayByAccount(clientId).get())
     }
 
     /**
@@ -96,13 +88,8 @@ class EthRegistrationTest {
      */
     @Test
     fun doubleRegistration() {
-        // deploy free relay
-        integrationHelper.deployRelays(1)
-        val freeRelay = integrationHelper.getFreeRelay()
-
         val name = String.getRandomString(7)
         val pubkey = Ed25519Sha3().generateKeypair().public.toHexString()
-        val clientId = "$name@d3"
 
         // register client in Iroha
         var res = registrationServiceEnvironment.register(name, pubkey)
@@ -115,12 +102,6 @@ class EthRegistrationTest {
         )
         assertEquals(200, res.statusCode)
 
-        // check relay address
-        assertEquals(freeRelay, integrationHelper.getRelayByAccount(clientId).get())
-
-
-        // deploy free relay
-        integrationHelper.deployRelays(1)
         // try to register with the same name
         res = integrationHelper.sendRegistrationRequest(
             name,
@@ -128,9 +109,6 @@ class EthRegistrationTest {
             ethRegistrationConfig.port
         )
         assertEquals(500, res.statusCode)
-
-        // check relay address the same
-        assertEquals(freeRelay, integrationHelper.getRelayByAccount(clientId).get())
     }
 
 }

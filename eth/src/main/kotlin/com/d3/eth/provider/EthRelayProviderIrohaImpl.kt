@@ -48,7 +48,7 @@ class EthRelayProviderIrohaImpl(
     }
 
     /** Get relay belonging to [irohaAccountId] */
-    override fun getRelayByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> = Result.of {
+    override fun getAddressByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> = Result.of {
         queryHelper.getAccountDetails(
             irohaAccountId,
             registrationAccount,

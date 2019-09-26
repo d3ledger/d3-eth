@@ -18,5 +18,5 @@ interface EthAddressProvider {
      * Get relay belonging to [irohaAccountId]
      * @return address or [Optional.empty] if address is absent
      */
-    fun getRelayByAccountId(irohaAccountId: String): Result<Optional<String>, Exception>
+    fun getAddressByAccountId(irohaAccountId: String): Result<Optional<String>, Exception>
 }

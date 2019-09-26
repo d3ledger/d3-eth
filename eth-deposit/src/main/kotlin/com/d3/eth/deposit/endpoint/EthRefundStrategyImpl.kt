@@ -10,7 +10,6 @@ import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.iroha.util.isWithdrawalTransaction
-import com.d3.eth.deposit.DEPOSIT_OPERATION
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.REFUND_OPERATION
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
@@ -95,7 +94,7 @@ class EthRefundStrategyImpl(
                     logger.info { "Rollback case ($key, $value)" }
                     //TODO ask Alexei
                     val relayAddress =
-                        relayProvider.getRelayByAccountId(commands.transferAsset.srcAccountId).get().get()
+                        relayProvider.getAddressByAccountId(commands.transferAsset.srcAccountId).get().get()
 
                     EthRefund(
                         destEthAddress,
@@ -124,7 +123,7 @@ class EthRefundStrategyImpl(
                     val tokenInfo = tokensProvider.getTokenAddress(assetId)
                         .fanout { tokensProvider.getTokenPrecision(assetId) }
 
-                    relayProvider.getRelayByAccountId(withdrawalCommand.srcAccountId)
+                    relayProvider.getAddressByAccountId(withdrawalCommand.srcAccountId)
                         .fanout {
                             tokenInfo
                         }.fold(

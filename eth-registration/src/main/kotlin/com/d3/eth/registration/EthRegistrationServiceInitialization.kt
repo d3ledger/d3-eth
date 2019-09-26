@@ -9,13 +9,16 @@ import com.d3.commons.model.IrohaCredential
 import com.d3.commons.registration.RegistrationServiceEndpoint
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
-import com.d3.eth.provider.EthFreeRelayProvider
+import com.d3.eth.provider.EthFreeWalletProvider
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.map
+import integration.eth.config.EthereumPasswords
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
+
+val WALLETS_PATH = "."
 
 /**
  * Initialisation of Registration Service
@@ -23,6 +26,7 @@ import mu.KLogging
  * @param ethRegistrationConfig - configurations of registration service
  */
 class EthRegistrationServiceInitialization(
+    private val ethPasswordConfig: EthereumPasswords,
     private val ethRegistrationConfig: EthRegistrationConfig,
     private val irohaAPI: IrohaAPI
 ) {
@@ -50,10 +54,9 @@ class EthRegistrationServiceInitialization(
                 IrohaQueryHelperImpl(irohaAPI, credential.accountId, credential.keyPair)
             Pair(
                 Pair(
-                    EthFreeRelayProvider(
-                        queryHelper,
-                        ethRegistrationConfig.notaryIrohaAccount,
-                        ethRegistrationConfig.relayRegistrationIrohaAccount
+                    EthFreeWalletProvider(
+                        ethPasswordConfig.credentialsPassword,
+                        WALLETS_PATH
                     ),
                     EthRelayProviderIrohaImpl(
                         queryHelper,

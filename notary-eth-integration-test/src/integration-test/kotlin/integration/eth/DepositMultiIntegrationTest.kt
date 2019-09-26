@@ -104,7 +104,6 @@ class DepositMultiIntegrationTest {
     private val relayWallet = registerRelay()
 
     private fun registerRelay(): String {
-        integrationHelper.deployRelays(1)
         // register client in Iroha
         val res = integrationHelper.sendRegistrationRequest(
             clientIrohaAccount,

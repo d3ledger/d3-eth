@@ -10,8 +10,8 @@ package com.d3.eth.vacuum
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
-import integration.eth.config.loadEthPasswords
 import com.github.kittinunf.result.*
+import integration.eth.config.loadEthPasswords
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
@@ -21,10 +21,10 @@ private val logger = KLogging().logger
 /**
  * Entry point for moving all currency from relay contracts to master contract
  */
-fun main(args: Array<String>) {
+fun main() {
     loadLocalConfigs(RELAY_VACUUM_PREFIX, RelayVacuumConfig::class.java, "vacuum.properties")
         .flatMap { relayVacuumConfig ->
-            executeVacuum(relayVacuumConfig, args)
+            executeVacuum(relayVacuumConfig)
         }
         .failure { ex ->
             logger.error("Cannot run vacuum", ex)
@@ -32,10 +32,7 @@ fun main(args: Array<String>) {
         }
 }
 
-fun executeVacuum(
-    relayVacuumConfig: RelayVacuumConfig,
-    args: Array<String> = emptyArray()
-): Result<Unit, Exception> {
+fun executeVacuum(relayVacuumConfig: RelayVacuumConfig): Result<Unit, Exception> {
     logger.info { "Run relay vacuum" }
     return Result.of {
         val keyPair = Utils.parseHexKeypair(

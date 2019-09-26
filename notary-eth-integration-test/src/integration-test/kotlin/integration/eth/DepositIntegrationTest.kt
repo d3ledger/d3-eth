@@ -59,7 +59,6 @@ class DepositIntegrationTest {
     private val relayWallet = registerRelay()
 
     private fun registerRelay(): String {
-        integrationHelper.deployRelays(1)
         // register client in Iroha
         val res = integrationHelper.sendRegistrationRequest(
             clientIrohaAccount,
@@ -67,7 +66,6 @@ class DepositIntegrationTest {
             registrationTestEnvironment.registrationConfig.port
         )
         Assertions.assertEquals(200, res.statusCode)
-        // TODO: D3-417 Web3j cannot pass an empty list of addresses to the smart contract.
         return integrationHelper.registerClientInEth(clientIrohaAccount)
     }
 
@@ -100,7 +98,7 @@ class DepositIntegrationTest {
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendEth(amount, relayWallet)
             }
-            Thread.sleep(3_000)
+            Thread.sleep(13_000)
 
             Assertions.assertEquals(
                 BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
@@ -220,7 +218,7 @@ class DepositIntegrationTest {
             integrationHelper.purgeAndwaitOneIrohaBlock {
                 integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
             }
-            Thread.sleep(7_000)
+            Thread.sleep(17_000)
 
             Assertions.assertEquals(
                 BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),
