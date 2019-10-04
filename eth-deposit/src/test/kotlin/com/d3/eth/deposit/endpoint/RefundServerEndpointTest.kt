@@ -23,10 +23,10 @@ import java.math.BigInteger
 class RefundServerEndpointTest {
 
     /** Server initialization bundle */
-    val serverBundle = ServerInitializationBundle(8080, "eth")
+    private val serverBundle = ServerInitializationBundle(8080, "eth")
 
     /** JSON adapter */
-    val moshi = Moshi.Builder().add(EthNotaryResponseMoshiAdapter()).add(
+    private val moshi = Moshi.Builder().add(EthNotaryResponseMoshiAdapter()).add(
         BigInteger::class.java,
         BigIntegerMoshiAdapter()
     ).build()
@@ -54,7 +54,15 @@ class RefundServerEndpointTest {
         } doReturn successResponse
     }
 
-    val server = RefundServerEndpoint(serverBundle, ethRefundStrategyMock, ethAddPeerStrategyMock)
+    private val ethRegistrationStrategyMock = mock<EthRegistrationProofStrategy> {
+        val request = any<IrohaTransactionHashType>()
+        on {
+            performRegistrationProof(request)
+        } doReturn successResponse
+    }
+
+    private val server =
+        RefundServerEndpoint(serverBundle, ethRefundStrategyMock, ethAddPeerStrategyMock, ethRegistrationStrategyMock)
 
     /**
      * @given initialized server class
@@ -120,4 +128,38 @@ class RefundServerEndpointTest {
         assertEquals(HttpStatusCode.BadRequest, answer.code)
         assertEquals(failureResponse.reason, answer.message)
     }
+
+    /**
+     * @given initialized server class
+     * @when  call onCallRegistrationProof() with null parameter
+     * @then  check that answer returns key not found
+     */
+    @Test
+    fun emptyRegisterCall() {
+        val failureResponse = EthNotaryResponse.Error("Request has been failed. Error in URL")
+
+        val answer = server.onCallRegistrationProof(null)
+
+        assertEquals(HttpStatusCode.BadRequest, answer.code)
+        assertEquals(failureResponse.reason, answer.message)
+    }
+
+    /**
+     * @given initialized server class
+     * @when  call onCallRegistrationProof()
+     * @then  check that answer returns success
+     */
+    @Test
+    fun onRegisterCallTest() {
+        val irohaTxHash = "tx_hash_from_iroha"
+        val request = moshi.adapter(IrohaTransactionHashType::class.java).toJson(irohaTxHash)
+        val result = server.onCallRegistrationProof(request)
+
+        assertEquals(HttpStatusCode.OK, result.code)
+        assertEquals(
+            successResponse,
+            moshi.adapter(EthNotaryResponse::class.java).fromJson(result.message)
+        )
+    }
+
 }

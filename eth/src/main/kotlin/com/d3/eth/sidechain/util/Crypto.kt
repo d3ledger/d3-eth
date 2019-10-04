@@ -59,6 +59,25 @@ fun hashToWithdraw(
 
 /**
  * Calculates keccak-256 hash of several params concatenation. Params are:
+ * @param address - Ethereum address
+ * @param accountId - Iroha account id
+ * @param irohaHash - hash of Iroha transaction
+ * @return keccak-256 hash of all provided fields
+ */
+fun hashToRegistration(
+    address: String,
+    accountId: String,
+    irohaHash: String
+): String {
+    return Hash.sha3(
+        address.replace("0x", "")
+                + irohaHash.replace("0x", "")
+                + accountId
+    )
+}
+
+/**
+ * Calculates keccak-256 hash of several params concatenation. Params are:
  * @param peerAddress Ethereum address of notary
  * @param irohaHash hash of transaction in Iroha
  * @return keccak-256 hash of all provided fields
