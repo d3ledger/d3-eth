@@ -20,7 +20,7 @@ interface EthRegistrationProofStrategy {
 }
 
 /**
- * Class that is responsible for getting registration proofs
+ * Class that is responsible for getting registration proofs 
  */
 class EthRegistrationProofStrategyImpl(
     private val queryHelper: IrohaQueryHelper,
