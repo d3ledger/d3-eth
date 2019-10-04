@@ -336,7 +336,6 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         name: String,
         keypair: KeyPair = ModelUtil.generateKeypair()
     ): String {
-//        deployRelays(1)
         return registerClientWithoutRelay(name, keypair)
     }
 

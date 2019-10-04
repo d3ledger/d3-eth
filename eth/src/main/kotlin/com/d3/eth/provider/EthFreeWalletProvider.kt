@@ -17,7 +17,7 @@ import java.util.*
  * @param password - ethereum wallet file secret password
  * @param fileStorage - storage of wallet files
  */
-class EthFreeWalletProvider(private val password: String, private val fileStorage: String) :
+class EthFreeWalletProvider(private val password: String, val fileStorage: String) :
     EthFreeClientAddressProvider {
 
     /**
@@ -48,17 +48,6 @@ class EthFreeWalletProvider(private val password: String, private val fileStorag
 
     /** Free addresses amount is quite large */
     override fun getAddressCount(): Result<Int, Exception> = Result.of { Int.MAX_VALUE }
-
-    /**
-     * Get wallet file by Ethereum address
-     */
-    fun getWalletByAddress(ethereumAddress: String): Result<File, java.lang.Exception> = Result.of {
-        val uuid = UUID.nameUUIDFromBytes(ethereumAddress.toByteArray())
-        val walletFile = File(fileStorage, "$uuid.json")
-        if (!walletFile.exists())
-            throw FileNotFoundException("Wallet ${walletFile.canonicalPath} for address $ethereumAddress not found")
-        walletFile
-    }
 
     /**
      * Logger

@@ -36,4 +36,7 @@ interface RelayVacuumConfig {
     val ethereum: EthereumConfig
 
     val vacuumCredential: IrohaCredentialRawConfig
+
+    /** Address of master smart contract in Ethereum */
+    val ethMasterAddress: String
 }

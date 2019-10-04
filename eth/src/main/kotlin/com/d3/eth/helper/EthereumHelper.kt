@@ -6,7 +6,11 @@
 package com.d3.eth.helper
 
 import com.d3.commons.util.unHex
+import com.github.kittinunf.result.Result
 import org.web3j.abi.datatypes.Type
+import java.io.File
+import java.io.FileNotFoundException
+import java.lang.Exception
 import java.util.*
 
 /**
@@ -19,4 +23,17 @@ fun encodeFunction(functionName: String, vararg params: Type<Any>): ByteArray {
     val function =
         org.web3j.abi.datatypes.Function(functionName, params.asList(), Collections.emptyList())
     return String.unHex(org.web3j.abi.FunctionEncoder.encode(function).drop(2))
+}
+
+/**
+ * Get wallet file by Ethereum address
+ * @param dir - directory where wallet file is stored
+ * @param ethereumAddress - ethereum address to search wallet
+ */
+fun getWalletByAddress(dir: String, ethereumAddress: String): Result<File, Exception> = Result.of {
+    val uuid = UUID.nameUUIDFromBytes(ethereumAddress.toByteArray())
+    val walletFile = File(dir, "$uuid.json")
+    if (!walletFile.exists())
+        throw FileNotFoundException("Wallet ${walletFile.canonicalPath} for address $ethereumAddress not found")
+    walletFile
 }

@@ -5,6 +5,7 @@
 
 package com.d3.eth.provider
 
+import com.d3.eth.helper.getWalletByAddress
 import integration.eth.config.loadEthPasswords
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -31,7 +32,7 @@ class EthFreeWalletProviderTest {
     fun generateWalletFile() {
         val address = ethWalletProvider.getAddress().get()
 
-        val walletFile = ethWalletProvider.getWalletByAddress(address).get()
+        val walletFile = getWalletByAddress(ethWalletProvider.fileStorage, address).get()
         val credentials = WalletUtils.loadCredentials(password, walletFile)
         assertEquals(address, credentials.address)
 
@@ -60,7 +61,7 @@ class EthFreeWalletProviderTest {
      */
     @Test
     fun loadInvalidWalletFile() {
-        ethWalletProvider.getWalletByAddress("wrong_address").fold(
+        getWalletByAddress(ethWalletProvider.fileStorage, "wrong_address").fold(
             { _ -> fail { "Exception is expected" } },
             { ex -> assert(ex is FileNotFoundException) }
         )
