@@ -10,7 +10,6 @@ import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.iroha.util.isWithdrawalTransaction
-import com.d3.eth.deposit.DEPOSIT_OPERATION
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.REFUND_OPERATION
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
