@@ -59,7 +59,6 @@ fun main(args: Array<String>) {
             )
 
             val master = deployHelper.deployUpgradableMasterSmartContract(
-                relayRegistry.contractAddress,
                 args.toList()
             )
             saveContract(

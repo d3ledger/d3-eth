@@ -71,8 +71,8 @@ fun hashToRegistration(
 ): String {
     return Hash.sha3(
         address.replace("0x", "")
+                + String.format("%x", BigInteger(1, accountId.toByteArray()))
                 + irohaHash.replace("0x", "")
-                + accountId
     )
 }
 

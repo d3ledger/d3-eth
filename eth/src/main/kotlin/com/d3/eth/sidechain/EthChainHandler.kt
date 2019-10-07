@@ -8,6 +8,7 @@ package com.d3.eth.sidechain
 import com.d3.commons.sidechain.ChainHandler
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.eth.provider.*
+import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.fanout
 import mu.KLogging
 import org.web3j.protocol.Web3j
@@ -25,10 +26,48 @@ import java.math.BigInteger
  */
 class EthChainHandler(
     val web3: Web3j,
+    val masterAddres: String,
     val ethRelayProvider: EthRelayProvider,
-    val ethTokensProvider: EthTokensProvider
+    val ethTokensProvider: EthTokensProvider,
+    deployHelper: DeployHelper
 ) :
     ChainHandler<EthBlock> {
+
+    private val master = deployHelper.loadMasterContract(masterAddres)
+
+    init {
+        logger.info { "Initialization of EthChainHandler with master $masterAddres" }
+    }
+
+    /**
+     * Process Master contract transactions
+     * @param tx - Ethereum transaction
+     * @param time - time of transaction
+     * @return side chain events flow
+     *
+     */
+    private fun handleMasterCall(
+        tx: Transaction,
+        time: BigInteger
+    ): List<SideChainEvent.PrimaryBlockChainEvent> {
+        // get receipt that contains data about solidity function execution
+        val receipt = web3.ethGetTransactionReceipt(tx.hash).send()
+        if (receipt.transactionReceipt.get().isStatusOK) {
+            logger.info { "Master contract call" }
+            val txReceipt = receipt.transactionReceipt.get()
+            // encoded abi method signature
+            if (!txReceipt.logs.isEmpty() && txReceipt.logs[0].topics[0] == "0x6a70775b447c720635e28c6ecca0cec2b8917a93dc40135739e28dd2299ea5ab") {
+                val ethAddress = tx.from
+                val accountId = String(master.registeredClients(ethAddress).send())
+                logger.info { "Ethereum registration of new client $accountId, eth address $ethAddress" }
+                //todo registration
+            }
+        } else {
+            return listOf()
+        }
+
+        return emptyList()
+    }
 
     /**
      * Process Ethereum ERC20 tokens
@@ -158,7 +197,9 @@ class EthChainHandler(
                 block.block.transactions
                     .map { it.get() as Transaction }
                     .flatMap {
-                        if (wallets.containsKey(it.to))
+                        if (masterAddres == it.to)
+                            handleMasterCall(it, time)
+                        else if (wallets.containsKey(it.to))
                             handleEther(it, time, wallets)
                         else if (ethAnchoredTokens.containsKey(it.to))
                             handleErc20(it, time, wallets, ethAnchoredTokens[it.to]!!, false)
