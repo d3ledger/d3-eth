@@ -41,7 +41,7 @@ class EthChainHandler(
 
     /**
      * Process Master contract transactions
-     * @param tx - ethereum transaction
+     * @param tx - Ethereum transaction
      * @param time - time of transaction
      * @return side chain events flow
      *
@@ -54,8 +54,9 @@ class EthChainHandler(
         val receipt = web3.ethGetTransactionReceipt(tx.hash).send()
         if (receipt.transactionReceipt.get().isStatusOK) {
             logger.info { "Master contract call" }
+            val txReceipt = receipt.transactionReceipt.get()
             // encoded abi method signature
-            if (receipt.transactionReceipt.get().logs[0].topics[0] == "0x6a70775b447c720635e28c6ecca0cec2b8917a93dc40135739e28dd2299ea5ab") {
+            if (!txReceipt.logs.isEmpty() && txReceipt.logs[0].topics[0] == "0x6a70775b447c720635e28c6ecca0cec2b8917a93dc40135739e28dd2299ea5ab") {
                 val ethAddress = tx.from
                 val accountId = String(master.registeredClients(ethAddress).send())
                 logger.info { "Ethereum registration of new client $accountId, eth address $ethAddress" }
