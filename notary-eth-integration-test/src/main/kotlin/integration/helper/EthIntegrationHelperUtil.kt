@@ -408,7 +408,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         port: Int
     ): khttp.responses.Response {
         return khttp.post(
-            "http://127.0.0.1:${port}/users",
+            "http://127.0.0.1:$port/users",
             data = mapOf(
                 "name" to name,
                 "pubkey" to pubkey,

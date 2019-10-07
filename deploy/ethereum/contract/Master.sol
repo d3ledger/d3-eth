@@ -1,6 +1,5 @@
 pragma solidity ^0.5.8;
 
-import "./IRelayRegistry.sol";
 import "./IERC20.sol";
 import "./SoraToken.sol";
 
@@ -12,15 +11,21 @@ contract Master {
     address public owner_;
     mapping(address => bool) public isPeer;
     uint public peersCount;
+    /** Iroha tx hashes used */
     mapping(bytes32 => bool) public used;
     mapping(address => bool) public uniqueAddresses;
 
-    address public relayRegistryAddress;
-    IRelayRegistry public relayRegistryInstance;
+    /** registered client addresses */
+    mapping(address => bytes) public registeredClients;
 
     SoraToken public xorTokenInstance;
 
     mapping(address => bool) public isToken;
+
+    /**
+     * Emit event on new registration with iroha acountId
+     */
+     event IrohaAccountRegistration(address ethereumAddress, bytes accountId);
 
     /**
      * Emit event when master contract does not have enough assets to proceed withdraw
@@ -30,19 +35,17 @@ contract Master {
     /**
      * Constructor. Sets contract owner to contract creator.
      */
-    constructor(address relayRegistry, address[] memory initialPeers) public {
-        initialize(msg.sender, relayRegistry, initialPeers);
+    constructor(address[] memory initialPeers) public {
+        initialize(msg.sender, initialPeers);
     }
 
     /**
      * Initialization of smart contract.
      */
-    function initialize(address owner, address relayRegistry, address[] memory initialPeers) public {
+    function initialize(address owner, address[] memory initialPeers) public {
         require(!initialized_);
 
         owner_ = owner;
-        relayRegistryAddress = relayRegistry;
-        relayRegistryInstance = IRelayRegistry(relayRegistryAddress);
         for (uint8 i = 0; i < initialPeers.length; i++) {
             addPeer(initialPeers[i]);
         }
@@ -145,7 +148,6 @@ contract Master {
      */
     function addToken(address newToken) public onlyOwner {
         require(isToken[newToken] == false);
-        uint i;
         isToken[newToken] = true;
     }
 
@@ -156,6 +158,40 @@ contract Master {
      */
     function checkTokenAddress(address tokenAddress) public view returns (bool) {
         return isToken[tokenAddress];
+    }
+
+    /**
+     * Register a clientIrohaAccountId for the caller clientEthereumAddress
+     * @param clientEthereumAddress - ethereum address to register
+     * @param clientIrohaAccountId - iroha account id
+     * @param txHash - iroha tx hash of registration
+     * @param v array of signatures of tx_hash (v-component)
+     * @param r array of signatures of tx_hash (r-component)
+     * @param s array of signatures of tx_hash (s-component)
+     */
+    function register(
+        address clientEthereumAddress,
+        bytes memory clientIrohaAccountId,
+        bytes32 txHash,
+        uint8[] memory v,
+        bytes32[] memory r,
+        bytes32[] memory s
+    )
+    public
+    {
+        require(used[txHash] == false);
+        require(checkSignatures(
+                    keccak256(abi.encodePacked(clientEthereumAddress, clientIrohaAccountId, txHash)),
+                    v,
+                    r,
+                    s)
+                );
+        require(clientEthereumAddress == msg.sender);
+        require(registeredClients[clientEthereumAddress].length == 0);
+
+        registeredClients[clientEthereumAddress] = clientIrohaAccountId;
+
+        emit IrohaAccountRegistration(clientEthereumAddress, clientIrohaAccountId);
     }
 
     /**
@@ -182,7 +218,6 @@ contract Master {
     public
     {
         require(checkTokenAddress(tokenAddress));
-        require(relayRegistryInstance.isWhiteListed(from, to));
         require(used[txHash] == false);
         require(checkSignatures(
             keccak256(abi.encodePacked(tokenAddress, amount, to, txHash, from)),
@@ -294,7 +329,6 @@ contract Master {
     public
     {
         require(address(xorTokenInstance) == tokenAddress);
-        require(relayRegistryInstance.isWhiteListed(from, beneficiary));
         require(used[txHash] == false);
         require(checkSignatures(
             keccak256(abi.encodePacked(tokenAddress, amount, beneficiary, txHash, from)),

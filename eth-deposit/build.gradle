@@ -10,6 +10,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(":eth-registration")
     implementation project(":eth")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 

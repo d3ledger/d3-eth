@@ -29,8 +29,9 @@ data class Response(val code: HttpStatusCode, val message: String)
  */
 class RefundServerEndpoint(
     private val serverBundle: ServerInitializationBundle,
-    private val ethStrategy: EthRefundStrategy,
-    private val addPeerStrategy: EthAddPeerStrategy
+    private val ethRefundStrategy: EthRefundStrategy,
+    private val addPeerStrategy: EthAddPeerStrategy,
+    private val ethRegistrationStrategy: EthRegistrationProofStrategy
 ) {
     private val moshi = Moshi
         .Builder()
@@ -57,6 +58,11 @@ class RefundServerEndpoint(
                     val response = onCallAddPeer(call.parameters["tx_hash"])
                     call.respondText(response.message, status = response.code)
                 }
+                get("ethereum/proof/registration/{tx_hash}") {
+                    logger.info { "Registration endpoint called with parameters: ${call.parameters}" }
+                    val response = onCallRegistrationProof(call.parameters["tx_hash"])
+                    call.respondText(response.message, status = response.code)
+                }
                 get(serverBundle.ethRefund + "/{tx_hash}") {
                     logger.info { "Eth refund invoked with parameters: ${call.parameters}" }
                     val response = onCallEthRefund(call.parameters["tx_hash"])
@@ -80,17 +86,8 @@ class RefundServerEndpoint(
      */
     fun onCallEthRefund(rawRequest: String?): Response {
         return rawRequest?.let { request ->
-            val response = ethStrategy.performRefund(EthRefundRequest(request))
-            when (response) {
-                is EthNotaryResponse.Successful -> Response(
-                    HttpStatusCode.OK,
-                    ethNotaryAdapter.toJson(response)
-                )
-                is EthNotaryResponse.Error -> {
-                    logger.error { response.reason }
-                    Response(HttpStatusCode.BadRequest, ethNotaryAdapter.toJson(response))
-                }
-            }
+            val response = ethRefundStrategy.performRefund(EthRefundRequest(request))
+            notaryResponseToHTTPResponse(response)
         } ?: onErrorPipelineCall()
     }
 
@@ -100,17 +97,34 @@ class RefundServerEndpoint(
     fun onCallAddPeer(rawRequest: String?): Response {
         return rawRequest?.let { request ->
             val response = addPeerStrategy.performAddPeer(request)
-            when (response) {
-                is EthNotaryResponse.Successful -> Response(
-                    HttpStatusCode.OK,
-                    ethNotaryAdapter.toJson(response)
-                )
-                is EthNotaryResponse.Error -> {
-                    logger.error { response.reason }
-                    Response(HttpStatusCode.BadRequest, ethNotaryAdapter.toJson(response))
-                }
-            }
+            notaryResponseToHTTPResponse(response)
         } ?: onErrorPipelineCall()
+    }
+
+    /**
+     * Calls registration proof service
+     */
+    fun onCallRegistrationProof(rawRequest: String?): Response {
+        return rawRequest?.let { request ->
+            val response = ethRegistrationStrategy.performRegistrationProof(request)
+            notaryResponseToHTTPResponse(response)
+        } ?: onErrorPipelineCall()
+    }
+
+    /**
+     * Transforms EthNotaryResponse to Response
+     */
+    private fun notaryResponseToHTTPResponse(notaryResponse: EthNotaryResponse): Response {
+        return when (notaryResponse) {
+            is EthNotaryResponse.Successful -> Response(
+                HttpStatusCode.OK,
+                ethNotaryAdapter.toJson(notaryResponse)
+            )
+            is EthNotaryResponse.Error -> {
+                logger.error(notaryResponse.reason)
+                Response(HttpStatusCode.BadRequest, ethNotaryAdapter.toJson(notaryResponse))
+            }
+        }
     }
 
     /**

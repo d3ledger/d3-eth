@@ -135,6 +135,7 @@ open class EthConfigHelper(
             override val ethereum = ethereumConfig
             override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName
+            override val ethMasterAddress = masterContractAddress
         }
     }
 
@@ -235,7 +236,6 @@ open class EthConfigHelper(
 
     /**
      * Creates new Ethereum config with given credentials path
-     * @param credentialsPath path to Ethereum credentials file (.key)
      * @return EthereumConfig object
      */
     fun createEthereumConfig(): EthereumConfig {

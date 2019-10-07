@@ -34,7 +34,7 @@ const val ATTEMPTS_DEFAULT = 240
 
 /**
  * Authenticator class for basic access authentication
- * @param ethereumPasswords config with Ethereum node credentials
+ * @param nodePassword config with Ethereum node credentials
  */
 class BasicAuthenticator(private val nodeLogin: String?, private val nodePassword: String?) :
     Authenticator {
@@ -67,7 +67,6 @@ class DeployHelperBuilder(
      * Helper class for contracts deploying
      * @param ethereumConfig config with Ethereum network parameters
      * @param ethereumPasswords config with Ethereum passwords
-     * @param attempts attempts amount to poll transaction status
      */
     constructor(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPasswords) :
             this(
@@ -174,7 +173,7 @@ class DeployHelper(
      * @return token smart contract object
      */
     fun deployERC20TokenSmartContract(): BasicCoin {
-        val tokenContract = contract.BasicCoin.deploy(
+        val tokenContract = BasicCoin.deploy(
             web3,
             transactionManager,
             StaticGasProvider(gasPrice, gasLimit),
@@ -229,12 +228,11 @@ class DeployHelper(
      * Deploy master smart contract
      * @return master smart contract object
      */
-    fun deployMasterSmartContract(relayRegistry: String, peers: List<String>): Master {
-        val master = contract.Master.deploy(
+    fun deployMasterSmartContract(peers: List<String>): Master {
+        val master = Master.deploy(
             web3,
             transactionManager,
             StaticGasProvider(gasPrice, gasLimit),
-            relayRegistry,
             peers
         ).send()
         logger.info { "Master smart contract ${master.contractAddress} was deployed" }
@@ -244,9 +242,9 @@ class DeployHelper(
     /**
      * Deploy [Master] via [OwnedUpgradeabilityProxy].
      */
-    fun deployUpgradableMasterSmartContract(relayRegistry: String, peers: List<String>): Master {
+    fun deployUpgradableMasterSmartContract(peers: List<String>): Master {
         // deploy implementation
-        val master = deployMasterSmartContract(relayRegistry, peers)
+        val master = deployMasterSmartContract(peers)
 
         // deploy proxy
         val proxy = deployOwnedUpgradeabilityProxy()
@@ -256,7 +254,6 @@ class DeployHelper(
             encodeFunction(
                 "initialize",
                 Address(credentials.address) as Type<Any>,
-                Address(relayRegistry) as Type<Any>,
                 DynamicArray<Address>(Address::class.java, peers.map { Address(it) }) as Type<Any>
             )
         proxy.upgradeToAndCall(master.contractAddress, encoded, BigInteger.ZERO).send()
@@ -289,7 +286,7 @@ class DeployHelper(
      * @return relay smart contract object
      */
     fun deployRelaySmartContract(master: String): Relay {
-        val relay = contract.Relay.deploy(
+        val relay = Relay.deploy(
             web3,
             transactionManager,
             StaticGasProvider(gasPrice, gasLimit),
@@ -381,7 +378,7 @@ class DeployHelper(
      */
     fun loadTokenSmartContract(tokenAddress: String): SoraToken {
         val soraToken =
-            contract.SoraToken.load(
+            SoraToken.load(
                 tokenAddress,
                 web3,
                 transactionManager,
@@ -459,13 +456,12 @@ class DeployHelper(
      * @param amount - amount of tokens
      */
     fun sendERC20(tokenAddress: String, toAddress: String, amount: BigInteger) {
-        val token =
-            BasicCoin.load(
-                tokenAddress,
-                web3,
-                transactionManager,
-                StaticGasProvider(gasPrice, gasLimit)
-            )
+        val token = BasicCoin.load(
+            tokenAddress,
+            web3,
+            transactionManager,
+            StaticGasProvider(gasPrice, gasLimit)
+        )
         val tx = token.transfer(toAddress, amount).send()
         logger.info { "ERC20 $amount with address $tokenAddress were sent to $toAddress, hash ${tx.transactionHash}" }
     }
@@ -477,13 +473,12 @@ class DeployHelper(
      * @return user balance
      */
     fun getERC20Balance(tokenAddress: String, whoAddress: String): BigInteger {
-        val token =
-            BasicCoin.load(
-                tokenAddress,
-                web3,
-                transactionManager,
-                StaticGasProvider(gasPrice, gasLimit)
-            )
+        val token = BasicCoin.load(
+            tokenAddress,
+            web3,
+            transactionManager,
+            StaticGasProvider(gasPrice, gasLimit)
+        )
         return token.balanceOf(whoAddress).send()
     }
 

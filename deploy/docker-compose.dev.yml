@@ -29,6 +29,11 @@ services:
     networks:
       - d3-network
 
+
+  d3-chain-adapter:
+    environment:
+      - CHAIN_ADAPTER_DROPLASTREADBLOCK=true
+
   d3-brvs:
     environment:
       WHITELIST_VALIDATION: 1

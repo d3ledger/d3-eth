@@ -12,11 +12,11 @@ import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
-import integration.eth.config.EthereumPasswords
-import integration.eth.config.loadEthPasswords
 import com.d3.eth.provider.EthRelayProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.github.kittinunf.result.*
+import integration.eth.config.EthereumPasswords
+import integration.eth.config.loadEthPasswords
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
@@ -24,8 +24,7 @@ import kotlin.system.exitProcess
 
 private val logger = KLogging().logger
 
-const val DEPOSIT_OPERATION="Ethereum deposit"
-const val REFUND_OPERATION="Ethereum refund"
+const val REFUND_OPERATION = "Ethereum refund"
 const val ETH_DEPOSIT_SERVICE_NAME = "eth-deposit"
 
 /**
