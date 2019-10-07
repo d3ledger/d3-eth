@@ -19,17 +19,21 @@ import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettyScheduledThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
-import com.d3.eth.deposit.endpoint.*
-import integration.eth.config.EthereumPasswords
+import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
+import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
+import com.d3.eth.deposit.endpoint.EthRegistrationProofStrategyImpl
+import com.d3.eth.deposit.endpoint.RefundServerEndpoint
 import com.d3.eth.provider.EthRelayProvider
 import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
+import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
+import integration.eth.config.EthereumPasswords
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import iroha.protocol.Primitive
@@ -79,6 +83,8 @@ class EthDepositInitialization(
         irohaAPI,
         ethDepositConfig
     )
+
+    private val deployHelper = DeployHelper(ethDepositConfig.ethereum, passwordsConfig)
 
     init {
         logger.info {
@@ -137,7 +143,13 @@ class EthDepositInitialization(
         )
 
         /** List of all observable wallets */
-        val ethHandler = EthChainHandler(web3, ethRelayProvider, ethTokensProvider)
+        val ethHandler = EthChainHandler(
+            web3,
+            ethDepositConfig.ethMasterAddress,
+            ethRelayProvider,
+            ethTokensProvider,
+            deployHelper
+        )
         return EthChainListener(
             web3,
             BigInteger.valueOf(ethDepositConfig.ethereum.confirmationPeriod),

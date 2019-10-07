@@ -59,4 +59,7 @@ interface EthDepositConfig {
     val expansionTriggerCreatorAccountId: String
 
     val ethIrohaDepositQueue: String
+
+    /** Address of master smart contract in Ethereum */
+    val ethMasterAddress: String
 }

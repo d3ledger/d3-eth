@@ -42,7 +42,6 @@ class ContractTestHelper {
     val token by lazy { deployHelper.deployERC20TokenSmartContract() }
     val master by lazy {
         deployHelper.deployUpgradableMasterSmartContract(
-            relayRegistry.contractAddress,
             listOf(accMain)
         )
     }
