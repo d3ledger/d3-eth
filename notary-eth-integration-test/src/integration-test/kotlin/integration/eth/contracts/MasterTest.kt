@@ -1265,6 +1265,11 @@ class MasterTest {
         }
     }
 
+    /**
+     * @given master contract
+     * @when master contract method registration called with correct params
+     * @then successfully register client
+     */
     @Test
     fun register4of4() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
@@ -1303,6 +1308,11 @@ class MasterTest {
         }
     }
 
+    /**
+     * @given master contract
+     * @when master contract method registration called with 2 of 4 correct signatures
+     * @then reject to register client
+     */
     @Test
     fun register2of4() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
