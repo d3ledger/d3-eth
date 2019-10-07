@@ -10,7 +10,6 @@ import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
-import com.d3.eth.deposit.endpoint.EthNotaryResponse
 import com.d3.eth.deposit.endpoint.EthSignature
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.extractVRS
@@ -223,6 +222,8 @@ class EthRegistrationProofIntegrationTest {
             println(tx.isStatusOK)
 
             Thread.sleep(10_000)
+
+            // todo check registration
         }
     }
 }
