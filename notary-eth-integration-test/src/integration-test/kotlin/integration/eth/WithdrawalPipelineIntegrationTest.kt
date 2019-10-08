@@ -105,6 +105,9 @@ class WithdrawalPipelineIntegrationTest {
     }
 
     private fun registerClient() {
+        // deploy free relay
+        integrationHelper.deployRelays(1)
+
         // register client in Iroha
         var res = integrationHelper.sendRegistrationRequest(
             clientName,

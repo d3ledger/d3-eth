@@ -20,10 +20,12 @@ import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
 import com.d3.eth.constants.ETH_RELAY_REGISTRY_KEY
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.executeDeposit
-import com.d3.eth.provider.*
+import com.d3.eth.provider.ETH_DOMAIN
+import com.d3.eth.provider.EthFreeRelayProvider
+import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.registration.EthRegistrationConfig
 import com.d3.eth.registration.EthRegistrationStrategyImpl
-import com.d3.eth.registration.WALLETS_PATH
 import com.d3.eth.registration.executeRegistration
 import com.d3.eth.registration.relay.RelayRegistration
 import com.d3.eth.sidechain.EthChainListener
@@ -122,15 +124,6 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     )
 
     /** Provider that is used to get free registered relays*/
-    private val ethFreeWalletProvider by lazy {
-        EthFreeWalletProvider(
-            configHelper.ethPasswordConfig.credentialsPassword,
-            WALLETS_PATH
-        )
-    }
-
-
-    /** Provider that is used to get free registered relays*/
     private val ethFreeRelayProvider by lazy {
         EthFreeRelayProvider(
             registrationQueryHelper,
@@ -150,7 +143,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
 
     private val ethRegistrationStrategy by lazy {
         EthRegistrationStrategyImpl(
-            ethFreeWalletProvider,
+            ethFreeRelayProvider,
             ethRelayProvider,
             registrationConsumer,
             accountHelper.notaryAccount.accountId
@@ -336,6 +329,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         name: String,
         keypair: KeyPair = ModelUtil.generateKeypair()
     ): String {
+        deployRelays(1)
         return registerClientWithoutRelay(name, keypair)
     }
 
@@ -443,10 +437,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      * Run ethereum registration config
      */
     fun runEthRegistrationService(registrationConfig: EthRegistrationConfig = ethRegistrationConfig) {
-        executeRegistration(
-            configHelper.ethPasswordConfig,
-            registrationConfig
-        )
+        executeRegistration(registrationConfig)
     }
 
     /**
