@@ -16,35 +16,6 @@ services:
     networks:
       - d3-network
 
-  d3-eth-registration:
-    image: nexus.iroha.tech:19002/d3-deploy/eth-registration:develop
-    container_name: d3-eth-registration
-    restart: on-failure
-    ports:
-      - 8083:8083
-      - 19020:9010
-    env_file:
-      - ../deploy/.env-default-jvm-options
-    volumes:
-      - ../configs:/configs
-      - ../deploy/ethereum/keys:/deploy/ethereum/keys
-    networks:
-      - d3-network
-
-  d3-eth-deploy-relay:
-    image: nexus.iroha.tech:19002/d3-deploy/eth-relay:develop
-    container_name: d3-eth-deploy-relay
-    restart: on-failure
-    ports:
-      - 19021:9010
-    env_file:
-      - ../deploy/.env-default-jvm-options
-    volumes:
-      - ../configs:/configs
-      - ../deploy/ethereum/keys:/deploy/ethereum/keys
-    networks:
-      - d3-network
-
   d3-eth-deposit:
     image: nexus.iroha.tech:19002/d3-deploy/eth-deposit:develop
     container_name: d3-eth-deposit
@@ -54,21 +25,6 @@ services:
     ports:
       - 20000:20000
       - 19022:9010
-    volumes:
-      - ../configs:/configs
-      - ../deploy/ethereum/keys:/deploy/ethereum/keys
-    networks:
-      - d3-network
-
-  d3-eth-withdrawal:
-    image: nexus.iroha.tech:19002/d3-deploy/eth-withdrawal:develop
-    container_name: d3-eth-withdrawal
-    restart: on-failure
-    env_file:
-      - ../deploy/.env-default-jvm-options
-    ports:
-      - 8084:8084
-      - 19023:9010
     volumes:
       - ../configs:/configs
       - ../deploy/ethereum/keys:/deploy/ethereum/keys
