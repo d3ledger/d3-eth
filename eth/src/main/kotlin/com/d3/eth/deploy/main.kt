@@ -50,14 +50,6 @@ fun main(args: Array<String>) {
                 .setFastTransactionManager()
                 .build()
 
-            val relayRegistry = deployHelper.deployUpgradableRelayRegistrySmartContract()
-            saveContract(
-                relayRegistry.contractAddress,
-                irohaConsumer,
-                predeployConfig.ethContractAddressStorageAccountId,
-                ETH_RELAY_REGISTRY_KEY
-            )
-
             val master = deployHelper.deployUpgradableMasterSmartContract(
                 args.toList()
             )
@@ -66,14 +58,6 @@ fun main(args: Array<String>) {
                 irohaConsumer,
                 predeployConfig.ethContractAddressStorageAccountId,
                 ETH_MASTER_ADDRESS_KEY
-            )
-
-            val relayImplementation = deployHelper.deployRelaySmartContract(master.contractAddress)
-            saveContract(
-                relayImplementation.contractAddress,
-                irohaConsumer,
-                predeployConfig.ethContractAddressStorageAccountId,
-                ETH_RELAY_IMPLEMENTATION_ADDRESS_KEY
             )
         }
         .failure { ex ->
