@@ -9,10 +9,7 @@ package com.d3.eth.registration
 
 import com.d3.commons.config.loadLocalConfigs
 import com.github.kittinunf.result.failure
-import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.map
-import integration.eth.config.EthereumPasswords
-import integration.eth.config.loadEthPasswords
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import mu.KLogging
 import kotlin.system.exitProcess
@@ -24,10 +21,10 @@ const val REGISTRATION_OPERATION = "Ethereum user registration"
  */
 fun main() {
     loadLocalConfigs(
-            "eth-registration",
-            EthRegistrationConfig::class.java,
-            "registration.properties"
-        ).map { registrationConfig ->
+        "eth-registration",
+        EthRegistrationConfig::class.java,
+        "registration.properties"
+    ).map { registrationConfig ->
         executeRegistration(registrationConfig)
     }
 }

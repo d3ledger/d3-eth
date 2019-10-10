@@ -10,9 +10,9 @@ package com.d3.eth.registration.relay
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
-import integration.eth.config.loadEthPasswords
 import com.d3.eth.provider.EthFreeRelayProvider
 import com.github.kittinunf.result.*
+import integration.eth.config.loadEthPasswords
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging

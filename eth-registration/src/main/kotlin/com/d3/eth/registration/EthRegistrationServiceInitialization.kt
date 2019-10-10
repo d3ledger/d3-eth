@@ -17,8 +17,6 @@ import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
 
-val WALLETS_PATH = "."
-
 /**
  * Initialisation of Registration Service
  *

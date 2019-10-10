@@ -23,9 +23,16 @@ task runSendEtherFromContract(type: JavaExec) {
     setWorkingDir("$rootDir/")
 }
 
+// Deploy ethereum smart contracts for Soranet - RelayRegistry, Master, add notaries wallets to Master and lock Master.
+task runPreDeployD3Ethereum(type: JavaExec) {
+    main = 'com.d3.eth.deploy.soranet.EthPreDeploySoranetMain'
+    classpath = sourceSets.main.runtimeClasspath
+    setWorkingDir("$rootDir/")
+}
+
 // Deploy ethereum smart contracts - RelayRegistry, Master, add notaries wallets to Master and lock Master.
-task runPreDeployEthereum(type: JavaExec) {
-    main = 'com.d3.eth.deploy.EthPreDeployMain'
+task runPreDeployD3Ethereum(type: JavaExec) {
+    main = 'com.d3.eth.deploy.d3.EthPreDeployD3Main'
     classpath = sourceSets.main.runtimeClasspath
     setWorkingDir("$rootDir/")
 }
