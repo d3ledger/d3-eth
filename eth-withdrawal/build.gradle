@@ -32,6 +32,17 @@ shadowDistTar.classifier = 'shadow'
 // name of jar file that the shadowJar plugin generates
 shadowJar.archiveName = 'app.jar'
 
+/*
+ * Create new Ethereum wallet
+ * Example:
+ * ./gradlew runCreateNewWallet
+ */
+task runRegisterEthereumWallet(type: JavaExec) {
+    main = 'com.d3.eth.withdrawal.RegisterEthereumWallet'
+    classpath = sourceSets.main.runtimeClasspath
+    setWorkingDir("$rootDir/")
+}
+
 // sora-plugin configs
 soramitsu {
     projectGroup = 'd3-deploy'

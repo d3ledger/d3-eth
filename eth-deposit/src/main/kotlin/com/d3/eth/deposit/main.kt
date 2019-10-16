@@ -12,7 +12,7 @@ import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.github.kittinunf.result.*
 import integration.eth.config.EthereumPasswords
@@ -86,7 +86,7 @@ fun executeDeposit(
         irohaCredential.keyPair
     )
 
-    val ethRelayProvider = EthRelayProviderIrohaImpl(
+    val ethRelayProvider = EthWalletProviderIrohaImpl(
         queryHelper,
         irohaCredential.accountId,
         depositConfig.registrationServiceIrohaAccount

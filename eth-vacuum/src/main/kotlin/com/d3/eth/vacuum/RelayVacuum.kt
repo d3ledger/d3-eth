@@ -6,7 +6,7 @@
 package com.d3.eth.vacuum
 
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.Result
@@ -38,7 +38,7 @@ class RelayVacuum(
         relayVacuumConfig.irohaAnchoredTokenSetterAccount
     )
 
-    private val ethRelayProvider = EthRelayProviderIrohaImpl(
+    private val ethRelayProvider = EthWalletProviderIrohaImpl(
         queryHelper,
         relayVacuumConfig.notaryIrohaAccount,
         relayVacuumConfig.registrationServiceIrohaAccount

@@ -24,6 +24,18 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 /**
+ * Approval for registration of client Ethereum address
+ */
+data class RegistrationProof(
+    val ethAddress: String,
+    val irohaAccountId: String,
+    val irohaHash: String,
+    val r: ArrayList<ByteArray>,
+    val s: ArrayList<ByteArray>,
+    val v: ArrayList<BigInteger>
+)
+
+/**
  * Approval for adding of a new peer
  */
 data class AddPeerProof(
@@ -66,6 +78,76 @@ class ProofCollector(
     private val notaryPeerListProvider: NotaryPeerListProvider
 ) {
     private val masterAccount = withdrawalServiceConfig.notaryIrohaAccount
+
+    /**
+     * Gather proof from notaries for client ethereum address registration
+     * @param ethAddress - new peer EthereumAddress
+     * @param irohaAccountId - iroha account id to be registered
+     * @param irohaTxHash - iroha hash of trigger tx
+     */
+    fun collectProofForRegistration(
+        ethAddress: String,
+        irohaAccountId: String,
+        irohaTxHash: String
+    ): Result<RegistrationProof, Exception> {
+        return Result.of {
+            val vv = ArrayList<BigInteger>()
+            val rr = ArrayList<ByteArray>()
+            val ss = ArrayList<ByteArray>()
+
+            notaryPeerListProvider.getPeerList().forEach { peer ->
+                logger.info { "Query $peer for add peer proof" }
+
+                val res: khttp.responses.Response
+                try {
+                    res = khttp.get("$peer/ethereum/proof/registration/$irohaTxHash")
+                } catch (e: Exception) {
+                    logger.warn { "Exception was thrown while server request: server $peer" }
+                    logger.warn { e.localizedMessage }
+                    return@forEach
+                }
+                if (res.statusCode != 200) {
+                    logger.warn { "Error happened while server request: server $peer, error ${res.statusCode}" }
+                    return@forEach
+                }
+
+                val moshi = Moshi.Builder().add(EthNotaryResponseMoshiAdapter()).build()!!
+                val ethNotaryAdapter = moshi.adapter(EthNotaryResponse::class.java)!!
+                val response = ethNotaryAdapter.fromJson(res.jsonObject.toString())
+
+                when (response) {
+                    is EthNotaryResponse.Error -> {
+                        logger.warn { "EthNotaryResponse.Error: ${response.reason}" }
+                        return@forEach
+                    }
+
+                    is EthNotaryResponse.Successful -> {
+                        val signature = response.ethSignature
+                        val vrs = extractVRS(signature)
+                        vv.add(vrs.v)
+                        rr.add(vrs.r)
+                        ss.add(vrs.s)
+                    }
+                }
+            }
+
+            if (vv.size == 0) {
+                throw D3ErrorException.fatal(
+                    failedOperation = WITHDRAWAL_OPERATION,
+                    description = "Not a single valid response was received from any refund server"
+                )
+            }
+
+            RegistrationProof(
+                ethAddress,
+                irohaAccountId,
+                irohaTxHash,
+                rr,
+                ss,
+                vv
+            )
+        }
+    }
 
     /**
      * Gather proof from notaries for add peer
@@ -160,7 +242,10 @@ class ProofCollector(
                     try {
                         res = khttp.get("$peer/eth/$hash")
                     } catch (e: Exception) {
-                        logger.warn("Exception was thrown while refund server request: server $peer", e)
+                        logger.warn(
+                            "Exception was thrown while refund server request: server $peer",
+                            e
+                        )
                         return@forEach
                     }
                     if (res.statusCode != 200) {

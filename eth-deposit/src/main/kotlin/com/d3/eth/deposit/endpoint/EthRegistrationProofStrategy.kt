@@ -6,6 +6,7 @@
 package com.d3.eth.deposit.endpoint
 
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
+import com.d3.eth.provider.ETH_CLIENT_WALLET
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.hashToRegistration
 import com.github.kittinunf.result.map
@@ -13,14 +14,12 @@ import integration.eth.config.EthereumConfig
 import integration.eth.config.EthereumPasswords
 import mu.KLogging
 
-private const val ETH_ADDRESS_KEY = "eth_address"
-
 interface EthRegistrationProofStrategy {
     fun performRegistrationProof(irohaTxHash: IrohaTransactionHashType): EthNotaryResponse
 }
 
 /**
- * Class that is responsible for getting registration proofs 
+ * Class that is responsible for getting registration proofs
  */
 class EthRegistrationProofStrategyImpl(
     private val queryHelper: IrohaQueryHelper,
@@ -43,7 +42,7 @@ class EthRegistrationProofStrategyImpl(
                         .setAccountDetail
                 if (tx.payload.reducedPayload.creatorAccountId != registrationCommand.accountId) {
                     throw IllegalArgumentException("Cannot register account in the Ethereum network. Bad tx creator.")
-                } else if (registrationCommand.key != ETH_ADDRESS_KEY) {
+                } else if (registrationCommand.key != ETH_CLIENT_WALLET) {
                     throw IllegalArgumentException("Cannot register account in the Ethereum network. No address was specified.")
                 }
                 val address = registrationCommand.value
@@ -60,7 +59,8 @@ class EthRegistrationProofStrategyImpl(
                 { ex ->
                     logger.error("Cannot register", ex)
                     EthNotaryResponse.Error(ex.message ?: "Cannot register")
-                })
+                }
+            )
     }
 
     companion object : KLogging()

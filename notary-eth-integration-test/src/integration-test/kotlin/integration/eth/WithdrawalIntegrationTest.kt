@@ -12,7 +12,7 @@ import com.d3.eth.deposit.endpoint.BigIntegerMoshiAdapter
 import com.d3.eth.deposit.endpoint.EthNotaryResponse
 import com.d3.eth.deposit.endpoint.EthNotaryResponseMoshiAdapter
 import com.d3.eth.provider.ETH_PRECISION
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.d3.eth.sidechain.util.hashToWithdraw
@@ -26,7 +26,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTimeoutPreemptively
 import org.junit.jupiter.api.Test
@@ -109,7 +108,7 @@ class WithdrawalIntegrationTest {
                 integrationHelper.testCredential.keyPair
             )
             integrationHelper.addIrohaAssetTo(clientId, assetId, decimalAmount)
-            val relay = EthRelayProviderIrohaImpl(
+            val relay = EthWalletProviderIrohaImpl(
                 integrationHelper.queryHelper,
                 masterAccount,
                 integrationHelper.accountHelper.registrationAccount.accountId

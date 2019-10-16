@@ -9,9 +9,9 @@ import com.d3.commons.model.D3ErrorException
 import com.d3.commons.registration.RegistrationStrategy
 import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
-import com.d3.eth.provider.ETH_WALLET
+import com.d3.commons.sidechain.provider.ChainAddressProvider
+import com.d3.eth.provider.ETH_RELAY
 import com.d3.eth.provider.EthFreeClientAddressProvider
-import com.d3.eth.provider.EthAddressProvider
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import mu.KLogging
@@ -21,7 +21,7 @@ import mu.KLogging
  */
 class EthRegistrationStrategyImpl(
     private val ethFreeClientAddressProvider: EthFreeClientAddressProvider,
-    private val ethAddressProvider: EthAddressProvider,
+    private val ethAddressProvider: ChainAddressProvider,
     private val irohaConsumer: IrohaConsumer,
     private val notaryIrohaAccount: String
 ) : RegistrationStrategy {
@@ -30,12 +30,11 @@ class EthRegistrationStrategyImpl(
         logger.info { "Init EthRegistrationStrategyImpl with irohaCreator=${irohaConsumer.creator}, notaryIrohaAccount=$notaryIrohaAccount" }
     }
 
-    private val ethereumAccountRegistrator =
-        SideChainRegistrator(
-            irohaConsumer,
-            notaryIrohaAccount,
-            ETH_WALLET
-        )
+    private val ethereumAccountRegistrator = SideChainRegistrator(
+        irohaConsumer,
+        notaryIrohaAccount,
+        ETH_RELAY
+    )
 
     /**
      * Register new notary client

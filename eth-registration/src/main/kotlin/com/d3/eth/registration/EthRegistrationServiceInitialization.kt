@@ -10,7 +10,7 @@ import com.d3.commons.registration.RegistrationServiceEndpoint
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.eth.provider.EthFreeRelayProvider
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.IrohaAPI
@@ -55,7 +55,7 @@ class EthRegistrationServiceInitialization(
                         ethRegistrationConfig.notaryIrohaAccount,
                         ethRegistrationConfig.relayRegistrationIrohaAccount
                     ),
-                    EthRelayProviderIrohaImpl(
+                    EthWalletProviderIrohaImpl(
                         queryHelper,
                         ethRegistrationConfig.notaryIrohaAccount,
                         ethRegistrationConfig.relayRegistrationIrohaAccount

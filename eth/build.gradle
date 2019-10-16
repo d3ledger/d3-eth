@@ -23,8 +23,19 @@ task runSendEtherFromContract(type: JavaExec) {
     setWorkingDir("$rootDir/")
 }
 
+/*
+ * Create new Ethereum wallet
+ * Example:
+ * ./gradlew runCreateNewWallet
+ */
+task runCreateNewWallet(type: JavaExec) {
+    main = 'com.d3.eth.deploy.CreateNewWallet'
+    classpath = sourceSets.main.runtimeClasspath
+    setWorkingDir("$rootDir/")
+}
+
 // Deploy ethereum smart contracts for Soranet - RelayRegistry, Master, add notaries wallets to Master and lock Master.
-task runPreDeployD3Ethereum(type: JavaExec) {
+task runPreDeploySoranetEthereum(type: JavaExec) {
     main = 'com.d3.eth.deploy.soranet.EthPreDeploySoranetMain'
     classpath = sourceSets.main.runtimeClasspath
     setWorkingDir("$rootDir/")

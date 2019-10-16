@@ -1,0 +1,36 @@
+buildscript {
+    repositories {
+        // gradle plugins repository
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'jp.co.soramitsu.sora-plugin' version '0.1.2'
+}
+
+dependencies {
+    implementation project(":eth")
+    implementation project(":eth-deposit")
+    implementation project(":eth-withdrawal")
+
+    implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    implementation "org.web3j:core:$web3j_version"
+}
+
+apply plugin: 'kotlin'
+
+/*
+ * Create new Ethereum wallet
+ * Example:
+ * ./gradlew runCreateNewWallet
+ */
+task runRegisterEthereumWallet(type: JavaExec) {
+    main = 'com.d3.eth.utils.RegisterEthereumWallet'
+    classpath = sourceSets.main.runtimeClasspath
+    setWorkingDir("$rootDir/")
+}
+

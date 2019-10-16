@@ -6,14 +6,19 @@
 package integration.eth
 
 import com.d3.commons.model.IrohaCredential
+import com.d3.commons.provider.NotaryPeerListProviderImpl
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
+import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
-import com.d3.eth.deposit.endpoint.EthSignature
+import com.d3.eth.provider.ETH_CLIENT_WALLET
+import com.d3.eth.provider.EthTokensProvider
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import com.d3.eth.sidechain.util.DeployHelper
-import com.d3.eth.sidechain.util.extractVRS
 import com.d3.eth.sidechain.util.hashToRegistration
+import com.d3.eth.withdrawal.withdrawalservice.ProofCollector
+import com.nhaarman.mockitokotlin2.mock
 import integration.helper.ContractTestHelper
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
@@ -24,9 +29,9 @@ import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.*
 import org.web3j.utils.Numeric
-import java.math.BigInteger
 import java.time.Duration
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EthRegistrationProofIntegrationTest {
@@ -35,6 +40,8 @@ class EthRegistrationProofIntegrationTest {
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     private val ethDeposit: Job
     private val depositConfig = integrationHelper.configHelper.createEthDepositConfig()
+    private val withdrawalConfig =
+        integrationHelper.configHelper.createWithdrawalConfig(String.getRandomString(3))
     private val deployHelper =
         DeployHelper(depositConfig.ethereum, integrationHelper.configHelper.ethPasswordConfig)
 
@@ -86,7 +93,7 @@ class EthRegistrationProofIntegrationTest {
                 ModelUtil.setAccountDetail(
                     clientIrohaConsumer,
                     clientIrohaConsumer.creator,
-                    "eth_address",
+                    ETH_CLIENT_WALLET,
                     ethAddress,
                     quorum = 2
                 ).get()
@@ -130,7 +137,7 @@ class EthRegistrationProofIntegrationTest {
                 ModelUtil.setAccountDetail(
                     clientIrohaConsumer,
                     clientIrohaConsumer.creator,
-                    "abc",
+                    "wrong_key",
                     ethAddress,
                     quorum = 2
                 ).get()
@@ -169,7 +176,7 @@ class EthRegistrationProofIntegrationTest {
             val clientIrohaAccountId = "$clientIrohaAccount@d3"
             val ethAddress = cth.deployHelper.credentials.address
             // 1st - register at notary registration - create iroha account
-            var res = integrationHelper.sendRegistrationRequest(
+            val res = integrationHelper.sendRegistrationRequest(
                 clientIrohaAccount,
                 keyPair.public.toHexString(),
                 registrationTestEnvironment.registrationConfig.port
@@ -184,46 +191,63 @@ class EthRegistrationProofIntegrationTest {
             val txHash = ModelUtil.setAccountDetail(
                 clientIrohaConsumer,
                 clientIrohaConsumer.creator,
-                "eth_address",
+                ETH_CLIENT_WALLET,
                 ethAddress,
                 quorum = 2
             ).get()
-            res =
-                khttp.get("http://127.0.0.1:${depositConfig.refund.port}/ethereum/proof/registration/$txHash")
-            assertEquals(200, res.statusCode)
-            val signature = res.jsonObject.get("ethSignature") as EthSignature
-            val hash = hashToRegistration(
-                address = ethAddress,
-                accountId = clientIrohaAccountId,
-                irohaHash = txHash
+
+            val tokensProvider = mock<EthTokensProvider>()
+            val withdrawalQueryHelper = IrohaQueryHelperImpl(
+                integrationHelper.irohaAPI,
+                withdrawalConfig.withdrawalCredential
             )
-            assertEquals(deployHelper.signUserData(hash), signature)
+            val notaryPeerListProvider = NotaryPeerListProviderImpl(
+                withdrawalQueryHelper,
+                withdrawalConfig.notaryListStorageAccount,
+                withdrawalConfig.notaryListSetterAccount
+            )
 
-            val vv = ArrayList<BigInteger>()
-            val rr = ArrayList<ByteArray>()
-            val ss = ArrayList<ByteArray>()
+            // get proofs
+            val proofCollector = ProofCollector(
+                withdrawalQueryHelper,
+                withdrawalConfig,
+                tokensProvider,
+                notaryPeerListProvider
+            )
 
-            val vrs = extractVRS(signature)
-            vv.add(vrs.v)
-            rr.add(vrs.r)
-            ss.add(vrs.s)
+            val proof = proofCollector.collectProofForRegistration(
+                ethAddress,
+                clientIrohaAccountId,
+                txHash
+            ).get()
 
             // register in Ethereum
             val tx = integrationHelper.masterContract.register(
-                ethAddress,
-                clientIrohaAccountId.toByteArray(),
-                Numeric.hexStringToByteArray(txHash),
-                vv,
-                rr,
-                ss
+                proof.ethAddress,
+                proof.irohaAccountId.toByteArray(),
+                Numeric.hexStringToByteArray(proof.irohaHash),
+                proof.v,
+                proof.r,
+                proof.s
             ).send()
 
-            println(tx.transactionHash)
-            println(tx.isStatusOK)
+            assertTrue { tx.isStatusOK }
 
-            Thread.sleep(10_000)
+            // let notary discover Ethereum tx and handle it
+            Thread.sleep(15_000)
 
-            // todo check registration
+            // check registration address
+            val clientAddressProvider = EthWalletProviderIrohaImpl(
+                withdrawalQueryHelper,
+                withdrawalConfig.notaryIrohaAccount,
+                withdrawalConfig.notaryIrohaAccount,
+                ETH_CLIENT_WALLET
+            ) { _, _ -> true }
+
+            assertEquals(
+                ethAddress,
+                clientAddressProvider.getAddressByAccountId(clientIrohaAccountId).get().get()
+            )
         }
     }
 }

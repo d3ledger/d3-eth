@@ -8,6 +8,8 @@ package com.d3.eth.helper
 import com.d3.commons.util.unHex
 import com.github.kittinunf.result.Result
 import org.web3j.abi.datatypes.Type
+import org.web3j.crypto.WalletUtils
+import org.web3j.utils.Numeric
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.Exception
@@ -36,4 +38,37 @@ fun getWalletByAddress(dir: String, ethereumAddress: String): Result<File, Excep
     if (!walletFile.exists())
         throw FileNotFoundException("Wallet ${walletFile.canonicalPath} for address $ethereumAddress not found")
     walletFile
+}
+
+/**
+ * Convert hex string to byte array
+ */
+fun hexStringToByteArray(irohaHash: String) = Numeric.hexStringToByteArray(irohaHash)
+
+/**
+ * Generate Ethereum wallet and save to encrypted file
+ * @param password - password for encryption
+ * @return generated ethereum address
+ */
+fun generateWalletFile(password: String): String {
+    val fileStorage = "."
+
+    // create secret file
+    val filename = WalletUtils.generateNewWalletFile(
+        password,
+        File(fileStorage)
+    )
+
+    // rename to <UUID>.json where <UUID> is generated from address
+    val generatedWalletFile = File(filename)
+    val credentials = WalletUtils.loadCredentials(
+        password,
+        generatedWalletFile
+    )
+    val ethereumAddress = credentials.address
+    val uuid = UUID.nameUUIDFromBytes(ethereumAddress.toByteArray())
+    val uuidFileName = File(fileStorage, "$uuid.json")
+    generatedWalletFile.renameTo(uuidFileName)
+
+    return ethereumAddress
 }

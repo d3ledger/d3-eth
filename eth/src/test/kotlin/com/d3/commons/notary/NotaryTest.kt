@@ -6,6 +6,7 @@
 package com.d3.commons.notary
 
 import com.d3.commons.model.IrohaCredential
+import com.d3.commons.registration.ChainRegistrationWithProvidedAddress
 import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.commons.sidechain.iroha.util.ModelUtil
@@ -23,20 +24,22 @@ import kotlin.test.assertEquals
  * Test business logic of Notary.
  */
 class NotaryTest {
-    val creatorId = "creator@iroha"
+    private val creatorId = "creator@iroha"
     private val irohaCredential = IrohaCredential(creatorId, ModelUtil.generateKeypair())
     private val irohaConsumer = mock<IrohaConsumer> {
         on { creator } doReturn creatorId
         on { getConsumerQuorum() } doReturn Result.of { 1 }
     }
+    private val registrationStrategy = mock<ChainRegistrationWithProvidedAddress>()
 
     /**
      * Check transactions in ordered batch emitted on deposit event.
      * @param expectedAmount amount of assets to deposit
      * @param expectedAssetId asset id
-     * @param expectedCreatorId creator of transactions
-     * @param expectedHash - hash of ethereum transaction
-     * @param expectedUserId - destination wallet address
+     * @param expectedUserId destination wallet address
+     * @param expectedFrom - sender wallet address
+     * @param expectedTime - time
+     * @param result - to check
      */
     private fun checkEthereumDepositResult(
         expectedAmount: String,
@@ -106,7 +109,7 @@ class NotaryTest {
 
         // source of events from side chains
         val obsEth = Observable.just<SideChainEvent.PrimaryBlockChainEvent>(custodianIntention)
-        val notary = NotaryImpl(irohaConsumer, irohaCredential, obsEth)
+        val notary = NotaryImpl(irohaConsumer, irohaCredential, obsEth, registrationStrategy)
         val res = notary.irohaOutput()
         checkEthereumDepositResult(
             expectedAmount,
@@ -145,7 +148,7 @@ class NotaryTest {
 
         // source of events from side chains
         val obsEth = Observable.just<SideChainEvent.PrimaryBlockChainEvent>(custodianIntention)
-        val notary = NotaryImpl(irohaConsumer, irohaCredential, obsEth)
+        val notary = NotaryImpl(irohaConsumer, irohaCredential, obsEth, registrationStrategy)
         val res = notary.irohaOutput()
         checkEthereumDepositResult(
             expectedAmount,

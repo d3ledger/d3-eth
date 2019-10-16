@@ -22,7 +22,7 @@ import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.executeDeposit
 import com.d3.eth.provider.ETH_DOMAIN
 import com.d3.eth.provider.EthFreeRelayProvider
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.registration.EthRegistrationConfig
 import com.d3.eth.registration.EthRegistrationStrategyImpl
@@ -134,7 +134,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
 
     /** Provider of ETH wallets created by registrationAccount*/
     private val ethRelayProvider by lazy {
-        EthRelayProviderIrohaImpl(
+        EthWalletProviderIrohaImpl(
             registrationQueryHelper,
             accountHelper.notaryAccount.accountId,
             accountHelper.registrationAccount.accountId

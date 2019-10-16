@@ -7,7 +7,12 @@ package com.d3.eth.sidechain
 
 import com.d3.commons.sidechain.ChainHandler
 import com.d3.commons.sidechain.SideChainEvent
-import com.d3.eth.provider.*
+import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
+import com.d3.commons.sidechain.provider.ChainAddressProvider
+import com.d3.eth.provider.ETH_DOMAIN
+import com.d3.eth.provider.ETH_NAME
+import com.d3.eth.provider.ETH_PRECISION
+import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.fanout
 import mu.KLogging
@@ -27,9 +32,10 @@ import java.math.BigInteger
 class EthChainHandler(
     val web3: Web3j,
     val masterAddres: String,
-    val ethRelayProvider: EthAddressProvider,
+    val ethRelayProvider: ChainAddressProvider,
     val ethTokensProvider: EthTokensProvider,
-    deployHelper: DeployHelper
+    deployHelper: DeployHelper,
+    val queryHelper: IrohaQueryHelper
 ) :
     ChainHandler<EthBlock> {
 
@@ -52,21 +58,35 @@ class EthChainHandler(
     ): List<SideChainEvent.PrimaryBlockChainEvent> {
         // get receipt that contains data about solidity function execution
         val receipt = web3.ethGetTransactionReceipt(tx.hash).send()
-        if (receipt.transactionReceipt.get().isStatusOK) {
+        return if (receipt.transactionReceipt.get().isStatusOK) {
             logger.info { "Master contract call" }
-            val txReceipt = receipt.transactionReceipt.get()
-            // encoded abi method signature
-            if (!txReceipt.logs.isEmpty() && txReceipt.logs[0].topics[0] == "0x6a70775b447c720635e28c6ecca0cec2b8917a93dc40135739e28dd2299ea5ab") {
-                val ethAddress = tx.from
-                val accountId = String(master.registeredClients(ethAddress).send())
-                logger.info { "Ethereum registration of new client $accountId, eth address $ethAddress" }
-                //todo registration
-            }
+            receipt.transactionReceipt.get().logs
+                // encoded abi method signature of register(
+                //        address clientEthereumAddress,
+                //        bytes memory clientIrohaAccountId,
+                //        bytes32 txHash,
+                //        uint8[] memory v,
+                //        bytes32[] memory r,
+                //        bytes32[] memory s
+                //    )
+                .filter { logs ->
+                    logs.topics[0] == "0x6a70775b447c720635e28c6ecca0cec2b8917a93dc40135739e28dd2299ea5ab"
+                }.map { log ->
+                    val ethAddress = tx.from
+                    val accountId = String(master.registeredClients(ethAddress).send())
+                    Pair(accountId, ethAddress)
+                }.map { (accountId, ethAddress) ->
+                    logger.info { "Registration event txHash=${tx.hash}, time=$time, account=$accountId, ethAddress=$ethAddress" }
+                    SideChainEvent.PrimaryBlockChainEvent.Registration(
+                        tx.hash,
+                        time,
+                        accountId,
+                        ethAddress
+                    )
+                }
         } else {
             return listOf()
         }
-
-        return emptyList()
     }
 
     /**

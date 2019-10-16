@@ -11,10 +11,13 @@ import com.d3.commons.model.IrohaCredential
 import com.d3.commons.notary.Notary
 import com.d3.commons.notary.NotaryImpl
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
+import com.d3.commons.registration.ChainRegistrationWithProvidedAddress
 import com.d3.commons.sidechain.SideChainEvent
+import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.consumer.MultiSigIrohaConsumer
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
+import com.d3.commons.sidechain.provider.ChainAddressProvider
 import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.createPrettyFixThreadPool
 import com.d3.commons.util.createPrettyScheduledThreadPool
@@ -23,8 +26,9 @@ import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRegistrationProofStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
-import com.d3.eth.provider.EthAddressProvider
+import com.d3.eth.provider.ETH_CLIENT_WALLET
 import com.d3.eth.provider.EthTokensProvider
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
@@ -50,7 +54,7 @@ import java.math.BigInteger
 
 /**
  * Class for deposit instantiation
- * @param ethRelayProvider - provides with white list of ethereum wallets
+ * @param ethAddressProvider - provides with white list of ethereum wallets
  * @param ethTokensProvider - provides with white list of ethereum ERC20 tokens
  */
 class EthDepositInitialization(
@@ -59,7 +63,7 @@ class EthDepositInitialization(
     private val ethDepositConfig: EthDepositConfig,
     private val passwordsConfig: EthereumPasswords,
     rmqConfig: RMQConfig,
-    private val ethRelayProvider: EthAddressProvider,
+    private val ethAddressProvider: ChainAddressProvider,
     private val ethTokensProvider: EthTokensProvider
 ) {
     private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(
@@ -146,9 +150,10 @@ class EthDepositInitialization(
         val ethHandler = EthChainHandler(
             web3,
             ethDepositConfig.ethMasterAddress,
-            ethRelayProvider,
+            ethAddressProvider,
             ethTokensProvider,
-            deployHelper
+            deployHelper,
+            queryHelper
         )
         return EthChainListener(
             web3,
@@ -184,7 +189,21 @@ class EthDepositInitialization(
                     .build()
             )
 
-        return NotaryImpl(notaryCredential, irohaAPI, ethEvents)
+        val clientAddressProvider = EthWalletProviderIrohaImpl(
+            queryHelper,
+            notaryCredential.accountId,
+            notaryCredential.accountId,
+            ETH_CLIENT_WALLET
+        ) { _, _ -> true }
+        val registrationIrohaConsumer = IrohaConsumerImpl(notaryCredential, irohaAPI)
+        val registrationStrategy = ChainRegistrationWithProvidedAddress(
+            clientAddressProvider,
+            registrationIrohaConsumer,
+            notaryCredential.accountId,
+            ETH_CLIENT_WALLET
+        )
+
+        return NotaryImpl(notaryCredential, irohaAPI, ethEvents, registrationStrategy)
     }
 
     /**

@@ -13,7 +13,7 @@ import com.d3.eth.deposit.endpoint.BigIntegerMoshiAdapter
 import com.d3.eth.deposit.endpoint.EthNotaryResponse
 import com.d3.eth.deposit.endpoint.EthNotaryResponseMoshiAdapter
 import com.d3.eth.provider.ETH_PRECISION
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.d3.eth.sidechain.util.hashToWithdraw
@@ -162,7 +162,7 @@ class WithdrawalMultinotaryIntegrationTest {
                 integrationHelper.testCredential.keyPair
             )
             integrationHelper.addIrohaAssetTo(clientId, assetId, decimalAmount)
-            val relay = EthRelayProviderIrohaImpl(
+            val relay = EthWalletProviderIrohaImpl(
                 integrationHelper.queryHelper,
                 masterAccount,
                 integrationHelper.accountHelper.registrationAccount.accountId

@@ -5,6 +5,7 @@
 
 package integration.eth.contracts
 
+import com.d3.eth.helper.hexStringToByteArray
 import com.d3.eth.sidechain.util.hashToAddAndRemovePeer
 import com.d3.eth.sidechain.util.hashToMint
 import com.d3.eth.sidechain.util.hashToRegistration
@@ -944,7 +945,7 @@ class MasterTest {
                 newPeer,
                 removeIrohaHash
             )
-            val removeByteHash = cth.irohaHashToByteHash(removeIrohaHash)
+            val removeByteHash = hexStringToByteArray(removeIrohaHash)
             val removeSigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), removeHash)
 

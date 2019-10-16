@@ -5,7 +5,7 @@
 
 package integration.eth
 
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.EthWalletProviderIrohaImpl
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import org.junit.jupiter.api.AfterAll
@@ -60,7 +60,7 @@ class EthRelayProviderIrohaTest {
 
             val valid = entries.filter { it.value != "free" }
 
-            EthRelayProviderIrohaImpl(
+            EthWalletProviderIrohaImpl(
                 integrationHelper.queryHelper,
                 relayStorage,
                 relaySetter
@@ -81,7 +81,7 @@ class EthRelayProviderIrohaTest {
     fun testEmptyStorage() {
         assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
-            EthRelayProviderIrohaImpl(
+            EthWalletProviderIrohaImpl(
                 integrationHelper.queryHelper,
                 integrationHelper.testCredential.accountId,
                 relaySetter
@@ -95,7 +95,7 @@ class EthRelayProviderIrohaTest {
 
     @Test
     fun testGetByAccountNotFound() {
-        val res = EthRelayProviderIrohaImpl(
+        val res = EthWalletProviderIrohaImpl(
             integrationHelper.queryHelper,
             integrationHelper.testCredential.accountId,
             relaySetter
