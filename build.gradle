@@ -72,7 +72,9 @@ allprojects {
         testImplementation group: 'org.mockito', name: 'mockito-all', version: '2.0.2-beta'
         testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0")
         // for setting env variables in tests
-        testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.18.0'
+        testImplementation ('com.github.stefanbirkner:system-rules:1.18.0'){
+            exclude group: 'junit'
+        }
         // to run both junit4 and junit5 tests
         testRuntime("org.junit.vintage:junit-vintage-engine:5.2.0")
     }
