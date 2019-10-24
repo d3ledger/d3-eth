@@ -552,7 +552,7 @@
               {
                 "addAssetQuantity": {
                   "assetId": "xor#sora",
-                  "amount": "1618033988749894848204586834"
+                  "amount": "1618033988.749894848204586834"
                 }
               },
               {
@@ -561,7 +561,7 @@
                   "destAccountId": "xor@sora",
                   "assetId": "xor#sora",
                   "description": "initial supply",
-                  "amount": "1618033988749894848204586834"
+                  "amount": "1618033988.749894848204586834"
                 }
               },
               {
