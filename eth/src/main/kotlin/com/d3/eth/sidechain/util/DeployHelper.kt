@@ -240,6 +240,25 @@ class DeployHelper(
     }
 
     /**
+     * Deploy MasterRelayed smart contract with Relay contract
+     * @return master smart contract object
+     */
+    fun deployMasterRelayedSmartContract(
+        relayRegistry: String,
+        peers: List<String>
+    ): MasterRelayed {
+        val master = MasterRelayed.deploy(
+            web3,
+            transactionManager,
+            StaticGasProvider(gasPrice, gasLimit),
+            relayRegistry,
+            peers
+        ).send()
+        logger.info { "MasterRelayed smart contract ${master.contractAddress} was deployed" }
+        return master
+    }
+
+    /**
      * Deploy [Master] via [OwnedUpgradeabilityProxy].
      */
     fun deployUpgradableMasterSmartContract(peers: List<String>): Master {
@@ -266,12 +285,57 @@ class DeployHelper(
     }
 
     /**
+     * Deploy [MasterRelayed] (Master with Relays) via [OwnedUpgradeabilityProxy].
+     */
+    fun deployUpgradableMasterRelayedSmartContract(
+        relayRegistry: String,
+        peers: List<String>
+    ): MasterRelayed {
+        // deploy implementation
+        val master = deployMasterRelayedSmartContract(relayRegistry, peers)
+
+        // deploy proxy
+        val proxy = deployOwnedUpgradeabilityProxy()
+
+        // call proxy set up
+        val encoded =
+            encodeFunction(
+                "initialize",
+                Address(credentials.address) as Type<Any>,
+                Address(relayRegistry) as Type<Any>,
+                DynamicArray<Address>(Address::class.java, peers.map { Address(it) }) as Type<Any>
+            )
+        proxy.upgradeToAndCall(master.contractAddress, encoded, BigInteger.ZERO).send()
+
+        // load via proxy
+        val proxiedMaster = loadMasterRelayedContract(proxy.contractAddress)
+        logger.info { "Upgradable proxy to Master contract ${proxiedMaster.contractAddress} was deployed" }
+
+        return proxiedMaster
+    }
+
+    /**
      * Load Master contract implementation
      * @param address - address of master contract
      * @return Master contract
      */
     fun loadMasterContract(address: String): Master {
         val proxiedMaster = Master.load(
+            address,
+            web3,
+            transactionManager,
+            StaticGasProvider(gasPrice, gasLimit)
+        )
+        return proxiedMaster
+    }
+
+    /**
+     * Load MasterRelayed contract implementation
+     * @param address - address of master contract
+     * @return Master contract
+     */
+    fun loadMasterRelayedContract(address: String): MasterRelayed {
+        val proxiedMaster = MasterRelayed.load(
             address,
             web3,
             transactionManager,
