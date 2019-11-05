@@ -1,7 +1,7 @@
 version: '3.5'
 
 networks:
-  d3-notary:
+  d3-network:
     name: d3-${SUBNET}
     attachable: true
 
@@ -11,12 +11,12 @@ services:
     expose:
     - 50051
     networks:
-    - d3-notary
+    - d3-network
 
   d3-iroha-postgres:
     container_name: d3-iroha-postgres-${SUBNET}
     networks:
-    - d3-notary
+    - d3-network
 
   # ethereum
   d3-eth-node0:
@@ -31,7 +31,7 @@ services:
     environment:
       - NODE=0
     networks:
-    - d3-notary
+    - d3-network
 
   d3-rmq:
     container_name: d3-rmq-${SUBNET}
@@ -39,19 +39,19 @@ services:
     - 15672
     - 5672
     networks:
-    - d3-notary
+    - d3-network
 
   d3-chain-adapter:
     container_name: d3-chain-adapter-${SUBNET}
     networks:
-    - d3-notary
+    - d3-network
 
   d3-brvs-mongodb:
     container_name: d3-brvs-mongodb-${SUBNET}
     networks:
-    - d3-notary
+    - d3-network
 
   d3-brvs:
     container_name: d3-brvs-${SUBNET}
     networks:
-    - d3-notary
+    - d3-network
