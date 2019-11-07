@@ -27,8 +27,7 @@ data class EthRefund(
     val address: EthereumAddress,
     val assetId: CoinType,
     val amount: String,
-    val irohaTxHash: IrohaTransactionHashType,
-    val relayAddress: String
+    val irohaTxHash: IrohaTransactionHashType
 )
 
 /**

@@ -65,8 +65,7 @@ class EthConsumer(
                 Numeric.hexStringToByteArray(event.proof.irohaHash),
                 event.proof.v,
                 event.proof.r,
-                event.proof.s,
-                relay.contractAddress
+                event.proof.s
             ).send()
         } catch (ex: Exception) {
             logger.error("Web3j exception encountered", ex)

@@ -97,8 +97,7 @@ class ContractTestHelper {
             tokenAddress,
             amount.toString(),
             to,
-            defaultIrohaHash,
-            relay.contractAddress
+            defaultIrohaHash
         )
         val sigs = prepareSignatures(1, listOf(keypair), finalHash)
 
@@ -127,8 +126,7 @@ class ContractTestHelper {
             tokenAddress,
             amount.toString(),
             to,
-            defaultIrohaHash,
-            relay.contractAddress
+            defaultIrohaHash
         )
         val sigs = prepareSignatures(1, listOf(keypair), finalHash)
 
@@ -160,8 +158,7 @@ class ContractTestHelper {
             tokenAddress,
             amount.toString(),
             to,
-            defaultIrohaHash,
-            relay.contractAddress
+            defaultIrohaHash
         )
         val sigs = prepareSignatures(1, listOf(keypair), finalHash)
 
@@ -195,8 +192,7 @@ class ContractTestHelper {
             tokenAddress,
             amount.toString(),
             to,
-            defaultIrohaHash,
-            relay.contractAddress
+            defaultIrohaHash
         )
         val sigs = prepareSignatures(1, listOf(keypair), finalHash)
         if (fromMaster) {

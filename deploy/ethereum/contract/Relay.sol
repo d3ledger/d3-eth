@@ -97,7 +97,6 @@ contract Relay {
      * @param v array of signatures of tx_hash (v-component)
      * @param r array of signatures of tx_hash (r-component)
      * @param s array of signatures of tx_hash (s-component)
-     * @param from relay contract address
      */
     function mintTokensByPeers(
         address tokenAddress,
@@ -106,8 +105,7 @@ contract Relay {
         bytes32 txHash,
         uint8[] memory v,
         bytes32[] memory r,
-        bytes32[] memory s,
-        address from
+        bytes32[] memory s
     )
     public
     {

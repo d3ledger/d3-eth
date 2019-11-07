@@ -17,7 +17,6 @@ import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.hashToWithdraw
 import com.github.kittinunf.result.Result
-import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.flatMap
 import integration.eth.config.EthereumConfig
 import integration.eth.config.EthereumPasswords
@@ -73,37 +72,7 @@ class EthRefundStrategyImpl(
         request: EthRefundRequest
     ): Result<EthRefund, Exception> {
         return Result.of {
-            val commands = appearedTx.payload.reducedPayload.getCommands(0)
             when {
-                // rollback case
-                appearedTx.payload.reducedPayload.commandsCount == 1 &&
-                        commands.hasSetAccountDetail() &&
-                        commands.setAccountDetail.key == "rollback" -> {
-
-                    // TODO a.chernyshov replace with effective implementation
-                    // 1. Get eth transaction hash from setAccountDetail
-                    // 2. Check eth transaction and get info from it
-                    //    There should be a batch with 3 txs
-                    //      if 3 tx in the batch - reject rollback
-                    //      if 2 tx (transfer asset is absent) - approve rollback
-                    // 3. build EthRefund
-
-                    val key = commands.setAccountDetail.key
-                    val value = commands.setAccountDetail.value
-                    val destEthAddress = ""
-                    logger.info { "Rollback case ($key, $value)" }
-                    //TODO ask Alexei
-                    val relayAddress =
-                        relayProvider.getRelayByAccountId(commands.transferAsset.srcAccountId).get().get()
-
-                    EthRefund(
-                        destEthAddress,
-                        "mockCoinType",
-                        "10",
-                        request.irohaTx,
-                        relayAddress
-                    )
-                }
                 // withdrawal case
                 isWithdrawalTransaction(
                     appearedTx,
@@ -120,38 +89,17 @@ class EthRefundStrategyImpl(
                     val assetId = withdrawalCommand.assetId
                     val destEthAddress = withdrawalCommand.description
 
-                    val tokenInfo = tokensProvider.getTokenAddress(assetId)
-                        .fanout { tokensProvider.getTokenPrecision(assetId) }
-
-                    relayProvider.getRelayByAccountId(withdrawalCommand.srcAccountId)
-                        .fanout {
-                            tokenInfo
-                        }.fold(
-                            { (relayAddress, tokenInfo) ->
-                                val decimalAmount =
-                                    BigDecimal(amount).scaleByPowerOfTen(tokenInfo.second)
-                                        .toPlainString()
-                                EthRefund(
-                                    destEthAddress,
-                                    tokenInfo.first,
-                                    decimalAmount,
-                                    request.irohaTx,
-                                    relayAddress.orElseThrow {
-                                        D3ErrorException.fatal(
-                                            failedOperation = REFUND_OPERATION,
-                                            description = "Relay address not found for user ${withdrawalCommand.srcAccountId}"
-                                        )
-                                    }
-                                )
-                            },
-                            {
-                                throw D3ErrorException.fatal(
-                                    failedOperation = REFUND_OPERATION,
-                                    description = "Cannot get relay by account id ${withdrawalCommand.srcAccountId}",
-                                    errorCause = it
-                                )
-                            }
-                        )
+                    val tokenAddress = tokensProvider.getTokenAddress(assetId).get()
+                    val tokenPrecision = tokensProvider.getTokenPrecision(assetId).get()
+                    val decimalAmount =
+                        BigDecimal(amount).scaleByPowerOfTen(tokenPrecision)
+                            .toPlainString()
+                    EthRefund(
+                        destEthAddress,
+                        tokenAddress,
+                        decimalAmount,
+                        request.irohaTx
+                    )
                 }
                 else -> {
                     throw D3ErrorException.warning(
@@ -169,15 +117,14 @@ class EthRefundStrategyImpl(
      * @return signed refund or error
      */
     private fun makeRefund(ethRefund: EthRefund): Result<EthNotaryResponse, Exception> {
-        logger.info { "Make refund. Asset address: ${ethRefund.assetId}, amount: ${ethRefund.amount}, to address: ${ethRefund.address}, hash: ${ethRefund.irohaTxHash}, relay: ${ethRefund.relayAddress}" }
+        logger.info { "Make refund. Asset address: ${ethRefund.assetId}, amount: ${ethRefund.amount}, to address: ${ethRefund.address}, hash: ${ethRefund.irohaTxHash}" }
         return Result.of {
             val finalHash =
                 hashToWithdraw(
                     ethRefund.assetId,
                     ethRefund.amount,
                     ethRefund.address,
-                    ethRefund.irohaTxHash,
-                    ethRefund.relayAddress
+                    ethRefund.irohaTxHash
                 )
 
             val signature = deployHelper.signUserData(finalHash)
