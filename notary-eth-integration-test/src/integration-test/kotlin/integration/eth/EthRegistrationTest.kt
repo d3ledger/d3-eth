@@ -118,7 +118,6 @@ class EthRegistrationTest {
         // check relay address
         assertEquals(freeRelay, integrationHelper.getRelayByAccount(clientId).get())
 
-
         // deploy free relay
         integrationHelper.deployRelays(1)
         // try to register with the same name

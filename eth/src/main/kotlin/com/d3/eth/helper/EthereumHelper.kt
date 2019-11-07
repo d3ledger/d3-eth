@@ -7,6 +7,7 @@ package com.d3.eth.helper
 
 import com.d3.commons.util.unHex
 import org.web3j.abi.datatypes.Type
+import org.web3j.utils.Numeric
 import java.util.*
 
 /**
@@ -20,3 +21,8 @@ fun encodeFunction(functionName: String, vararg params: Type<Any>): ByteArray {
         org.web3j.abi.datatypes.Function(functionName, params.asList(), Collections.emptyList())
     return String.unHex(org.web3j.abi.FunctionEncoder.encode(function).drop(2))
 }
+
+/**
+ * Convert hex string to byte array
+ */
+fun hexStringToByteArray(irohaHash: String) = Numeric.hexStringToByteArray(irohaHash)
