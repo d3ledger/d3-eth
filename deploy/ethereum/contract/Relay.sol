@@ -113,6 +113,6 @@ contract Relay {
     {
         emit AddressEvent(masterAddress);
         // trusted call
-        masterInstance.mintTokensByPeers(tokenAddress, amount, beneficiary, txHash, v, r, s, from);
+        masterInstance.mintTokensByPeers(tokenAddress, amount, beneficiary, txHash, v, r, s);
     }
 }

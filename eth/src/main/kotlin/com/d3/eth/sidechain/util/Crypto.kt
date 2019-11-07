@@ -98,22 +98,19 @@ fun hashToAddAndRemovePeer(
  * @param amount amount of token/ether to mint
  * @param beneficiary address to transfer token/eth to
  * @param irohaHash hash of transaction in Iroha
- * @param from address of the relay contract
  * @return keccak-256 hash of all provided fields
  */
 fun hashToMint(
     tokenAddress: String,
     amount: String,
     beneficiary: String,
-    irohaHash: String,
-    from: String
+    irohaHash: String
 ): String {
     return Hash.sha3(
         tokenAddress.replace("0x", "")
                 + String.format("%064x", BigInteger(amount)).replace("0x", "")
                 + beneficiary.replace("0x", "")
                 + irohaHash.replace("0x", "")
-                + from.replace("0x", "")
     )
 }
 

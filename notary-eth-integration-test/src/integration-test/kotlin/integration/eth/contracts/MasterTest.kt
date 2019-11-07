@@ -1099,8 +1099,7 @@ class MasterTest {
                 xorAddress,
                 amountToSend.toString(),
                 beneficiary,
-                cth.defaultIrohaHash,
-                cth.relay.contractAddress
+                cth.defaultIrohaHash
             )
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
@@ -1113,8 +1112,7 @@ class MasterTest {
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
-                    sigs.ss,
-                    cth.relay.contractAddress
+                    sigs.ss
                 ).send().isStatusOK
             )
 
@@ -1150,8 +1148,7 @@ class MasterTest {
                 xorToken,
                 amountToSend.toString(),
                 beneficiary,
-                cth.defaultIrohaHash,
-                cth.relay.contractAddress
+                cth.defaultIrohaHash
             )
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
@@ -1164,8 +1161,7 @@ class MasterTest {
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
-                    sigs.ss,
-                    cth.relay.contractAddress
+                    sigs.ss
                 ).send().isStatusOK
             )
 
@@ -1245,8 +1241,7 @@ class MasterTest {
                 xorAddress,
                 amountToSend.toString(),
                 beneficiary,
-                cth.defaultIrohaHash,
-                cth.relay.contractAddress
+                cth.defaultIrohaHash
             )
             val sigs =
                 cth.prepareSignatures(realSigCount, keyPairs.subList(0, realSigCount), finalHash)
@@ -1259,8 +1254,7 @@ class MasterTest {
                     cth.defaultByteHash,
                     sigs.vv,
                     sigs.rr,
-                    sigs.ss,
-                    master.contractAddress
+                    sigs.ss
                 ).send()
             }
         }

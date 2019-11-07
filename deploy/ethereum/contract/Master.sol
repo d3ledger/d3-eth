@@ -323,15 +323,14 @@ contract Master {
         bytes32 txHash,
         uint8[] memory v,
         bytes32[] memory r,
-        bytes32[] memory s,
-        address from
+        bytes32[] memory s
     )
     public
     {
         require(address(xorTokenInstance) == tokenAddress);
         require(used[txHash] == false);
         require(checkSignatures(
-            keccak256(abi.encodePacked(tokenAddress, amount, beneficiary, txHash, from)),
+            keccak256(abi.encodePacked(tokenAddress, amount, beneficiary, txHash)),
             v,
             r,
             s)

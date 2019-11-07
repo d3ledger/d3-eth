@@ -256,8 +256,7 @@ class ContractTestHelper {
             xorAddress,
             amount.toString(),
             beneficiary,
-            defaultIrohaHash,
-            relay.contractAddress
+            defaultIrohaHash
         )
         val sigs = prepareSignatures(1, listOf(keypair), finalHash)
 
@@ -268,8 +267,7 @@ class ContractTestHelper {
             defaultByteHash,
             sigs.vv,
             sigs.rr,
-            sigs.ss,
-            relay.contractAddress
+            sigs.ss
         ).send()
     }
 
