@@ -75,35 +75,6 @@ class EthRefundStrategyImpl(
         return Result.of {
             val commands = appearedTx.payload.reducedPayload.getCommands(0)
             when {
-                // rollback case
-                appearedTx.payload.reducedPayload.commandsCount == 1 &&
-                        commands.hasSetAccountDetail() &&
-                        commands.setAccountDetail.key == "rollback" -> {
-
-                    // TODO a.chernyshov replace with effective implementation
-                    // 1. Get eth transaction hash from setAccountDetail
-                    // 2. Check eth transaction and get info from it
-                    //    There should be a batch with 3 txs
-                    //      if 3 tx in the batch - reject rollback
-                    //      if 2 tx (transfer asset is absent) - approve rollback
-                    // 3. build EthRefund
-
-                    val key = commands.setAccountDetail.key
-                    val value = commands.setAccountDetail.value
-                    val destEthAddress = ""
-                    logger.info { "Rollback case ($key, $value)" }
-                    //TODO ask Alexei
-                    val relayAddress =
-                        relayProvider.getRelayByAccountId(commands.transferAsset.srcAccountId).get().get()
-
-                    EthRefund(
-                        destEthAddress,
-                        "mockCoinType",
-                        "10",
-                        request.irohaTx,
-                        relayAddress
-                    )
-                }
                 // withdrawal case
                 isWithdrawalTransaction(
                     appearedTx,
