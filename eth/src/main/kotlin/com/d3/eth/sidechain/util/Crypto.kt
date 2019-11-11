@@ -13,6 +13,7 @@ import java.math.BigInteger
 
 /**
  * Signs user-provided data with predefined account deployed on local Parity node
+ * @param ecKeyPair keypair used to sign
  * @param toSign data to sign
  * @return signed data
  */
@@ -21,9 +22,8 @@ fun signUserData(ecKeyPair: ECKeyPair, toSign: String): String {
     // Message from hex to bytes
     val dat = Numeric.hexStringToByteArray(toSign)
     // Add ethereum signature format
-    val to_sign = ("\u0019Ethereum Signed Message:\n" + (dat.size)).toByteArray()
-    val data_sign = to_sign.plus(dat)
-    val signature = Sign.signMessage(data_sign, ecKeyPair)
+    val to_sign = ("\u0019Ethereum Signed Message:\n" + (dat.size)).toByteArray() + dat
+    val signature = Sign.signMessage(to_sign, ecKeyPair)
     // Combine in the signature
     var res = Numeric.toHexString(signature.r)
     res = res.plus(Numeric.toHexString(signature.s).substring(2))
