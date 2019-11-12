@@ -123,7 +123,6 @@ class EthDepositConfigTest {
             "deposit.properties"
         ).get()
 
-        assertEquals(registrationServiceIrohaAccount, depositConfig.registrationServiceIrohaAccount)
         assertEquals(notaryListStorageAccount, depositConfig.notaryListStorageAccount)
         assertEquals(ethAnchoredTokenStorageAccount, depositConfig.ethAnchoredTokenStorageAccount)
         assertEquals(ethAnchoredTokenSetterAccount, depositConfig.ethAnchoredTokenSetterAccount)

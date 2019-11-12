@@ -9,9 +9,9 @@ import com.d3.commons.model.D3ErrorException
 import com.d3.commons.registration.RegistrationStrategy
 import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
-import com.d3.eth.provider.ETH_WALLET
+import com.d3.eth.provider.ETH_RELAY
 import com.d3.eth.provider.EthFreeRelayProvider
-import com.d3.eth.provider.EthRelayProvider
+import com.d3.eth.provider.EthAddressProvider
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import mu.KLogging
@@ -21,7 +21,7 @@ import mu.KLogging
  */
 class EthRegistrationStrategyImpl(
     private val ethFreeRelayProvider: EthFreeRelayProvider,
-    private val ethRelayProvider: EthRelayProvider,
+    private val ethAddressProvider: EthAddressProvider,
     private val irohaConsumer: IrohaConsumer,
     private val notaryIrohaAccount: String
 ) : RegistrationStrategy {
@@ -34,7 +34,7 @@ class EthRegistrationStrategyImpl(
         SideChainRegistrator(
             irohaConsumer,
             notaryIrohaAccount,
-            ETH_WALLET
+            ETH_RELAY
         )
 
     /**
@@ -51,7 +51,7 @@ class EthRegistrationStrategyImpl(
         publicKey: String
     ): Result<String, Exception> {
         // check that client hasn't been registered yet
-        return ethRelayProvider.getRelayByAccountId("$accountName@$domainId")
+        return ethAddressProvider.getAddressByAccountId("$accountName@$domainId")
             .flatMap { assignedRelays ->
                 if (assignedRelays.isPresent)
                     throw D3ErrorException.warning(

@@ -114,8 +114,6 @@ open class EthConfigHelper(
         )
     ): EthDepositConfig {
         return object : EthDepositConfig {
-            override val registrationServiceIrohaAccount =
-                accountHelper.registrationAccount.accountId
             override val notaryListStorageAccount = accountHelper.notaryListStorageAccount.accountId
             override val expansionTriggerAccount = accountHelper.expansionTriggerAccount.accountId
             override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
@@ -136,6 +134,10 @@ open class EthConfigHelper(
             override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName
             override val ethMasterAddress = masterContractAddress
+            override val ethereumWalletStorageAccount = accountHelper.ethereumWalletStorageAccount.accountId
+            override val ethereumWalletSetterAccount = accountHelper.notaryAccount.accountId
+            override val ethereumRelayStorageAccount = accountHelper.ethereumRelayStorageAccount.accountId
+            override val ethereumRelaySetterAccount = accountHelper.registrationAccount.accountId
         }
     }
 

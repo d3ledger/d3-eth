@@ -12,7 +12,8 @@ import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.iroha.util.isWithdrawalTransaction
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.REFUND_OPERATION
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.ETH_RELAY
+import com.d3.eth.provider.EthAddressProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.hashToWithdraw
@@ -39,10 +40,11 @@ class EthRefundStrategyImpl(
 ) : EthRefundStrategy {
     private val queryHelper =
         IrohaQueryHelperImpl(irohaAPI, credential.accountId, credential.keyPair)
-    private val relayProvider = EthRelayProviderIrohaImpl(
+    private val relayProvider = EthAddressProviderIrohaImpl(
         queryHelper,
-        credential.accountId,
-        depositConfig.registrationServiceIrohaAccount
+        depositConfig.ethereumRelayStorageAccount,
+        depositConfig.ethereumRelaySetterAccount,
+        ETH_RELAY
     )
 
     private val withdrawalAccountId = depositConfig.withdrawalAccountId
@@ -94,7 +96,7 @@ class EthRefundStrategyImpl(
                     val tokenInfo = tokensProvider.getTokenAddress(assetId)
                         .fanout { tokensProvider.getTokenPrecision(assetId) }
 
-                    relayProvider.getRelayByAccountId(withdrawalCommand.srcAccountId)
+                    relayProvider.getAddressByAccountId(withdrawalCommand.srcAccountId)
                         .fanout {
                             tokenInfo
                         }.fold(

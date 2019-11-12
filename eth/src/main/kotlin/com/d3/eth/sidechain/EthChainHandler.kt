@@ -21,13 +21,13 @@ import java.math.BigInteger
  * Implementation of [ChainHandler] for Ethereum side chain.
  * Extract interesting transactions from Ethereum block.
  * @param web3 - notary.endpoint of Ethereum client
- * @param ethRelayProvider - provider of observable wallets
+ * @param ethAddressProvider - provider of observable wallets
  * @param ethTokensProvider - provider of observable tokens
  */
 class EthChainHandler(
     val web3: Web3j,
     val masterAddres: String,
-    val ethRelayProvider: EthRelayProvider,
+    val ethRelayProvider: EthAddressProvider,
     val ethTokensProvider: EthTokensProvider,
     deployHelper: DeployHelper
 ) :
@@ -185,7 +185,7 @@ class EthChainHandler(
     override fun parseBlock(block: EthBlock): List<SideChainEvent.PrimaryBlockChainEvent> {
         logger.info { "Ethereum chain handler for block ${block.block.number}" }
 
-        return ethRelayProvider.getRelays().fanout {
+        return ethRelayProvider.getAddresses().fanout {
             ethTokensProvider.getEthAnchoredTokens().fanout {
                 ethTokensProvider.getIrohaAnchoredTokens()
             }

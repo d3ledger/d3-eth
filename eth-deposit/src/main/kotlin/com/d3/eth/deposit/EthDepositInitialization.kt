@@ -12,6 +12,7 @@ import com.d3.commons.notary.Notary
 import com.d3.commons.notary.NotaryImpl
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
 import com.d3.commons.sidechain.SideChainEvent
+import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.consumer.MultiSigIrohaConsumer
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -23,8 +24,10 @@ import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRegistrationProofStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
-import com.d3.eth.provider.EthRelayProvider
+import com.d3.eth.provider.EthAddressProvider
 import com.d3.eth.provider.EthTokensProvider
+import com.d3.eth.registration.EthRegistrationConfig
+import com.d3.eth.registration.wallet.EthereumWalletRegistrationHandler
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
@@ -50,7 +53,7 @@ import java.math.BigInteger
 
 /**
  * Class for deposit instantiation
- * @param ethRelayProvider - provides with white list of ethereum wallets
+ * @param ethAddressProvider - provides with white list of ethereum wallets
  * @param ethTokensProvider - provides with white list of ethereum ERC20 tokens
  */
 class EthDepositInitialization(
@@ -59,8 +62,10 @@ class EthDepositInitialization(
     private val ethDepositConfig: EthDepositConfig,
     private val passwordsConfig: EthereumPasswords,
     rmqConfig: RMQConfig,
-    private val ethRelayProvider: EthRelayProvider,
-    private val ethTokensProvider: EthTokensProvider
+    private val ethWalletProvider: EthAddressProvider,
+    private val ethRelayProvider: EthAddressProvider,
+    private val ethTokensProvider: EthTokensProvider,
+    private val registrationHandler: EthereumWalletRegistrationHandler
 ) {
     private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(
         passwordsConfig.credentialsPassword,
@@ -117,6 +122,7 @@ class EthDepositInitialization(
                     ).subscribe(
                         { (block, _) ->
                             expansionStrategy.filterAndExpand(block)
+                            registrationHandler.filterAndRegister(block)
                         }, { ex ->
                             logger.error("Withdrawal observable error", ex)
                             System.exit(1)

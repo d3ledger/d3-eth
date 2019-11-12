@@ -17,9 +17,6 @@ interface RefundConfig {
 
 /** Configuration of deposit */
 interface EthDepositConfig {
-    /** Iroha account that has registered wallets */
-    val registrationServiceIrohaAccount: String
-
     /** Account that stores list of notaries endpoints */
     val notaryListStorageAccount: String
 
@@ -62,4 +59,16 @@ interface EthDepositConfig {
 
     /** Address of master smart contract in Ethereum */
     val ethMasterAddress: String
+
+    /** Ethereum wallet list storage account id */
+    val ethereumWalletStorageAccount: String
+
+    /** Ethereum wallet list setter account id */
+    val ethereumWalletSetterAccount: String
+
+    /** Ethereum relay list storage account id */
+    val ethereumRelayStorageAccount: String
+
+    /** Ethereum relay list setter account id */
+    val ethereumRelaySetterAccount: String
 }
