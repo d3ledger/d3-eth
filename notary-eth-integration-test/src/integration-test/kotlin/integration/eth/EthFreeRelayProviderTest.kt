@@ -54,18 +54,17 @@ class EthFreeRelayProviderTest {
 
             setAccountDetail(
                 irohaConsumer,
-                integrationHelper.accountHelper.notaryAccount.accountId,
+                integrationHelper.accountHelper.ethereumRelayStorageAccount.accountId,
                 ethFreeWallet,
                 "free"
             )
                 .failure { fail(it) }
 
-            val freeWalletsProvider =
-                EthFreeRelayProvider(
-                    integrationHelper.queryHelper,
-                    integrationHelper.accountHelper.notaryAccount.accountId,
-                    creator
-                )
+            val freeWalletsProvider = EthFreeRelayProvider(
+                integrationHelper.queryHelper,
+                integrationHelper.accountHelper.ethereumRelayStorageAccount.accountId,
+                creator
+            )
             val result = freeWalletsProvider.getRelay()
 
             assertEquals(ethFreeWallet, result.get())
@@ -110,7 +109,7 @@ class EthFreeRelayProviderTest {
             val freeWalletsProvider =
                 EthFreeRelayProvider(
                     integrationHelper.queryHelper,
-                    integrationHelper.accountHelper.notaryAccount.accountId,
+                    integrationHelper.accountHelper.ethereumRelayStorageAccount.accountId,
                     integrationHelper.accountHelper.registrationAccount.accountId
                 )
 

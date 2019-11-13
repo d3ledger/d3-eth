@@ -68,8 +68,8 @@ class RelayVacuumTest {
             "RELAY-VACUUM_IROHAANCHOREDTOKENSETTERACCOUNT",
             irohaAnchoredTokenSetterAccount
         )
-        val notaryIrohaAccount = "notary@account"
-        environmentVariables.set("RELAY-VACUUM_NOTARYIROHAACCOUNT", notaryIrohaAccount)
+        val relayStorageAccount = "notary@account"
+        environmentVariables.set("RELAY-VACUUM_RELAYSTORAGEACCOUNT", relayStorageAccount)
         val irohaHostname = "iroha.host"
         environmentVariables.set("RELAY-VACUUM_IROHA_HOSTNAME", irohaHostname)
         val irohaPort = "4040"
@@ -107,7 +107,7 @@ class RelayVacuumTest {
         assertEquals(ethAnchoredTokenSetterAccount, relayConfig.ethAnchoredTokenSetterAccount)
         assertEquals(irohaAnchoredTokenStorageAccount, relayConfig.irohaAnchoredTokenStorageAccount)
         assertEquals(irohaAnchoredTokenSetterAccount, relayConfig.irohaAnchoredTokenSetterAccount)
-        assertEquals(notaryIrohaAccount, relayConfig.notaryIrohaAccount)
+        assertEquals(relayStorageAccount, relayConfig.relayStorageAccount)
         assertEquals(irohaHostname, relayConfig.iroha.hostname)
         assertEquals(irohaPort.toInt(), relayConfig.iroha.port)
         assertEquals(ethereumUrl, relayConfig.ethereum.url)

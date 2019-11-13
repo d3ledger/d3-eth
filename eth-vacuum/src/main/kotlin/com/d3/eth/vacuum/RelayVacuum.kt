@@ -41,7 +41,7 @@ class RelayVacuum(
 
     private val ethRelayProvider = EthAddressProviderIrohaImpl(
         queryHelper,
-        relayVacuumConfig.notaryIrohaAccount,
+        relayVacuumConfig.relayStorageAccount,
         relayVacuumConfig.registrationServiceIrohaAccount,
         ETH_RELAY
     )

@@ -19,7 +19,7 @@ interface EthRegistrationConfig {
     val relayRegistrationIrohaAccount: String
 
     /** Iroha account of relay account register */
-    val notaryIrohaAccount: String
+    val relayStorageAccount: String
 
     val registrationCredential: IrohaCredentialRawConfig
 

@@ -53,12 +53,12 @@ class EthRegistrationServiceInitialization(
                 Pair(
                     EthFreeRelayProvider(
                         queryHelper,
-                        ethRegistrationConfig.notaryIrohaAccount,
+                        ethRegistrationConfig.relayStorageAccount,
                         ethRegistrationConfig.relayRegistrationIrohaAccount
                     ),
                     EthAddressProviderIrohaImpl(
                         queryHelper,
-                        ethRegistrationConfig.notaryIrohaAccount,
+                        ethRegistrationConfig.relayStorageAccount,
                         ethRegistrationConfig.relayRegistrationIrohaAccount,
                         ETH_RELAY
                     )
@@ -71,7 +71,7 @@ class EthRegistrationServiceInitialization(
                 ethFreeRelayProvider,
                 ethRelayProvider,
                 irohaConsumer,
-                ethRegistrationConfig.notaryIrohaAccount
+                ethRegistrationConfig.relayStorageAccount
             )
         }.map { registrationStrategy ->
             RegistrationServiceEndpoint(

@@ -142,7 +142,6 @@ class WithdrawalMultinotaryIntegrationTest {
     fun testRefundEndpoints() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
-            val masterAccount = integrationHelper.accountHelper.notaryAccount.accountId
             val amount = "64203"
             val decimalAmount = BigDecimal(amount).scaleByPowerOfTen(ETH_PRECISION)
             val assetId = "ether#ethereum"
@@ -165,7 +164,7 @@ class WithdrawalMultinotaryIntegrationTest {
             integrationHelper.addIrohaAssetTo(clientId, assetId, decimalAmount)
             val relay = EthAddressProviderIrohaImpl(
                 integrationHelper.queryHelper,
-                masterAccount,
+                integrationHelper.accountHelper.ethereumRelayStorageAccount.accountId,
                 integrationHelper.accountHelper.registrationAccount.accountId,
                 ETH_RELAY
             ).getAddresses().get().filter {

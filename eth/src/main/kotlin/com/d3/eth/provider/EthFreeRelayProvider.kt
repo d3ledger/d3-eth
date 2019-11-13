@@ -13,21 +13,21 @@ import mu.KLogging
 /**
  * Provides with free ethereum relay wallet
  * @param queryHelper - iroha queries network layer
- * @param notaryIrohaAccount - Master notary account in Iroha to write down the information about free relay wallets has been added
+ * @param storageAccount - account in Iroha to write down the information about free relay wallets has been added
  */
 // TODO Prevent double relay accounts usage (in perfect world it is on Iroha side with custom code). In real world
 // on provider side with some synchronization.
 class EthFreeRelayProvider(
     private val queryHelper: IrohaQueryHelper,
-    private val notaryIrohaAccount: String,
-    private val registrationIrohaAccount: String
+    private val storageAccount: String,
+    private val setterAccount: String
 ) {
 
     private val freeRelayPredicate = { _: String, value: String -> value == "free" }
 
     init {
         logger.info {
-            "Init free relay provider with holder account '$notaryIrohaAccount' and setter account '$registrationIrohaAccount'"
+            "Init free relay provider with holder account '$storageAccount' and setter account '$setterAccount'"
         }
     }
 
@@ -37,12 +37,12 @@ class EthFreeRelayProvider(
      */
     fun getRelay(): Result<String, Exception> {
         return queryHelper.getAccountDetailsFirst(
-            notaryIrohaAccount,
-            registrationIrohaAccount,
+            storageAccount,
+            setterAccount,
             freeRelayPredicate
         ).map { freeWallet ->
             if (!freeWallet.isPresent)
-                throw IllegalStateException("EthFreeRelayProvider - no free relay wallets created by $registrationIrohaAccount")
+                throw IllegalStateException("EthFreeRelayProvider - no free relay wallets created by $setterAccount")
             freeWallet.get().key
         }
     }
@@ -53,8 +53,8 @@ class EthFreeRelayProvider(
      */
     fun getRelays(): Result<Set<String>, Exception> {
         return queryHelper.getAccountDetailsFilter(
-            notaryIrohaAccount,
-            registrationIrohaAccount,
+            storageAccount,
+            setterAccount,
             freeRelayPredicate
         ).map { relays ->
             relays.keys
@@ -67,8 +67,8 @@ class EthFreeRelayProvider(
      */
     fun getRelaysCount(): Result<Int, Exception> {
         return queryHelper.getAccountDetailsCount(
-            notaryIrohaAccount,
-            registrationIrohaAccount,
+            storageAccount,
+            setterAccount,
             freeRelayPredicate
         )
     }

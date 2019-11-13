@@ -67,7 +67,6 @@ class DepositIntegrationTest {
             registrationTestEnvironment.registrationConfig.port
         )
         Assertions.assertEquals(200, res.statusCode)
-        // TODO: D3-417 Web3j cannot pass an empty list of addresses to the smart contract.
         return integrationHelper.registerClientInEth(clientIrohaAccount)
     }
 

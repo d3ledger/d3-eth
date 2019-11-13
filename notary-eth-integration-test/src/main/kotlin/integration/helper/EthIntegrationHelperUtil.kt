@@ -131,7 +131,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     private val ethFreeRelayProvider by lazy {
         EthFreeRelayProvider(
             registrationQueryHelper,
-            accountHelper.notaryAccount.accountId,
+            accountHelper.ethereumRelayStorageAccount.accountId,
             accountHelper.registrationAccount.accountId
         )
     }
@@ -140,7 +140,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     private val ethRelayProvider by lazy {
         EthAddressProviderIrohaImpl(
             registrationQueryHelper,
-            accountHelper.notaryAccount.accountId,
+            accountHelper.ethereumRelayStorageAccount.accountId,
             accountHelper.registrationAccount.accountId,
             ETH_RELAY
         )
@@ -151,7 +151,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             ethFreeRelayProvider,
             ethRelayProvider,
             registrationConsumer,
-            accountHelper.notaryAccount.accountId
+            accountHelper.ethereumRelayStorageAccount.accountId
         )
     }
 

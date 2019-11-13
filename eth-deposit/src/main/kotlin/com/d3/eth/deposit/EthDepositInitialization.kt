@@ -12,7 +12,6 @@ import com.d3.commons.notary.Notary
 import com.d3.commons.notary.NotaryImpl
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
 import com.d3.commons.sidechain.SideChainEvent
-import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.consumer.MultiSigIrohaConsumer
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -26,7 +25,6 @@ import com.d3.eth.deposit.endpoint.EthRegistrationProofStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
 import com.d3.eth.provider.EthAddressProvider
 import com.d3.eth.provider.EthTokensProvider
-import com.d3.eth.registration.EthRegistrationConfig
 import com.d3.eth.registration.wallet.EthereumWalletRegistrationHandler
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
@@ -53,8 +51,10 @@ import java.math.BigInteger
 
 /**
  * Class for deposit instantiation
- * @param ethAddressProvider - provides with white list of ethereum wallets
+ * @param ethWalletProvider - provides with white list of ethereum wallets
+ * @param ethRelayProvider - provides with white list of ethereum relays
  * @param ethTokensProvider - provides with white list of ethereum ERC20 tokens
+ * @param registrationHandler - iroha-based wallet registration handler
  */
 class EthDepositInitialization(
     private val notaryCredential: IrohaCredential,

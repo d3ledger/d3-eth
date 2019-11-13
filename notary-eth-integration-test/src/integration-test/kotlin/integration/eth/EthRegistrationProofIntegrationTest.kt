@@ -175,9 +175,62 @@ class EthRegistrationProofIntegrationTest {
     }
 
     /**
-     * @given
-     * @when
-     * @then
+     * @given notary service is running and client with iroha account and ethereum wallet
+     * @when the client sends ethereum wallet registration request with invalid message
+     * @then failed registration record is sent to iroha,
+     */
+    @Test
+    fun correctAfterInvalidWalletRegistration() {
+        Assertions.assertTimeoutPreemptively(timeoutDuration) {
+            val keyPair = ModelUtil.generateKeypair()
+            val clientIrohaAccount = String.getRandomString(5)
+            val ethKeypair = Keys.createEcKeyPair()
+            val clientId = "$clientIrohaAccount@d3"
+            val ethereumAddress = "0x${Keys.getAddress(ethKeypair.publicKey)}"
+
+            // register iroha account
+            val res = integrationHelper.sendRegistrationRequest(
+                clientIrohaAccount,
+                keyPair.public.toHexString(),
+                registrationTestEnvironment.registrationConfig.port
+            )
+            assertEquals(200, res.statusCode)
+
+            // send wrong signature
+            val clientIrohaConsumer = IrohaConsumerImpl(
+                IrohaCredential(clientId, keyPair),
+                integrationHelper.irohaAPI
+            )
+            integrationHelper.setAccountDetail(
+                clientIrohaConsumer,
+                integrationHelper.accountHelper.registrationAccount.accountId,
+                ETH_REGISTRATION_KEY,
+                "some wrong value",
+                quorum = 2
+            )
+            Thread.sleep(3_000)
+
+            // check wrong registration
+            assertTrue {
+                integrationHelper.queryHelper.getAccountDetails(
+                    clientId,
+                    integrationHelper.accountHelper.notaryAccount.accountId,
+                    ETH_FAILED_REGISTRATION_KEY
+                ).get().isPresent
+            }
+
+            // register in Ethereum again
+            integrationHelper.registerEthereumWallet(clientId, keyPair, ethKeypair)
+
+            Thread.sleep(3_000)
+            checkRegisteredEthereumAddress(clientId, ethereumAddress)
+        }
+    }
+
+    /**
+     * @given two registered clients and one ethereum wallet
+     * @when registration with occupied wallet send
+     * @then the second registration fails
      */
     @Test
     fun doubleWalletRegistration() {

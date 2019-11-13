@@ -10,8 +10,8 @@ import com.d3.commons.registration.RegistrationStrategy
 import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.eth.provider.ETH_RELAY
-import com.d3.eth.provider.EthFreeRelayProvider
 import com.d3.eth.provider.EthAddressProvider
+import com.d3.eth.provider.EthFreeRelayProvider
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import mu.KLogging
@@ -23,19 +23,18 @@ class EthRegistrationStrategyImpl(
     private val ethFreeRelayProvider: EthFreeRelayProvider,
     private val ethAddressProvider: EthAddressProvider,
     private val irohaConsumer: IrohaConsumer,
-    private val notaryIrohaAccount: String
+    relayStorageAccount: String
 ) : RegistrationStrategy {
 
     init {
-        logger.info { "Init EthRegistrationStrategyImpl with irohaCreator=${irohaConsumer.creator}, notaryIrohaAccount=$notaryIrohaAccount" }
+        logger.info { "Init EthRegistrationStrategyImpl with irohaCreator=${irohaConsumer.creator}, relayStorageAccount=$relayStorageAccount" }
     }
 
-    private val ethereumAccountRegistrator =
-        SideChainRegistrator(
-            irohaConsumer,
-            notaryIrohaAccount,
-            ETH_RELAY
-        )
+    private val ethereumAccountRegistrator = SideChainRegistrator(
+        irohaConsumer,
+        relayStorageAccount,
+        ETH_RELAY
+    )
 
     /**
      * Register new notary client
