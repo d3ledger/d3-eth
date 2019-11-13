@@ -30,6 +30,8 @@ fun checkRegistrationProof(proof: EthereumRegistrationProof): Boolean {
     val address = Keys.getAddress(proof.publicKey)
 
     // Iterate recId [0..3] while the correct way not found
+    // there are 4 potential outputs including null values, thus we should check output
+    // comparing to expecting public key
     for (i in 0..3) {
         // null is a valid result, skip it
         val res =
