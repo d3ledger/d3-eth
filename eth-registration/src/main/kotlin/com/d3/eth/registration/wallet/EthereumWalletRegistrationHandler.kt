@@ -7,6 +7,7 @@ package com.d3.eth.registration.wallet
 
 import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
+import com.d3.commons.util.GsonInstance
 import com.d3.commons.util.hex
 import com.d3.commons.util.irohaUnEscape
 import com.d3.eth.provider.ETH_WALLET
@@ -31,9 +32,9 @@ class EthereumWalletRegistrationHandler(
     private val ethWalletProvider: EthAddressProvider,
     private val ethRelayProvider: EthAddressProvider
 ) {
-    val gson = Gson()
+    private val gson = GsonInstance.get()
 
-    val registrator = SideChainRegistrator(
+    private val registrator = SideChainRegistrator(
         irohaConsumer,
         walletStorageIrohaAccountId,
         ETH_WALLET

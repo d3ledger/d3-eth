@@ -7,6 +7,7 @@ package com.d3.eth.deposit.endpoint
 
 import com.d3.commons.expansion.ExpansionDetails
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
+import com.d3.commons.util.GsonInstance
 import com.d3.commons.util.irohaUnEscape
 import com.d3.eth.sidechain.util.hashToAddAndRemovePeer
 import com.d3.eth.sidechain.util.signUserData
@@ -28,7 +29,7 @@ class EthAddPeerStrategyImpl(
     private val expansionTriggerAccountId: String,
     private val expansionTriggerCreatorAccountId: String
 ) : EthAddPeerStrategy {
-    private val gson = Gson()
+    private val gson = GsonInstance.get()
 
     /**
      * Check and give proof
