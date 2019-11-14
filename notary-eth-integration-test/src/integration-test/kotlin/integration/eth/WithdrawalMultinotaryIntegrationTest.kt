@@ -13,7 +13,8 @@ import com.d3.eth.deposit.endpoint.BigIntegerMoshiAdapter
 import com.d3.eth.deposit.endpoint.EthNotaryResponse
 import com.d3.eth.deposit.endpoint.EthNotaryResponseMoshiAdapter
 import com.d3.eth.provider.ETH_PRECISION
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.ETH_RELAY
+import com.d3.eth.provider.EthAddressProviderIrohaImpl
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.d3.eth.sidechain.util.hashToWithdraw
@@ -141,7 +142,6 @@ class WithdrawalMultinotaryIntegrationTest {
     fun testRefundEndpoints() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
-            val masterAccount = integrationHelper.accountHelper.notaryAccount.accountId
             val amount = "64203"
             val decimalAmount = BigDecimal(amount).scaleByPowerOfTen(ETH_PRECISION)
             val assetId = "ether#ethereum"
@@ -162,11 +162,12 @@ class WithdrawalMultinotaryIntegrationTest {
                 integrationHelper.testCredential.keyPair
             )
             integrationHelper.addIrohaAssetTo(clientId, assetId, decimalAmount)
-            val relay = EthRelayProviderIrohaImpl(
+            val relay = EthAddressProviderIrohaImpl(
                 integrationHelper.queryHelper,
-                masterAccount,
-                integrationHelper.accountHelper.registrationAccount.accountId
-            ).getRelays().get().filter {
+                integrationHelper.accountHelper.ethereumRelayStorageAccount.accountId,
+                integrationHelper.accountHelper.registrationAccount.accountId,
+                ETH_RELAY
+            ).getAddresses().get().filter {
                 it.value == clientId
             }.keys.first()
 

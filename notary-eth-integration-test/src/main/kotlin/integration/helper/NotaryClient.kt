@@ -9,6 +9,10 @@ import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
+import com.d3.commons.util.irohaEscape
+import com.d3.eth.registration.wallet.EthereumRegistrationProof
+import com.d3.eth.registration.wallet.ETH_REGISTRATION_KEY
+import com.d3.eth.registration.wallet.createRegistrationProof
 import com.d3.eth.sidechain.util.DeployHelper
 import integration.eth.config.EthereumConfig
 import integration.eth.config.EthereumPasswords
@@ -32,6 +36,9 @@ class NotaryClient(
     /** Notary Iroha account id */
     private val notaryAccountId = integrationHelper.accountHelper.notaryAccount.accountId
 
+    /** Ethereum registration service */
+    private val registrationAccountId = integrationHelper.accountHelper.registrationAccount.accountId
+
     /** Client Iroha account id */
     val accountId = irohaCredential.accountId
 
@@ -46,7 +53,7 @@ class NotaryClient(
     }
 
     /**
-     * Send HTTP POST request to registration service to register user
+     * Send HTTP POST request to registration service to register user with Relay
      */
     fun signUp(): khttp.responses.Response {
         val response = integrationHelper.sendRegistrationRequest(
@@ -57,6 +64,19 @@ class NotaryClient(
         relay = response.text
 
         return response
+    }
+
+    /**
+     * Send request to register user with existing Ethereum wallet.
+     */
+    fun signUpWithWallet() {
+        val signature = createRegistrationProof(etherHelper.credentials.ecKeyPair)
+        integrationHelper.setAccountDetail(
+            integrationHelper.irohaConsumer,
+            registrationAccountId,
+            ETH_REGISTRATION_KEY,
+            signature.toJson().irohaEscape()
+        )
     }
 
     fun deposit(amount: BigInteger) {

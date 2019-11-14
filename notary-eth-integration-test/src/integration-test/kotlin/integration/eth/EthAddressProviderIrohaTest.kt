@@ -5,7 +5,8 @@
 
 package integration.eth
 
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.ETH_RELAY
+import com.d3.eth.provider.EthAddressProviderIrohaImpl
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
 import org.junit.jupiter.api.AfterAll
@@ -19,7 +20,7 @@ import java.time.Duration
  * Requires Iroha is running
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class EthRelayProviderIrohaTest {
+class EthAddressProviderIrohaTest {
 
     val integrationHelper = EthIntegrationHelperUtil()
 
@@ -38,7 +39,7 @@ class EthRelayProviderIrohaTest {
 
     /**
      * @given ethereum relay wallets are stored in the system
-     * @when getRelays() is called
+     * @when getAddresses() is called
      * @then not free wallets are returned in a map
      */
     @Test
@@ -60,11 +61,12 @@ class EthRelayProviderIrohaTest {
 
             val valid = entries.filter { it.value != "free" }
 
-            EthRelayProviderIrohaImpl(
+            EthAddressProviderIrohaImpl(
                 integrationHelper.queryHelper,
                 relayStorage,
-                relaySetter
-            ).getRelays()
+                relaySetter,
+                ETH_RELAY
+            ).getAddresses()
                 .fold(
                     { assertEquals(valid, it) },
                     { ex -> fail("cannot get relays", ex) }
@@ -74,18 +76,19 @@ class EthRelayProviderIrohaTest {
 
     /**
      * @given There is no relay accounts registered (we use test accountId as relay holder)
-     * @when getRelays() is called
+     * @when getAddresses() is called
      * @then empty map is returned
      */
     @Test
     fun testEmptyStorage() {
         assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
-            EthRelayProviderIrohaImpl(
+            EthAddressProviderIrohaImpl(
                 integrationHelper.queryHelper,
                 integrationHelper.testCredential.accountId,
-                relaySetter
-            ).getRelays()
+                relaySetter,
+                ETH_RELAY
+            ).getAddresses()
                 .fold(
                     { assert(it.isEmpty()) },
                     { ex -> fail("result has exception", ex) }
@@ -95,11 +98,12 @@ class EthRelayProviderIrohaTest {
 
     @Test
     fun testGetByAccountNotFound() {
-        val res = EthRelayProviderIrohaImpl(
+        val res = EthAddressProviderIrohaImpl(
             integrationHelper.queryHelper,
             integrationHelper.testCredential.accountId,
-            relaySetter
-        ).getRelayByAccountId("nonexist@domain")
+            relaySetter,
+            ETH_RELAY
+        ).getAddressByAccountId("nonexist@domain")
         assertFalse(res.get().isPresent)
     }
 }

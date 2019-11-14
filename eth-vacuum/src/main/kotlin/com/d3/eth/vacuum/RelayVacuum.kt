@@ -6,7 +6,8 @@
 package com.d3.eth.vacuum
 
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.ETH_RELAY
+import com.d3.eth.provider.EthAddressProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.sidechain.util.DeployHelper
 import com.github.kittinunf.result.Result
@@ -38,17 +39,18 @@ class RelayVacuum(
         relayVacuumConfig.irohaAnchoredTokenSetterAccount
     )
 
-    private val ethRelayProvider = EthRelayProviderIrohaImpl(
+    private val ethRelayProvider = EthAddressProviderIrohaImpl(
         queryHelper,
-        relayVacuumConfig.notaryIrohaAccount,
-        relayVacuumConfig.registrationServiceIrohaAccount
+        relayVacuumConfig.relayStorageAccount,
+        relayVacuumConfig.registrationServiceIrohaAccount,
+        ETH_RELAY
     )
 
     /**
      * Returns all non free relays
      */
     private fun getAllRelays(): Result<List<Relay>, Exception> {
-        return ethRelayProvider.getRelays().map { wallets ->
+        return ethRelayProvider.getAddresses().map { wallets ->
             wallets.keys.map { ethPublicKey ->
                 deployHelper.loadRelayContract(ethPublicKey)
             }

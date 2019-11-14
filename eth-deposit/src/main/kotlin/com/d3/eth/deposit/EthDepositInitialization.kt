@@ -23,8 +23,9 @@ import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRegistrationProofStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
-import com.d3.eth.provider.EthRelayProvider
+import com.d3.eth.provider.EthAddressProvider
 import com.d3.eth.provider.EthTokensProvider
+import com.d3.eth.registration.wallet.EthereumWalletRegistrationHandler
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
@@ -50,8 +51,10 @@ import java.math.BigInteger
 
 /**
  * Class for deposit instantiation
- * @param ethRelayProvider - provides with white list of ethereum wallets
+ * @param ethWalletProvider - provides with white list of ethereum wallets
+ * @param ethRelayProvider - provides with white list of ethereum relays
  * @param ethTokensProvider - provides with white list of ethereum ERC20 tokens
+ * @param registrationHandler - iroha-based wallet registration handler
  */
 class EthDepositInitialization(
     private val notaryCredential: IrohaCredential,
@@ -59,8 +62,10 @@ class EthDepositInitialization(
     private val ethDepositConfig: EthDepositConfig,
     private val passwordsConfig: EthereumPasswords,
     rmqConfig: RMQConfig,
-    private val ethRelayProvider: EthRelayProvider,
-    private val ethTokensProvider: EthTokensProvider
+    private val ethWalletProvider: EthAddressProvider,
+    private val ethRelayProvider: EthAddressProvider,
+    private val ethTokensProvider: EthTokensProvider,
+    private val registrationHandler: EthereumWalletRegistrationHandler
 ) {
     private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(
         passwordsConfig.credentialsPassword,
@@ -117,6 +122,7 @@ class EthDepositInitialization(
                     ).subscribe(
                         { (block, _) ->
                             expansionStrategy.filterAndExpand(block)
+                            registrationHandler.filterAndRegister(block)
                         }, { ex ->
                             logger.error("Withdrawal observable error", ex)
                             System.exit(1)

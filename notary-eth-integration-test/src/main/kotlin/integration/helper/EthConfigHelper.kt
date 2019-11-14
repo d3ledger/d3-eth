@@ -81,7 +81,7 @@ open class EthConfigHelper(
             override val replenishmentPeriod = relayRegistrationConfig.replenishmentPeriod
             override val ethMasterAddress = masterContractAddress
             override val ethRelayImplementationAddress = relayImplementaionContractAddress
-            override val notaryIrohaAccount = accountHelper.notaryAccount.accountId
+            override val relayStorageAccount = accountHelper.ethereumRelayStorageAccount.accountId
             override val iroha = createIrohaConfig()
             override val ethereum = relayRegistrationConfig.ethereum
             override val relayRegistrationCredential =
@@ -114,8 +114,6 @@ open class EthConfigHelper(
         )
     ): EthDepositConfig {
         return object : EthDepositConfig {
-            override val registrationServiceIrohaAccount =
-                accountHelper.registrationAccount.accountId
             override val notaryListStorageAccount = accountHelper.notaryListStorageAccount.accountId
             override val expansionTriggerAccount = accountHelper.expansionTriggerAccount.accountId
             override val expansionTriggerCreatorAccountId = accountHelper.superuserAccount.accountId
@@ -136,6 +134,10 @@ open class EthConfigHelper(
             override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName
             override val ethMasterAddress = masterContractAddress
+            override val ethereumWalletStorageAccount = accountHelper.ethereumWalletStorageAccount.accountId
+            override val ethereumWalletSetterAccount = accountHelper.notaryAccount.accountId
+            override val ethereumRelayStorageAccount = accountHelper.ethereumRelayStorageAccount.accountId
+            override val ethereumRelaySetterAccount = accountHelper.registrationAccount.accountId
         }
     }
 
@@ -157,7 +159,7 @@ open class EthConfigHelper(
             )
 
         return object : WithdrawalServiceConfig {
-            override val notaryIrohaAccount = accountHelper.notaryAccount.accountId
+            override val relayStorageAccount = accountHelper.ethereumRelayStorageAccount.accountId
             override val ethAnchoredTokenStorageAccount =
                 accountHelper.ethAnchoredTokenStorageAccount.accountId
             override val ethAnchoredTokenSetterAccount = accountHelper.tokenSetterAccount.accountId
@@ -196,7 +198,7 @@ open class EthConfigHelper(
         return object : EthRegistrationConfig {
             override val port = portCounter.incrementAndGet()
             override val relayRegistrationIrohaAccount = accountHelper.registrationAccount.accountId
-            override val notaryIrohaAccount = accountHelper.notaryAccount.accountId
+            override val relayStorageAccount = accountHelper.ethereumRelayStorageAccount.accountId
             override val iroha = createIrohaConfig()
             override val registrationCredential =
                 accountHelper.createCredentialRawConfig(accountHelper.registrationAccount)
@@ -222,7 +224,7 @@ open class EthConfigHelper(
             override val irohaAnchoredTokenSetterAccount =
                 accountHelper.tokenSetterAccount.accountId
             /** Notary Iroha account that stores relay register */
-            override val notaryIrohaAccount = accountHelper.notaryAccount.accountId
+            override val relayStorageAccount = accountHelper.ethereumRelayStorageAccount.accountId
 
             override val vacuumCredential =
                 accountHelper.createCredentialRawConfig(accountHelper.testCredential)

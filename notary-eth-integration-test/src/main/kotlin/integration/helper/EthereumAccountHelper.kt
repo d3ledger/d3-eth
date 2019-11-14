@@ -23,4 +23,11 @@ class EthereumAccountHelper(irohaApi: IrohaAPI) : IrohaAccountHelper(irohaApi) {
 
     /** Account that sets Ethereum addresses */
     val ethAddressesWriter = createTesterAccount("eth_addr_writer", listOf("tester"))
+
+    /** list of registered ethereum wallets */
+    val ethereumWalletStorageAccount = createTesterAccount("ethereum_wallets")
+
+    /** list of registered ethereum relays */
+    val ethereumRelayStorageAccount = createTesterAccount("ethereum_relays")
+
 }

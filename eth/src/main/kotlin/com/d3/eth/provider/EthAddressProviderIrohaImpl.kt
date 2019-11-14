@@ -12,23 +12,25 @@ import jp.co.soramitsu.iroha.java.ErrorResponseException
 import mu.KLogging
 import java.util.*
 
+const val ETH_RELAY = "ethereum_relay"
 const val ETH_WALLET = "ethereum_wallet"
 
 /**
- * Implementation of [EthRelayProvider] with Iroha storage.
+ * Implementation of [EthAddressProvider] with Iroha storage.
  *
  * @param queryHelper - Iroha queries network layer
  * @param notaryAccount - account that contains details
  * @param registrationAccount - account that has set details
  */
-class EthRelayProviderIrohaImpl(
+class EthAddressProviderIrohaImpl(
     private val queryHelper: IrohaQueryHelper,
-    private val notaryAccount: String,
-    private val registrationAccount: String
-) : EthRelayProvider {
+    private val storageAccountId: String,
+    private val setterAccountId: String,
+    private val key: String
+) : EthAddressProvider {
     init {
         logger.info {
-            "Init relay provider with notary account '$notaryAccount' and registration account '$registrationAccount'"
+            "Init relay provider with storage account '$storageAccountId' and setter account '$setterAccountId'"
         }
     }
 
@@ -39,20 +41,20 @@ class EthRelayProviderIrohaImpl(
      *
      * @return map<eth_wallet -> iroha_account> in success case or exception otherwise
      */
-    override fun getRelays(): Result<Map<String, String>, Exception> {
+    override fun getAddresses(): Result<Map<String, String>, Exception> {
         return queryHelper.getAccountDetailsFilter(
-            notaryAccount,
-            registrationAccount,
+            storageAccountId,
+            setterAccountId,
             nonFreeRelayPredicate
         )
     }
 
     /** Get relay belonging to [irohaAccountId] */
-    override fun getRelayByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> = Result.of {
+    override fun getAddressByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> = Result.of {
         queryHelper.getAccountDetails(
             irohaAccountId,
-            registrationAccount,
-            ETH_WALLET
+            setterAccountId,
+            key
         ).fold(
             { relay ->
                 if (!relay.isPresent) {

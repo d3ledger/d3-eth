@@ -54,8 +54,8 @@ class RelayRegistrationConfigTest {
             "RELAY-REGISTRATION_ETHRELAYIMPLEMENTATIONADDRESS",
             ethRelayImplementationAddress
         )
-        val notaryIrohaAccount = "notary@account"
-        environmentVariables.set("RELAY-REGISTRATION_NOTARYIROHAACCOUNT", notaryIrohaAccount)
+        val relayStorageAccount = "ethereum_relays@account"
+        environmentVariables.set("RELAY-REGISTRATION_RELAYSTORAGEACCOUNT", relayStorageAccount)
 
         val relayRegistrationCredentialAccountId = "notary_credentials@account"
         environmentVariables.set(
@@ -100,7 +100,7 @@ class RelayRegistrationConfigTest {
         assertEquals(replenishmentPeriod.toLong(), relayConfig.replenishmentPeriod)
         assertEquals(ethMasterAddress, relayConfig.ethMasterAddress)
         assertEquals(ethRelayImplementationAddress, relayConfig.ethRelayImplementationAddress)
-        assertEquals(notaryIrohaAccount, relayConfig.notaryIrohaAccount)
+        assertEquals(relayStorageAccount, relayConfig.relayStorageAccount)
         assertEquals(
             relayRegistrationCredentialAccountId,
             relayConfig.relayRegistrationCredential.accountId

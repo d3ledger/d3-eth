@@ -31,8 +31,8 @@ class EthRegistrationConfigTest {
             "ETH-REGISTRATION_RELAYREGISTRATIONIROHAACCOUNT",
             relayRegistrationIrohaAccount
         )
-        val notaryIrohaAccount = "notary@account"
-        environmentVariables.set("ETH-REGISTRATION_NOTARYIROHAACCOUNT", notaryIrohaAccount)
+        val relayStorageAccount = "notary@account"
+        environmentVariables.set("ETH-REGISTRATION_RELAYSTORAGEACCOUNT", relayStorageAccount)
         val registrationCredentialAccountId = "registration@credential"
         environmentVariables.set("ETH-REGISTRATION_REGISTRATIONCREDENTIAL_ACCOUNTID", registrationCredentialAccountId)
         val registrationCredentialPubkey = "pubkey..."
@@ -54,7 +54,7 @@ class EthRegistrationConfigTest {
 
         assertEquals(port.toInt(), registrationConfig.port)
         assertEquals(relayRegistrationIrohaAccount, registrationConfig.relayRegistrationIrohaAccount)
-        assertEquals(notaryIrohaAccount, registrationConfig.notaryIrohaAccount)
+        assertEquals(relayStorageAccount, registrationConfig.relayStorageAccount)
         assertEquals(registrationCredentialAccountId, registrationConfig.registrationCredential.accountId)
         assertEquals(registrationCredentialPubkey, registrationConfig.registrationCredential.pubkey)
         assertEquals(registrationCredentialPrivkey, registrationConfig.registrationCredential.privkey)

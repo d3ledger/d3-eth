@@ -60,7 +60,7 @@ fun main(args: Array<String>) {
 
                 val freeRelayProvider = EthFreeRelayProvider(
                     queryHelper,
-                    relayRegistrationConfig.notaryIrohaAccount,
+                    relayRegistrationConfig.relayStorageAccount,
                     relayRegistrationConfig.relayRegistrationCredential.accountId
                 )
 

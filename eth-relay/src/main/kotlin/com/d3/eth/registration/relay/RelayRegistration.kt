@@ -49,7 +49,7 @@ class RelayRegistration(
     /** Iroha endpoint */
     private val irohaConsumer = IrohaConsumerImpl(relayCredential, irohaAPI)
 
-    private val notaryIrohaAccount = relayRegistrationConfig.notaryIrohaAccount
+    private val relayStorageAccount = relayRegistrationConfig.relayStorageAccount
 
     /**
      * Registers relay in Iroha.
@@ -57,7 +57,7 @@ class RelayRegistration(
      * @return Result with string representation of hash or possible failure
      */
     fun registerRelayIroha(relayAddress: String): Result<String, Exception> {
-        return ModelUtil.setAccountDetail(irohaConsumer, notaryIrohaAccount, relayAddress, "free")
+        return ModelUtil.setAccountDetail(irohaConsumer, relayStorageAccount, relayAddress, "free")
     }
 
     /**

@@ -65,7 +65,7 @@ class ProofCollector(
     private val tokensProvider: EthTokensProvider,
     private val notaryPeerListProvider: NotaryPeerListProvider
 ) {
-    private val masterAccount = withdrawalServiceConfig.notaryIrohaAccount
+    private val relayStorageAccount = withdrawalServiceConfig.relayStorageAccount
 
     /**
      * Gather proof from notaries for add peer
@@ -138,7 +138,7 @@ class ProofCollector(
         // description field holds target account address
         return tokensProvider.getTokenAddress(event.asset)
             .fanout { tokensProvider.getTokenPrecision(event.asset) }
-            .fanout { findInAccDetail(masterAccount, event.srcAccount) }
+            .fanout { findInAccDetail(relayStorageAccount, event.srcAccount) }
             .map { (tokenInfo, relayAddress) ->
                 val hash = event.hash
                 val amount = event.amount

@@ -27,7 +27,7 @@ interface RelayRegistrationConfig {
     val ethRelayImplementationAddress: String
 
     /** Notary Iroha account that stores relay register */
-    val notaryIrohaAccount: String
+    val relayStorageAccount: String
 
     val relayRegistrationCredential: IrohaCredentialRawConfig
 

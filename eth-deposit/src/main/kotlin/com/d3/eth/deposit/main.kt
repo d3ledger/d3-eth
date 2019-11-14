@@ -11,9 +11,14 @@ import com.d3.chainadapter.client.RMQConfig
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.model.IrohaCredential
+import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
-import com.d3.eth.provider.EthRelayProviderIrohaImpl
+import com.d3.eth.provider.ETH_RELAY
+import com.d3.eth.provider.ETH_WALLET
+import com.d3.eth.provider.EthAddressProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
+import com.d3.eth.registration.EthRegistrationConfig
+import com.d3.eth.registration.wallet.EthereumWalletRegistrationHandler
 import com.github.kittinunf.result.*
 import integration.eth.config.EthereumPasswords
 import integration.eth.config.loadEthPasswords
@@ -39,7 +44,12 @@ fun main() {
                 RMQConfig::class.java,
                 "rmq.properties"
             )
-            executeDeposit(ethereumPasswords, depositConfig, rmqConfig)
+            val ehRegistrtaionConfig = loadLocalConfigs(
+                "eth-registration",
+                EthRegistrationConfig::class.java,
+                "registration.properties"
+            ).get()
+            executeDeposit(ethereumPasswords, depositConfig, rmqConfig, ehRegistrtaionConfig)
         }
         .failure { ex ->
             logger.error("Cannot run eth deposit", ex)
@@ -50,7 +60,8 @@ fun main() {
 fun executeDeposit(
     ethereumPasswords: EthereumPasswords,
     depositConfig: EthDepositConfig,
-    rmqConfig: RMQConfig
+    rmqConfig: RMQConfig,
+    registrationConfig: EthRegistrationConfig
 ) {
     Result.of {
         val keypair = Utils.parseHexKeypair(
@@ -59,7 +70,7 @@ fun executeDeposit(
         )
         IrohaCredential(depositConfig.notaryCredential.accountId, keypair)
     }.flatMap { irohaCredential ->
-        executeDeposit(irohaCredential, ethereumPasswords, depositConfig, rmqConfig)
+        executeDeposit(irohaCredential, ethereumPasswords, depositConfig, rmqConfig, registrationConfig)
     }.failure { ex ->
         logger.error("Cannot run eth deposit", ex)
         System.exit(1)
@@ -71,7 +82,8 @@ fun executeDeposit(
     irohaCredential: IrohaCredential,
     ethereumPasswords: EthereumPasswords,
     depositConfig: EthDepositConfig,
-    rmqConfig: RMQConfig
+    rmqConfig: RMQConfig,
+    registrationConfig: EthRegistrationConfig
 ): Result<Unit, Exception> {
     logger.info { "Run ETH deposit" }
 
@@ -86,10 +98,17 @@ fun executeDeposit(
         irohaCredential.keyPair
     )
 
-    val ethRelayProvider = EthRelayProviderIrohaImpl(
+    val ethWalletProvider = EthAddressProviderIrohaImpl(
         queryHelper,
-        irohaCredential.accountId,
-        depositConfig.registrationServiceIrohaAccount
+        depositConfig.ethereumWalletStorageAccount,
+        depositConfig.ethereumWalletSetterAccount,
+        ETH_WALLET
+    )
+    val ethRelayProvider = EthAddressProviderIrohaImpl(
+        queryHelper,
+        depositConfig.ethereumRelayStorageAccount,
+        depositConfig.ethereumRelaySetterAccount,
+        ETH_RELAY
     )
     val ethTokensProvider = EthTokensProviderImpl(
         queryHelper,
@@ -98,13 +117,24 @@ fun executeDeposit(
         depositConfig.irohaAnchoredTokenStorageAccount,
         depositConfig.irohaAnchoredTokenSetterAccount
     )
+
+    val registrationHandler = EthereumWalletRegistrationHandler(
+        IrohaConsumerImpl(irohaCredential, irohaAPI),
+        registrationConfig.registrationCredential.accountId,
+        depositConfig.ethereumWalletStorageAccount,
+        ethWalletProvider,
+        ethRelayProvider
+    )
+
     return EthDepositInitialization(
         irohaCredential,
         irohaAPI,
         depositConfig,
         ethereumPasswords,
         rmqConfig,
+        ethWalletProvider,
         ethRelayProvider,
-        ethTokensProvider
+        ethTokensProvider,
+        registrationHandler
     ).init()
 }

@@ -15,7 +15,7 @@ interface WithdrawalServiceConfig {
     val port: Int
 
     /** Notary account in Iroha */
-    val notaryIrohaAccount: String
+    val relayStorageAccount: String
 
     /** Iroha account that stores Ethereum anchored ERC20 tokens */
     val ethAnchoredTokenStorageAccount: String

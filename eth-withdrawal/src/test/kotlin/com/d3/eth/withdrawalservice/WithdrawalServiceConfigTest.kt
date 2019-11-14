@@ -47,8 +47,8 @@ class WithdrawalServiceConfigTest {
     fun allEnvironmentVariablesTest() {
         val port = "133700"
         environmentVariables.set("WITHDRAWAL_PORT", port)
-        val notaryIrohaAccount = "notary@account"
-        environmentVariables.set("WITHDRAWAL_NOTARYIROHAACCOUNT", notaryIrohaAccount)
+        val relayStorageAccount = "ethereum_relays@account"
+        environmentVariables.set("WITHDRAWAL_RELAYSTORAGEACCOUNT", relayStorageAccount)
         val ethAnchoredTokenStorageAccount = "eth_anchored@storage"
         environmentVariables.set(
             "WITHDRAWAL_ETHANCHOREDTOKENSTORAGEACCOUNT",
@@ -129,7 +129,7 @@ class WithdrawalServiceConfigTest {
         ).get()
 
         assertEquals(port.toInt(), withdrawalConfig.port)
-        assertEquals(notaryIrohaAccount, withdrawalConfig.notaryIrohaAccount)
+        assertEquals(relayStorageAccount, withdrawalConfig.relayStorageAccount)
 
         assertEquals(
             ethAnchoredTokenStorageAccount,
