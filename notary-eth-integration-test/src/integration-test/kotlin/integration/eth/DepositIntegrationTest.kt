@@ -50,6 +50,7 @@ class DepositIntegrationTest {
         ethRegistrationService = GlobalScope.launch {
             integrationHelper.runEthRegistrationService(integrationHelper.ethRegistrationConfig)
         }
+        Thread.sleep(5_000)
     }
 
     /** Iroha client account */
