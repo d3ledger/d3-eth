@@ -21,7 +21,7 @@ import java.math.BigInteger
  * Implementation of [ChainHandler] for Ethereum side chain.
  * Extract interesting transactions from Ethereum block.
  * @param web3 - notary.endpoint of Ethereum client
- * @param ethAddressProvider - provider of observable wallets
+ * @param ethRelayProvider - provider of observable relays
  * @param ethTokensProvider - provider of observable tokens
  */
 class EthChainHandler(
@@ -37,36 +37,6 @@ class EthChainHandler(
 
     init {
         logger.info { "Initialization of EthChainHandler with master $masterAddres" }
-    }
-
-    /**
-     * Process Master contract transactions
-     * @param tx - Ethereum transaction
-     * @param time - time of transaction
-     * @return side chain events flow
-     *
-     */
-    private fun handleMasterCall(
-        tx: Transaction,
-        time: BigInteger
-    ): List<SideChainEvent.PrimaryBlockChainEvent> {
-        // get receipt that contains data about solidity function execution
-        val receipt = web3.ethGetTransactionReceipt(tx.hash).send()
-        if (receipt.transactionReceipt.get().isStatusOK) {
-            logger.info { "Master contract call" }
-            val txReceipt = receipt.transactionReceipt.get()
-            // encoded abi method signature
-            if (!txReceipt.logs.isEmpty() && txReceipt.logs[0].topics[0] == "0x6a70775b447c720635e28c6ecca0cec2b8917a93dc40135739e28dd2299ea5ab") {
-                val ethAddress = tx.from
-                val accountId = String(master.registeredClients(ethAddress).send())
-                logger.info { "Ethereum registration of new client $accountId, eth address $ethAddress" }
-                //todo registration
-            }
-        } else {
-            return listOf()
-        }
-
-        return emptyList()
     }
 
     /**
@@ -197,9 +167,7 @@ class EthChainHandler(
                 block.block.transactions
                     .map { it.get() as Transaction }
                     .flatMap {
-                        if (masterAddres == it.to)
-                            handleMasterCall(it, time)
-                        else if (wallets.containsKey(it.to))
+                        if (wallets.containsKey(it.to))
                             handleEther(it, time, wallets)
                         else if (ethAnchoredTokens.containsKey(it.to))
                             handleErc20(it, time, wallets, ethAnchoredTokens[it.to]!!, false)

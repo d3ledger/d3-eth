@@ -21,7 +21,6 @@ import com.d3.commons.util.createPrettyScheduledThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
 import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
-import com.d3.eth.deposit.endpoint.EthRegistrationProofStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
 import com.d3.eth.provider.EthAddressProvider
 import com.d3.eth.provider.EthTokensProvider
@@ -215,11 +214,6 @@ class EthDepositInitialization(
                 ecKeyPair,
                 ethDepositConfig.expansionTriggerAccount,
                 ethDepositConfig.expansionTriggerCreatorAccountId
-            ),
-            EthRegistrationProofStrategyImpl(
-                queryHelper,
-                ethDepositConfig.ethereum,
-                passwordsConfig
             )
         )
     }

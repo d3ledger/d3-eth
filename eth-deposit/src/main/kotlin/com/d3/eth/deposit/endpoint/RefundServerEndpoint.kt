@@ -30,8 +30,7 @@ data class Response(val code: HttpStatusCode, val message: String)
 class RefundServerEndpoint(
     private val serverBundle: ServerInitializationBundle,
     private val ethRefundStrategy: EthRefundStrategy,
-    private val addPeerStrategy: EthAddPeerStrategy,
-    private val ethRegistrationStrategy: EthRegistrationProofStrategy
+    private val addPeerStrategy: EthAddPeerStrategy
 ) {
     private val moshi = Moshi
         .Builder()
@@ -56,11 +55,6 @@ class RefundServerEndpoint(
                 get("ethereum/proof/add_peer/{tx_hash}") {
                     logger.info { "Add peer endpoint called with parameters: ${call.parameters}" }
                     val response = onCallAddPeer(call.parameters["tx_hash"])
-                    call.respondText(response.message, status = response.code)
-                }
-                get("ethereum/proof/registration/{tx_hash}") {
-                    logger.info { "Registration endpoint called with parameters: ${call.parameters}" }
-                    val response = onCallRegistrationProof(call.parameters["tx_hash"])
                     call.respondText(response.message, status = response.code)
                 }
                 get(serverBundle.ethRefund + "/{tx_hash}") {
@@ -97,16 +91,6 @@ class RefundServerEndpoint(
     fun onCallAddPeer(rawRequest: String?): Response {
         return rawRequest?.let { request ->
             val response = addPeerStrategy.performAddPeer(request)
-            notaryResponseToHTTPResponse(response)
-        } ?: onErrorPipelineCall()
-    }
-
-    /**
-     * Calls registration proof service
-     */
-    fun onCallRegistrationProof(rawRequest: String?): Response {
-        return rawRequest?.let { request ->
-            val response = ethRegistrationStrategy.performRegistrationProof(request)
             notaryResponseToHTTPResponse(response)
         } ?: onErrorPipelineCall()
     }
