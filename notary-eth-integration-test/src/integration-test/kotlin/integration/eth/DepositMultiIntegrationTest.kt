@@ -12,6 +12,7 @@ import com.d3.commons.util.hex
 import com.d3.commons.util.toHexString
 import com.d3.eth.provider.ETH_PRECISION
 import com.d3.eth.sidechain.util.DeployHelper
+import com.d3.eth.sidechain.util.DeployHelperBuilder
 import integration.eth.config.loadEthPasswords
 import integration.helper.D3_DOMAIN
 import integration.helper.EthIntegrationHelperUtil
@@ -22,6 +23,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.web3j.crypto.Credentials
+import org.web3j.crypto.Keys
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Duration
@@ -43,10 +46,15 @@ class DepositMultiIntegrationTest {
     private val ethDeposit1: Job
     private val ethDeposit2: Job
 
+    val ethereumPasswords = loadEthPasswords("test", "/eth/ethereum_password.properties").get()
+
     init {
         // run notary
         ethDeposit1 = GlobalScope.launch {
-            integrationHelper.runEthDeposit(ethDepositConfig = integrationHelper.configHelper.createEthDepositConfig())
+            integrationHelper.runEthDeposit(
+                ethDepositConfig = integrationHelper.configHelper.createEthDepositConfig(),
+                registrationConfig = integrationHelper.configHelper.createEthRegistrationConfig()
+            )
         }
         registrationTestEnvironment.registrationInitialization.init()
         ethRegistrationService = GlobalScope.launch {
@@ -60,7 +68,6 @@ class DepositMultiIntegrationTest {
             override val accountId = integrationHelper.accountHelper.notaryAccount.accountId
         }
 
-        val ethereumPasswords = loadEthPasswords("test", "/eth/ethereum_password.properties").get()
         val ethereumConfig =
             integrationHelper.configHelper.createEthereumConfig()
         val depositConfig =
@@ -92,27 +99,49 @@ class DepositMultiIntegrationTest {
 
         // run 2nd instance of notary
         ethDeposit2 = GlobalScope.launch {
-            integrationHelper.runEthDeposit(ethereumPasswords, depositConfig)
+            integrationHelper.runEthDeposit(
+                ethereumPasswords,
+                depositConfig,
+                registrationConfig = integrationHelper.configHelper.createEthRegistrationConfig()
+                )
         }
     }
 
     /** Iroha client account */
     private val clientIrohaAccount = String.getRandomString(9)
     private val clientIrohaAccountId = "$clientIrohaAccount@$D3_DOMAIN"
+    private val clientKeyPair = ModelUtil.generateKeypair()
 
-    /** Ethereum address to transfer to */
-    private val relayWallet = registerRelay()
-
-    private fun registerRelay(): String {
-        integrationHelper.deployRelays(1)
+    init {
         // register client in Iroha
         val res = integrationHelper.sendRegistrationRequest(
             clientIrohaAccount,
-            ModelUtil.generateKeypair().public.toHexString(),
+            clientKeyPair.public.toHexString(),
             registrationTestEnvironment.registrationConfig.port
         )
         Assertions.assertEquals(200, res.statusCode)
+    }
+
+    /** Ethereum address to transfer to */
+    private val relayAddress = registerRelay()
+
+    private fun registerRelay(): String {
+        integrationHelper.deployRelays(1)
         return integrationHelper.registerClientInEth(clientIrohaAccount)
+    }
+
+    val clientEthereumKeypair = Keys.createEcKeyPair()
+    val walletAddress = registerWallet()
+
+    private fun registerWallet(): String {
+        // register in Ethereum client1
+        integrationHelper.registerEthereumWallet(
+            clientIrohaAccountId,
+            clientKeyPair,
+            clientEthereumKeypair
+        )
+        return "0x${Keys.getAddress(clientEthereumKeypair.publicKey)}"
+
     }
 
     private val timeoutDuration = Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)
@@ -135,7 +164,7 @@ class DepositMultiIntegrationTest {
      * @then Associated Iroha account balance is increased on 1234000000000 Wei
      */
     @Test
-    fun depositMultisig() {
+    fun relayDepositMultisig() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             Thread.currentThread().name = this::class.simpleName
             val initialAmount =
@@ -144,7 +173,50 @@ class DepositMultiIntegrationTest {
             // send ETH
             runBlocking { delay(2000) }
             integrationHelper.purgeAndwaitOneIrohaBlock {
-                integrationHelper.sendEth(amount, relayWallet)
+                integrationHelper.sendEth(amount, relayAddress)
+            }
+            runBlocking { delay(15_000) }
+
+            Assertions.assertEquals(
+                BigDecimal(amount, ETH_PRECISION).add(BigDecimal(initialAmount)),
+                BigDecimal(
+                    integrationHelper.getIrohaAccountBalance(
+                        clientIrohaAccountId,
+                        etherAssetId
+                    )
+                )
+            )
+        }
+    }
+
+    /**
+     * @given Ethereum and Iroha networks running and client ethereum wallet registered and has 1234000000000 Wei
+     * @when the client transfers 0 Wei from wallet to "master" and then transfers 1234000000000 Wei
+     * @then Associated Iroha account balance is increased on 1234000000000 Wei
+     */
+    @Test
+    fun walletDepositMultisig() {
+        Assertions.assertTimeoutPreemptively(timeoutDuration) {
+            Thread.currentThread().name = this::class.simpleName
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, etherAssetId)
+            val amount = BigInteger.valueOf(1_234_000_000_000)
+            // send ETH
+            runBlocking { delay(2000) }
+            integrationHelper.purgeAndwaitOneIrohaBlock {
+                // refill wallet
+                val amountWithFee = BigInteger.valueOf(1_234_500_000_000)
+                integrationHelper.sendEth(amountWithFee, walletAddress)
+
+                // send from wallet to master
+                val credentials = Credentials.create(clientEthereumKeypair)
+                val ethHelper = DeployHelperBuilder(
+                    integrationHelper.ethTestConfig.ethereum,
+                    ethereumPasswords.nodeLogin,
+                    ethereumPasswords.nodePassword,
+                    credentials
+                ).build()
+                ethHelper.sendEthereum(amount, integrationHelper.masterContract.contractAddress)
             }
             runBlocking { delay(15_000) }
 
@@ -169,7 +241,7 @@ class DepositMultiIntegrationTest {
      * @then Associated Iroha account balance is increased on 51 coin
      */
     @Test
-    fun depositMultisigERC20() {
+    fun relayDepositMultisigERC20() {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
             val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
@@ -180,7 +252,48 @@ class DepositMultiIntegrationTest {
 
             // send ETH
             integrationHelper.purgeAndwaitOneIrohaBlock {
-                integrationHelper.sendERC20Token(tokenAddress, amount, relayWallet)
+                integrationHelper.sendERC20Token(tokenAddress, amount, relayAddress)
+            }
+            runBlocking { delay(15_000) }
+
+            Assertions.assertEquals(
+                BigDecimal(amount, tokenInfo.precision).add(BigDecimal(initialAmount)),
+                BigDecimal(integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId))
+            )
+        }
+    }
+
+    /**
+     * @given Ethereum and Iroha networks running and client ethereum wallet registered and has 51 coin
+     * @when the client transfers 0 coins from wallet to "master" and then transfers 51 coin
+     * @then Associated Iroha account balance is increased on 51 coin
+     */
+    @Test
+    fun walletDepositMultisigERC20() {
+        Assertions.assertTimeoutPreemptively(timeoutDuration) {
+            integrationHelper.nameCurrentThread(this::class.simpleName!!)
+            val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
+            val assetId = "${tokenInfo.name}#ethereum"
+            val initialAmount =
+                integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
+            val amount = BigInteger.valueOf(51)
+
+            // send ETH
+            integrationHelper.purgeAndwaitOneIrohaBlock {
+                // refill wallet
+                val amountForFee = BigInteger.valueOf(500_000_000)
+                integrationHelper.sendEth(amountForFee, walletAddress)
+                integrationHelper.sendERC20Token(tokenAddress, amount, walletAddress)
+
+                // send from wallet to master
+                val credentials = Credentials.create(clientEthereumKeypair)
+                val ethHelper = DeployHelperBuilder(
+                    integrationHelper.ethTestConfig.ethereum,
+                    ethereumPasswords.nodeLogin,
+                    ethereumPasswords.nodePassword,
+                    credentials
+                ).build()
+                ethHelper.sendERC20(tokenAddress, integrationHelper.masterContract.contractAddress, amount)
             }
             runBlocking { delay(15_000) }
 

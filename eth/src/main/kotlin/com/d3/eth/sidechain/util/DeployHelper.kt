@@ -112,7 +112,7 @@ class DeployHelper(
     nodeLogin: String?,
     nodePassword: String?,
     val credentials: org.web3j.crypto.Credentials,
-    attempts: Int
+    attempts: Int = ATTEMPTS_DEFAULT
 ) {
     /**
      * Helper class for contracts deploying

@@ -14,7 +14,6 @@ import com.d3.eth.provider.ETH_WALLET
 import com.d3.eth.provider.EthAddressProvider
 import com.d3.eth.registration.wallet.ETH_REGISTRATION_KEY
 import com.d3.eth.registration.wallet.EthereumRegistrationProof
-import com.google.gson.Gson
 import iroha.protocol.BlockOuterClass
 import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.iroha.java.Utils
@@ -32,6 +31,10 @@ class EthereumWalletRegistrationHandler(
     private val ethWalletProvider: EthAddressProvider,
     private val ethRelayProvider: EthAddressProvider
 ) {
+    init {
+        logger.info { "Initialization of EthereumWalletRegistrationHandler with registrationTriggerAccountId=$registrationTriggerAccountId" }
+    }
+
     private val gson = GsonInstance.get()
 
     private val registrator = SideChainRegistrator(
@@ -46,6 +49,7 @@ class EthereumWalletRegistrationHandler(
             .flatMap { tx ->
                 val txHash = String.hex(Utils.hash(tx))
                 val clientId = tx.payload.reducedPayload.creatorAccountId
+                val time = tx.payload.reducedPayload.createdTime
                 tx.payload.reducedPayload.commandsList
                     .filter { command -> command.hasSetAccountDetail() }
                     .map { command -> command.setAccountDetail }
@@ -56,6 +60,7 @@ class EthereumWalletRegistrationHandler(
                     }
                     .map { setAccountDetail ->
                         try {
+                            logger.info { "Check registration wallet proof for account $clientId" }
                             val registrationProof = gson.fromJson(
                                 setAccountDetail.value.irohaUnEscape(),
                                 EthereumRegistrationProof::class.java
@@ -72,7 +77,8 @@ class EthereumWalletRegistrationHandler(
                             if (checkRegistrationProof(registrationProof)) {
                                 val registrationTxHash = registrator.register(
                                     ethAddress,
-                                    clientId
+                                    clientId,
+                                    time
                                 ) { clientId }.get()
                                 logger.info { "Registration with Ethereum wallet $ethAddress triggered for $clientId completed with tx $registrationTxHash" }
 
