@@ -28,7 +28,6 @@ import com.d3.eth.registration.wallet.EthereumWalletRegistrationHandler
 import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
-import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
@@ -87,8 +86,6 @@ class EthDepositInitialization(
         irohaAPI,
         ethDepositConfig
     )
-
-    private val deployHelper = DeployHelper(ethDepositConfig.ethereum, passwordsConfig)
 
     init {
         logger.info {
@@ -151,9 +148,9 @@ class EthDepositInitialization(
         val ethHandler = EthChainHandler(
             web3,
             ethDepositConfig.ethMasterAddress,
+            ethWalletProvider,
             ethRelayProvider,
-            ethTokensProvider,
-            deployHelper
+            ethTokensProvider
         )
         return EthChainListener(
             web3,

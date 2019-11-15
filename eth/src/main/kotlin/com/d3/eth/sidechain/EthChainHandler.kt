@@ -20,20 +20,22 @@ import java.math.BigInteger
 /**
  * Implementation of [ChainHandler] for Ethereum side chain.
  * Extract interesting transactions from Ethereum block.
+ * Supports two kinds of deposit transfers:
+ * 1) from any address to `relay` address
+ * 2) from `wallet` address to master address
  * @param web3 - notary.endpoint of Ethereum client
+ * @param ethWalletProvider - provider of observable wallets
  * @param ethRelayProvider - provider of observable relays
  * @param ethTokensProvider - provider of observable tokens
  */
 class EthChainHandler(
     val web3: Web3j,
     val masterAddres: String,
+    val ethWalletProvider: EthAddressProvider,
     val ethRelayProvider: EthAddressProvider,
-    val ethTokensProvider: EthTokensProvider,
-    deployHelper: DeployHelper
+    val ethTokensProvider: EthTokensProvider
 ) :
     ChainHandler<EthBlock> {
-
-    private val master = deployHelper.loadMasterContract(masterAddres)
 
     init {
         logger.info { "Initialization of EthChainHandler with master $masterAddres" }
@@ -48,6 +50,7 @@ class EthChainHandler(
         tx: Transaction,
         time: BigInteger,
         wallets: Map<String, String>,
+        relays: Map<String, String>,
         tokenName: String,
         isIrohaAnchored: Boolean
     ): List<SideChainEvent.PrimaryBlockChainEvent> {
@@ -62,9 +65,7 @@ class EthChainHandler(
                 .filter {
                     // filter out transfer
                     // the first topic is a hashed representation of a transfer signature call (the scary string)
-                    val to = "0x" + it.topics[2].drop(26).toLowerCase()
-                    it.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" &&
-                            wallets.containsKey(to)
+                    it.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
                 }
                 .filter {
                     // check if amount > 0
@@ -74,6 +75,13 @@ class EthChainHandler(
                         logger.warn { "Transaction ${tx.hash} from Ethereum with 0 ERC20 amount" }
                         false
                     }
+                }
+                .filter {
+                    // second and third topics are addresses from and to
+                    val from = "0x" + it.topics[1].drop(26).toLowerCase()
+                    val to = "0x" + it.topics[2].drop(26).toLowerCase()
+                    // transfer from wallet to master or deposit to relay
+                    (to == masterAddres && wallets.containsKey(from)) || (relays.containsKey(to))
                 }
                 .map {
                     ethTokensProvider.getTokenPrecision(tokenName)
@@ -85,11 +93,17 @@ class EthChainHandler(
                                 // amount of transfer is stored in data
                                 val amount = BigInteger(it.data.drop(2), 16)
 
+                                lateinit var clientId: String
+                                if (to == masterAddres)
+                                    clientId = wallets[from]!!
+                                else
+                                    clientId = relays[to]!!
+
                                 if (isIrohaAnchored)
                                     SideChainEvent.PrimaryBlockChainEvent.IrohaAnchoredOnPrimaryChainDeposit(
                                         tx.hash,
                                         time,
-                                        wallets[to]!!,
+                                        clientId,
                                         tokenName,
                                         BigDecimal(amount, precision).toPlainString(),
                                         from
@@ -98,7 +112,7 @@ class EthChainHandler(
                                     SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
                                         tx.hash,
                                         time,
-                                        wallets[to]!!,
+                                        clientId,
                                         tokenName,
                                         BigDecimal(amount, precision).toPlainString(),
                                         from
@@ -120,7 +134,7 @@ class EthChainHandler(
     private fun handleEther(
         tx: Transaction,
         time: BigInteger,
-        wallets: Map<String, String>
+        clientId: String
     ): List<SideChainEvent.PrimaryBlockChainEvent> {
         logger.info { "Handle Ethereum tx ${tx.hash}" }
 
@@ -139,7 +153,7 @@ class EthChainHandler(
                     tx.hash,
                     time,
                     // all non-existent keys were filtered out in parseBlock
-                    wallets[tx.to]!!,
+                    clientId,
                     "$ETH_NAME#$ETH_DOMAIN",
                     BigDecimal(tx.value, ETH_PRECISION).toPlainString(),
                     tx.from
@@ -154,33 +168,38 @@ class EthChainHandler(
      */
     override fun parseBlock(block: EthBlock): List<SideChainEvent.PrimaryBlockChainEvent> {
         logger.info { "Ethereum chain handler for block ${block.block.number}" }
-
-        return ethRelayProvider.getAddresses().fanout {
-            ethTokensProvider.getEthAnchoredTokens().fanout {
-                ethTokensProvider.getIrohaAnchoredTokens()
-            }
-        }.fold(
-            { (wallets, tokens) ->
-                val (ethAnchoredTokens, irohaAnchoredTokens) = tokens
-                // Eth time in seconds, convert ot milliseconds
-                val time = block.block.timestamp.multiply(BigInteger.valueOf(1000))
-                block.block.transactions
-                    .map { it.get() as Transaction }
-                    .flatMap {
-                        if (wallets.containsKey(it.to))
-                            handleEther(it, time, wallets)
-                        else if (ethAnchoredTokens.containsKey(it.to))
-                            handleErc20(it, time, wallets, ethAnchoredTokens[it.to]!!, false)
-                        else if (irohaAnchoredTokens.containsKey(it.to))
-                            handleErc20(it, time, wallets, irohaAnchoredTokens[it.to]!!, true)
-                        else
-                            listOf()
-                    }
-            }, { ex ->
-                logger.error("Cannot parse block", ex)
-                listOf()
-            }
-        )
+        val addresses = ethWalletProvider.getAddresses().fanout {
+            ethRelayProvider.getAddresses()
+        }
+        val tokens = ethTokensProvider.getEthAnchoredTokens().fanout {
+            ethTokensProvider.getIrohaAnchoredTokens()
+        }
+        return addresses.fanout { tokens }
+            .fold(
+                { (addresses, tokens) ->
+                    val (wallets, relays) = addresses
+                    val (ethAnchoredTokens, irohaAnchoredTokens) = tokens
+                    // Eth time in seconds, convert ot milliseconds
+                    val time = block.block.timestamp.multiply(BigInteger.valueOf(1000))
+                    block.block.transactions
+                        .map { it.get() as Transaction }
+                        .flatMap {
+                            if (wallets.containsKey(it.from) && it.to == masterAddres)
+                                handleEther(it, time, wallets[it.from]!!)
+                            if (relays.containsKey(it.to))
+                                handleEther(it, time, relays[it.to]!!)
+                            else if (ethAnchoredTokens.containsKey(it.to))
+                                handleErc20(it, time, wallets, relays, ethAnchoredTokens[it.to]!!, false)
+                            else if (irohaAnchoredTokens.containsKey(it.to))
+                                handleErc20(it, time, wallets, relays, irohaAnchoredTokens[it.to]!!, true)
+                            else
+                                listOf()
+                        }
+                }, { ex ->
+                    logger.error("Cannot parse block", ex)
+                    listOf()
+                }
+            )
     }
 
     /**
