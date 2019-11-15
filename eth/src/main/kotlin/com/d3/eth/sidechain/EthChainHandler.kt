@@ -184,11 +184,15 @@ class EthChainHandler(
                     block.block.transactions
                         .map { it.get() as Transaction }
                         .flatMap {
-                            if (wallets.containsKey(it.from) && it.to == masterAddres)
-                                handleEther(it, time, wallets[it.from]!!)
-                            if (relays.containsKey(it.to))
-                                handleEther(it, time, relays[it.to]!!)
-                            else if (ethAnchoredTokens.containsKey(it.to))
+                            if (wallets.containsKey(it.from) && it.to == masterAddres) {
+                                val account = wallets[it.from]!!
+                                logger.info { "Deposit from wallet ${it.from} ($account) to master ${masterAddres}" }
+                                handleEther(it, time, account)
+                            } else if (relays.containsKey(it.to)) {
+                                val account = relays[it.to]!!
+                                logger.info { "Deposit to relay ${it.to} ($account)" }
+                                handleEther(it, time, account)
+                            } else if (ethAnchoredTokens.containsKey(it.to))
                                 handleErc20(it, time, wallets, relays, ethAnchoredTokens[it.to]!!, false)
                             else if (irohaAnchoredTokens.containsKey(it.to))
                                 handleErc20(it, time, wallets, relays, irohaAnchoredTokens[it.to]!!, true)

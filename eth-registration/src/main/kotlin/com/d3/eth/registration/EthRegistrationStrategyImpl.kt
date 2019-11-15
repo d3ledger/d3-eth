@@ -62,7 +62,8 @@ class EthRegistrationStrategyImpl(
                 // register with relay in Iroha
                 ethereumAccountRegistrator.register(
                     freeEthWallet,
-                    "$accountName@$domainId"
+                    "$accountName@$domainId",
+                    System.currentTimeMillis()
                 ) { "$accountName@$domainId" }
             }
     }

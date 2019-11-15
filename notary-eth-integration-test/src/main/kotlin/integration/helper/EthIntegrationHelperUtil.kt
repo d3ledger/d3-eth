@@ -40,6 +40,7 @@ import integration.eth.config.EthereumPasswords
 import kotlinx.coroutines.runBlocking
 import mu.KLogging
 import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Keys
 import java.math.BigInteger
 import java.security.KeyPair
 import java.util.*
@@ -427,6 +428,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         irohaKeyPair: KeyPair,
         ethereumKeyPair: ECKeyPair
     ): Result<String, Exception> {
+        val address = "0x${Keys.getAddress(ethereumKeyPair.publicKey)}"
+        logger.info { "Send request to register wallet ${address} for client ${clientId}" }
         // register in Ethereum
         val clientIrohaConsumer = IrohaConsumerImpl(
             IrohaCredential(clientId, irohaKeyPair),
