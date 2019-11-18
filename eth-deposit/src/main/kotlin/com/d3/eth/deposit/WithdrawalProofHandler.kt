@@ -17,7 +17,6 @@ import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.sidechain.util.DeployHelper
 import com.d3.eth.sidechain.util.hashToMint
 import com.d3.eth.sidechain.util.hashToWithdraw
-import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import integration.eth.config.EthereumPasswords
 import iroha.protocol.BlockOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
@@ -37,7 +36,7 @@ class WithdrawalProofHandler(
     private val withrdawalTriggerAccountId: String,
     private val tokensProvider: EthTokensProvider,
     private val walletsProvider: EthAddressProvider,
-    withdrawalConfig: WithdrawalServiceConfig,
+    ethDepositConfig: EthDepositConfig,
     passwordsConfig: EthereumPasswords,
     irohaAPI: IrohaAPI
 ) {
@@ -47,13 +46,13 @@ class WithdrawalProofHandler(
         logger.info { "Initialization of WithdrawalProofHandler withrdawalTriggerAccountId=$withrdawalTriggerAccountId" }
     }
 
-    private val deployHelper = DeployHelper(withdrawalConfig.ethereum, passwordsConfig)
+    private val deployHelper = DeployHelper(ethDepositConfig.ethereum, passwordsConfig)
 
     private val queryHelper =
-        IrohaQueryHelperImpl(irohaAPI, withdrawalConfig.withdrawalCredential)
+        IrohaQueryHelperImpl(irohaAPI, ethDepositConfig.withdrawalCredential)
 
     private val irohaConsumer = IrohaConsumerImpl(
-        IrohaCredential(withdrawalConfig.withdrawalCredential),
+        IrohaCredential(ethDepositConfig.withdrawalCredential),
         irohaAPI
     )
 

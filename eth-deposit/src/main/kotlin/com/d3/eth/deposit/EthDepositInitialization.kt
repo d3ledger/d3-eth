@@ -29,7 +29,6 @@ import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
-import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
@@ -64,8 +63,7 @@ class EthDepositInitialization(
     private val ethWalletProvider: EthAddressProvider,
     private val ethRelayProvider: EthAddressProvider,
     private val ethTokensProvider: EthTokensProvider,
-    private val registrationHandler: EthereumWalletRegistrationHandler,
-    withdrawalConfig: WithdrawalServiceConfig
+    private val registrationHandler: EthereumWalletRegistrationHandler
 ) {
     private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(
         passwordsConfig.credentialsPassword,
@@ -90,10 +88,10 @@ class EthDepositInitialization(
     )
 
     private val withdrawalProofHandler = WithdrawalProofHandler(
-        withdrawalConfig.withdrawalCredential.accountId,
+        ethDepositConfig.withdrawalAccountId,
         ethTokensProvider,
         ethWalletProvider,
-        withdrawalConfig,
+        ethDepositConfig,
         passwordsConfig,
         irohaAPI
     )

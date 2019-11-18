@@ -19,7 +19,6 @@ import com.d3.eth.provider.EthAddressProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.registration.EthRegistrationConfig
 import com.d3.eth.registration.wallet.EthereumWalletRegistrationHandler
-import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import com.github.kittinunf.result.*
 import integration.eth.config.EthereumPasswords
 import integration.eth.config.loadEthPasswords
@@ -50,18 +49,12 @@ fun main() {
                 EthRegistrationConfig::class.java,
                 "registration.properties"
             ).get()
-            val withdrawalConfig = loadLocalConfigs(
-                "withdrawal",
-                WithdrawalServiceConfig::class.java,
-                "withdrawal.properties"
-            ).get()
 
             executeDeposit(
                 ethereumPasswords,
                 depositConfig,
                 rmqConfig,
-                ethRegistrtaionConfig,
-                withdrawalConfig
+                ethRegistrtaionConfig
             )
         }
         .failure { ex ->
@@ -74,8 +67,7 @@ fun executeDeposit(
     ethereumPasswords: EthereumPasswords,
     depositConfig: EthDepositConfig,
     rmqConfig: RMQConfig,
-    registrationConfig: EthRegistrationConfig,
-    withdrawalConfig: WithdrawalServiceConfig
+    registrationConfig: EthRegistrationConfig
 ) {
     Result.of {
         val keypair = Utils.parseHexKeypair(
@@ -89,8 +81,7 @@ fun executeDeposit(
             ethereumPasswords,
             depositConfig,
             rmqConfig,
-            registrationConfig,
-            withdrawalConfig
+            registrationConfig
         )
     }.failure { ex ->
         logger.error("Cannot run eth deposit", ex)
@@ -104,8 +95,7 @@ fun executeDeposit(
     ethereumPasswords: EthereumPasswords,
     depositConfig: EthDepositConfig,
     rmqConfig: RMQConfig,
-    registrationConfig: EthRegistrationConfig,
-    withdrawalConfig: WithdrawalServiceConfig
+    registrationConfig: EthRegistrationConfig
 ): Result<Unit, Exception> {
     logger.info { "Run ETH deposit" }
 
@@ -157,7 +147,6 @@ fun executeDeposit(
         ethWalletProvider,
         ethRelayProvider,
         ethTokensProvider,
-        registrationHandler,
-        withdrawalConfig
+        registrationHandler
     ).init()
 }

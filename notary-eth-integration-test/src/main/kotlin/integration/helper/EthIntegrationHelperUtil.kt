@@ -480,7 +480,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         val address = "http://localhost:${ethDepositConfig.refund.port}"
         addNotary(name, address)
 
-        executeDeposit(ethereumPasswords, ethDepositConfig, rmqConfig, registrationConfig, withdrawalConfig)
+        executeDeposit(ethereumPasswords, ethDepositConfig, rmqConfig, registrationConfig)
 
         logger.info { "Notary $name is started on $address" }
     }

@@ -32,7 +32,11 @@ interface EthDepositConfig {
     /** Iroha account that sets Iroha anchored ERC20 tokens */
     val irohaAnchoredTokenSetterAccount: String
 
+    /** multisig notary credentials */
     val notaryCredential: IrohaCredentialRawConfig
+
+    /** non-multisig withdrawal proof creator */
+    val withdrawalCredential: IrohaCredentialRawConfig
 
     val refund: RefundConfig
 
