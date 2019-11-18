@@ -19,6 +19,7 @@ import com.d3.eth.provider.EthAddressProviderIrohaImpl
 import com.d3.eth.provider.EthTokensProviderImpl
 import com.d3.eth.registration.EthRegistrationConfig
 import com.d3.eth.registration.wallet.EthereumWalletRegistrationHandler
+import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import com.github.kittinunf.result.*
 import integration.eth.config.EthereumPasswords
 import integration.eth.config.loadEthPasswords
@@ -44,12 +45,24 @@ fun main() {
                 RMQConfig::class.java,
                 "rmq.properties"
             )
-            val ehRegistrtaionConfig = loadLocalConfigs(
+            val ethRegistrtaionConfig = loadLocalConfigs(
                 "eth-registration",
                 EthRegistrationConfig::class.java,
                 "registration.properties"
             ).get()
-            executeDeposit(ethereumPasswords, depositConfig, rmqConfig, ehRegistrtaionConfig)
+            val withdrawalConfig = loadLocalConfigs(
+                "withdrawal",
+                WithdrawalServiceConfig::class.java,
+                "withdrawal.properties"
+            ).get()
+
+            executeDeposit(
+                ethereumPasswords,
+                depositConfig,
+                rmqConfig,
+                ethRegistrtaionConfig,
+                withdrawalConfig
+            )
         }
         .failure { ex ->
             logger.error("Cannot run eth deposit", ex)
@@ -61,7 +74,8 @@ fun executeDeposit(
     ethereumPasswords: EthereumPasswords,
     depositConfig: EthDepositConfig,
     rmqConfig: RMQConfig,
-    registrationConfig: EthRegistrationConfig
+    registrationConfig: EthRegistrationConfig,
+    withdrawalConfig: WithdrawalServiceConfig
 ) {
     Result.of {
         val keypair = Utils.parseHexKeypair(
@@ -70,7 +84,14 @@ fun executeDeposit(
         )
         IrohaCredential(depositConfig.notaryCredential.accountId, keypair)
     }.flatMap { irohaCredential ->
-        executeDeposit(irohaCredential, ethereumPasswords, depositConfig, rmqConfig, registrationConfig)
+        executeDeposit(
+            irohaCredential,
+            ethereumPasswords,
+            depositConfig,
+            rmqConfig,
+            registrationConfig,
+            withdrawalConfig
+        )
     }.failure { ex ->
         logger.error("Cannot run eth deposit", ex)
         System.exit(1)
@@ -83,7 +104,8 @@ fun executeDeposit(
     ethereumPasswords: EthereumPasswords,
     depositConfig: EthDepositConfig,
     rmqConfig: RMQConfig,
-    registrationConfig: EthRegistrationConfig
+    registrationConfig: EthRegistrationConfig,
+    withdrawalConfig: WithdrawalServiceConfig
 ): Result<Unit, Exception> {
     logger.info { "Run ETH deposit" }
 
@@ -135,6 +157,7 @@ fun executeDeposit(
         ethWalletProvider,
         ethRelayProvider,
         ethTokensProvider,
-        registrationHandler
+        registrationHandler,
+        withdrawalConfig
     ).init()
 }

@@ -15,12 +15,12 @@ import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
-import com.d3.commons.util.getRandomString
-import com.d3.commons.util.toHexString
-import com.d3.commons.util.irohaEscape
+import com.d3.commons.util.*
 import com.d3.eth.constants.ETH_MASTER_ADDRESS_KEY
 import com.d3.eth.constants.ETH_RELAY_REGISTRY_KEY
+import com.d3.eth.deposit.ETH_WITHDRAWAL_PROOF_DOMAIN
 import com.d3.eth.deposit.EthDepositConfig
+import com.d3.eth.deposit.WithdrawalProof
 import com.d3.eth.deposit.executeDeposit
 import com.d3.eth.provider.*
 import com.d3.eth.registration.EthRegistrationConfig
@@ -31,8 +31,10 @@ import com.d3.eth.registration.wallet.ETH_REGISTRATION_KEY
 import com.d3.eth.registration.wallet.EthereumRegistrationProof
 import com.d3.eth.registration.wallet.createRegistrationProof
 import com.d3.eth.sidechain.EthChainListener
+import com.d3.eth.sidechain.util.extractVRS
 import com.d3.eth.token.EthTokenInfo
 import com.d3.eth.vacuum.RelayVacuumConfig
+import com.d3.eth.withdrawal.withdrawalservice.WITHDRAWAL_OPERATION
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.success
@@ -41,6 +43,9 @@ import kotlinx.coroutines.runBlocking
 import mu.KLogging
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
+import org.web3j.crypto.WalletUtils
+import org.web3j.utils.Numeric
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.KeyPair
 import java.util.*
@@ -50,6 +55,7 @@ import java.util.*
  * Class lazily creates new master contract in Ethereum and master account in Iroha.
  */
 class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
+    private val gson = GsonInstance.get()
 
     val ethTestConfig =
         loadConfigs("test", TestEthereumConfig::class.java, "/test.properties").get()
@@ -62,6 +68,14 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     private val tokenProviderIrohaConsumer by lazy {
         IrohaConsumerImpl(accountHelper.tokenSetterAccount, irohaAPI)
     }
+
+    val tokensProvider = EthTokensProviderImpl(
+        queryHelper,
+        accountHelper.ethAnchoredTokenStorageAccount.accountId,
+        accountHelper.tokenSetterAccount.accountId,
+        accountHelper.irohaAnchoredTokenStorageAccount.accountId,
+        accountHelper.tokenSetterAccount.accountId
+    )
 
     /** Iroha consumer to set Ethereum contract addresses in Iroha */
     private val ethAddressWriterIrohaConsumer by lazy {
@@ -458,13 +472,15 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             "rmq",
             RMQConfig::class.java, "rmq.properties"
         ),
-        registrationConfig: EthRegistrationConfig = configHelper.createEthRegistrationConfig()
+        registrationConfig: EthRegistrationConfig = configHelper.createEthRegistrationConfig(),
+        withdrawalConfig: WithdrawalServiceConfig = configHelper.createWithdrawalConfig(String.getRandomString(5))
+
     ) {
         val name = String.getRandomString(9)
         val address = "http://localhost:${ethDepositConfig.refund.port}"
         addNotary(name, address)
 
-        executeDeposit(ethereumPasswords, ethDepositConfig, rmqConfig, registrationConfig)
+        executeDeposit(ethereumPasswords, ethDepositConfig, rmqConfig, registrationConfig, withdrawalConfig)
 
         logger.info { "Notary $name is started on $address" }
     }
@@ -554,6 +570,75 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             },
             { ex -> throw ex }
         )
+    }
+
+    /**
+     * Withdraw to wallet by provided proofs
+     * @param txHash - hash of iroha initial tx
+     */
+    fun withdrawToWallet(
+        txHash: String
+    ) {
+        val tx = queryHelper.getSingleTransaction(txHash).get()
+            .payload.reducedPayload.commandsList
+            .filter { it.hasTransferAsset() }
+            .filter { WalletUtils.isValidAddress(it.transferAsset.description) }
+            .get(0).transferAsset
+        val assetId = tx.assetId
+        val amount = tx.amount
+        val beneficiary = tx.description
+
+        val ethTokenAddress = tokensProvider.getTokenAddress(assetId).get()
+        val tokenPrecision = tokensProvider.getTokenPrecision(assetId).get()
+        val decimalAmount = BigDecimal(amount).scaleByPowerOfTen(tokenPrecision).toBigInteger()
+
+        // signatures
+        val vv = ArrayList<BigInteger>()
+        val rr = ArrayList<ByteArray>()
+        val ss = ArrayList<ByteArray>()
+
+        val proofAccountId = "${txHash.take(32).toLowerCase()}@$ETH_WITHDRAWAL_PROOF_DOMAIN"
+        queryHelper.getAccountDetails(proofAccountId, accountHelper.withdrawalAccount.accountId).get()
+            .map { (ethNotaryAddress, withdrawalProofJson) ->
+                val withdrawalProof =
+                    gson.fromJson(withdrawalProofJson.irohaUnEscape(), WithdrawalProof::class.java)
+                val vrs = extractVRS(withdrawalProof.signature)
+                vv.add(vrs.v)
+                rr.add(vrs.r)
+                ss.add(vrs.s)
+
+            }
+
+        if (vv.size == 0) {
+            throw Exception("No proofs for withdrawal")
+        }
+        val transactionResponse =
+            if (tokensProvider.isIrohaAnchored(assetId).get())
+                contractTestHelper.master.mintTokensByPeers(
+                    ethTokenAddress,
+                    decimalAmount,
+                    beneficiary,
+                    Numeric.hexStringToByteArray(txHash),
+                    vv,
+                    rr,
+                    ss,
+                    beneficiary
+                ).send()
+            else
+                contractTestHelper.master.withdraw(
+                    ethTokenAddress,
+                    decimalAmount,
+                    beneficiary,
+                    Numeric.hexStringToByteArray(txHash),
+                    vv,
+                    rr,
+                    ss,
+                    beneficiary
+                ).send()
+
+        val ethTransaction = contractTestHelper.deployHelper.web3.ethGetTransactionByHash(transactionResponse.transactionHash).send()
+        logger.info { "Gas used: ${ethTransaction.transaction.get().gas}" }
+        logger.info { "Gas price: ${ethTransaction.transaction.get().gasPrice}" }
     }
 
     /**

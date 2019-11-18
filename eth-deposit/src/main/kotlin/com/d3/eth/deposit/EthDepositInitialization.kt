@@ -29,6 +29,7 @@ import com.d3.eth.sidechain.EthChainHandler
 import com.d3.eth.sidechain.EthChainListener
 import com.d3.eth.sidechain.util.BasicAuthenticator
 import com.d3.eth.sidechain.util.ENDPOINT_ETHEREUM
+import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
@@ -63,7 +64,8 @@ class EthDepositInitialization(
     private val ethWalletProvider: EthAddressProvider,
     private val ethRelayProvider: EthAddressProvider,
     private val ethTokensProvider: EthTokensProvider,
-    private val registrationHandler: EthereumWalletRegistrationHandler
+    private val registrationHandler: EthereumWalletRegistrationHandler,
+    withdrawalConfig: WithdrawalServiceConfig
 ) {
     private var ecKeyPair: ECKeyPair = WalletUtils.loadCredentials(
         passwordsConfig.credentialsPassword,
@@ -85,6 +87,15 @@ class EthDepositInitialization(
         notaryCredential,
         irohaAPI,
         ethDepositConfig
+    )
+
+    private val withdrawalProofHandler = WithdrawalProofHandler(
+        withdrawalConfig.withdrawalCredential.accountId,
+        ethTokensProvider,
+        ethWalletProvider,
+        withdrawalConfig,
+        passwordsConfig,
+        irohaAPI
     )
 
     init {
@@ -119,6 +130,7 @@ class EthDepositInitialization(
                         { (block, _) ->
                             expansionStrategy.filterAndExpand(block)
                             registrationHandler.filterAndRegister(block)
+                            withdrawalProofHandler.proceedBlock(block)
                         }, { ex ->
                             logger.error("Withdrawal observable error", ex)
                             System.exit(1)

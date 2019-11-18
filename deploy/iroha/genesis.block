@@ -109,14 +109,17 @@
                 "createRole": {
                   "roleName": "withdrawal",
                   "permissions": [
+                    "can_create_account",
                     "can_get_all_accounts",
                     "can_get_all_acc_detail",
+                    "can_get_all_signatories",
                     "can_get_blocks",
                     "can_read_assets",
                     "can_subtract_asset_qty",
                     "can_transfer",
                     "can_receive",
-                    "can_get_all_txs"
+                    "can_get_all_txs",
+                    "can_set_detail"
                   ]
                 }
               },
@@ -324,6 +327,12 @@
               {
                 "createDomain": {
                   "domainId": "bootstrap",
+                  "defaultRole": "none"
+                }
+              },
+              {
+                "createDomain": {
+                  "domainId": "ethWithdrawalProof",
                   "defaultRole": "none"
                 }
               },
