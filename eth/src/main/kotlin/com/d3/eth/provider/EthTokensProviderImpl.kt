@@ -62,7 +62,7 @@ class EthTokensProviderImpl(
                 irohaAnchoredTokenSetterAccount
             )
         }.map { (ethAnchored, irohaAnchored) ->
-            ethAnchored.plus(irohaAnchored)
+            ethAnchored.plus(irohaAnchored).plus(ETH_ADDRESS to "$ETH_NAME#$ETH_DOMAIN")
         }
     }
 

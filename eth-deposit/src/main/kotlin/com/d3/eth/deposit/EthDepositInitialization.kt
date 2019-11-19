@@ -87,6 +87,15 @@ class EthDepositInitialization(
         ethDepositConfig
     )
 
+    private val withdrawalProofHandler = WithdrawalProofHandler(
+        ethDepositConfig.withdrawalAccountId,
+        ethTokensProvider,
+        ethWalletProvider,
+        ethDepositConfig,
+        passwordsConfig,
+        irohaAPI
+    )
+
     init {
         logger.info {
             "Init deposit ethAddress=" +
@@ -119,6 +128,7 @@ class EthDepositInitialization(
                         { (block, _) ->
                             expansionStrategy.filterAndExpand(block)
                             registrationHandler.filterAndRegister(block)
+                            withdrawalProofHandler.proceedBlock(block)
                         }, { ex ->
                             logger.error("Withdrawal observable error", ex)
                             System.exit(1)

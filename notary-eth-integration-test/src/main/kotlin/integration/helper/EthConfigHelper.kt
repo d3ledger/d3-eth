@@ -125,6 +125,7 @@ open class EthConfigHelper(
             override val irohaAnchoredTokenSetterAccount =
                 accountHelper.tokenSetterAccount.accountId
             override val notaryCredential = notaryCredential_
+            override val withdrawalCredential = accountHelper.createCredentialRawConfig(accountHelper.withdrawalAccount)
             override val refund = createRefundConfig()
             override val iroha = irohaConfig
             override val lastEthereumReadBlockFilePath =

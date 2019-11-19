@@ -44,12 +44,18 @@ fun main() {
                 RMQConfig::class.java,
                 "rmq.properties"
             )
-            val ehRegistrtaionConfig = loadLocalConfigs(
+            val ethRegistrtaionConfig = loadLocalConfigs(
                 "eth-registration",
                 EthRegistrationConfig::class.java,
                 "registration.properties"
             ).get()
-            executeDeposit(ethereumPasswords, depositConfig, rmqConfig, ehRegistrtaionConfig)
+
+            executeDeposit(
+                ethereumPasswords,
+                depositConfig,
+                rmqConfig,
+                ethRegistrtaionConfig
+            )
         }
         .failure { ex ->
             logger.error("Cannot run eth deposit", ex)
@@ -70,7 +76,13 @@ fun executeDeposit(
         )
         IrohaCredential(depositConfig.notaryCredential.accountId, keypair)
     }.flatMap { irohaCredential ->
-        executeDeposit(irohaCredential, ethereumPasswords, depositConfig, rmqConfig, registrationConfig)
+        executeDeposit(
+            irohaCredential,
+            ethereumPasswords,
+            depositConfig,
+            rmqConfig,
+            registrationConfig
+        )
     }.failure { ex ->
         logger.error("Cannot run eth deposit", ex)
         System.exit(1)
