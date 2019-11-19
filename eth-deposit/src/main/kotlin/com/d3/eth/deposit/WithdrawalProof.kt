@@ -9,10 +9,24 @@ package com.d3.eth.deposit
  * Represents Ethereum withdrawal proof from one node
  */
 data class WithdrawalProof(
+    // Client Iroha account id
+    val accountId: String,
+
+    // ethereum address of token contract
     val tokenContractAddress: String,
+
+    // amount of assets to withdraw
     val amount: String,
+
+    // beneficiary ethereum address
     val beneficiary: String,
+
+    // initial iroha withdrawal transaction
     val irohaHash: String,
+
+    // caller ethereum address
     val relay: String,
+
+    // ethereum notary signature
     val signature: String
 )

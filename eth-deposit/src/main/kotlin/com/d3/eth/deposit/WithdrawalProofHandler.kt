@@ -95,6 +95,7 @@ class WithdrawalProofHandler(
                         // write proof
                         val key = ethCredential.address
                         val proof = createProof(
+                            transfer.srcAccountId,
                             transfer.assetId,
                             transfer.amount,
                             transfer.description,
@@ -124,6 +125,7 @@ class WithdrawalProofHandler(
     }
 
     private fun createProof(
+        accountId: String,
         assetId: String,
         amount: String,
         beneficiary: String,
@@ -149,15 +151,16 @@ class WithdrawalProofHandler(
                 txHash,
                 beneficiary
             )
-        val siganture = deployHelper.signUserData(hash)
+        val signature = deployHelper.signUserData(hash)
 
         val withdrawalProof = WithdrawalProof(
+            accountId,
             ethTokenAddress,
             decimalAmount,
             beneficiary,
             txHash,
             beneficiary,
-            siganture
+            signature
         )
         return gson.toJson(withdrawalProof).irohaEscape()
     }
