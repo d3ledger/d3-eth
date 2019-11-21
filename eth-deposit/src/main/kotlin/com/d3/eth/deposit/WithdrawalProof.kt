@@ -5,6 +5,8 @@
 
 package com.d3.eth.deposit
 
+import java.math.BigInteger
+
 /**
  * Represents Ethereum withdrawal proof from one node
  */
@@ -28,5 +30,13 @@ data class WithdrawalProof(
     val relay: String,
 
     // ethereum notary signature
-    val signature: String
+    val signature: VRSSignarute
 )
+
+/**
+ * Data class which stores signature splitted into components
+ * @param v v component of signature
+ * @param r r component of signature
+ * @param s s component of signature
+ */
+data class VRSSignarute(val v: BigInteger, val r: BigInteger, val s: BigInteger)

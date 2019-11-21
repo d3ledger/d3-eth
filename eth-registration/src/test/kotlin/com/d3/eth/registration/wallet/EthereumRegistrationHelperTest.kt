@@ -55,8 +55,7 @@ class EthereumRegistrationHelperTest {
         // generate proof with wrong address
         val address = "0000000000000000000000000000000000000000"
         val esig = keypair.sign(Hash.sha3(address.toByteArray()))
-        val proof =
-            EthereumRegistrationProof(esig, keypair.publicKey)
+        val proof = EthereumRegistrationProof(esig, keypair.publicKey)
 
         assertFalse { checkRegistrationProof(proof) }
     }
