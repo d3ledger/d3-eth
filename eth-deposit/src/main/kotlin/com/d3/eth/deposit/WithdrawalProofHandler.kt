@@ -155,7 +155,7 @@ class WithdrawalProofHandler(
             )
         val signatureString = deployHelper.signUserData(hash)
         val vrs = extractVRS(signatureString)
-        val signature = VRSSignarute(vrs.v, BigInteger(1, vrs.r), BigInteger(1, vrs.s))
+        val signature = VRSSignarute(vrs.v, vrs.r, vrs.s)
 
         val withdrawalProof = WithdrawalProof(
             accountId,
