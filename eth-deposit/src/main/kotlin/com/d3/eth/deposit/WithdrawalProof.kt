@@ -36,7 +36,7 @@ data class WithdrawalProof(
 /**
  * Data class which stores signature splitted into components
  * @param v v component of signature
- * @param r r component of signature
- * @param s s component of signature
+ * @param r r component of signature in hex
+ * @param s s component of signature in hex
  */
-data class VRSSignarute(val v: BigInteger, val r: ByteArray, val s: ByteArray)
+data class VRSSignarute(val v: BigInteger, val r: String, val s: String)

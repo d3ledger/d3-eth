@@ -23,6 +23,7 @@ import iroha.protocol.BlockOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import mu.KLogging
+import org.apache.commons.codec.binary.Hex
 import org.web3j.crypto.WalletUtils
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -155,7 +156,7 @@ class WithdrawalProofHandler(
             )
         val signatureString = deployHelper.signUserData(hash)
         val vrs = extractVRS(signatureString)
-        val signature = VRSSignarute(vrs.v, vrs.r, vrs.s)
+        val signature = VRSSignarute(vrs.v, Hex.encodeHexString(vrs.r), Hex.encodeHexString(vrs.s))
 
         val withdrawalProof = WithdrawalProof(
             accountId,

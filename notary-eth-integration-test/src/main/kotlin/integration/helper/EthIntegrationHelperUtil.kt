@@ -603,9 +603,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
                 val withdrawalProof =
                     gson.fromJson(withdrawalProofJson.irohaUnEscape(), WithdrawalProof::class.java)
                 vv.add(withdrawalProof.signature.v)
-                rr.add(withdrawalProof.signature.r)
-                ss.add(withdrawalProof.signature.s)
-
+                rr.add(Numeric.hexStringToByteArray(withdrawalProof.signature.r))
+                ss.add(Numeric.hexStringToByteArray(withdrawalProof.signature.s))
             }
 
         if (vv.size == 0) {
