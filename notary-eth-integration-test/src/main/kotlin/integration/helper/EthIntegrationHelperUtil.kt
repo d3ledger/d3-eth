@@ -602,11 +602,9 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             .map { (ethNotaryAddress, withdrawalProofJson) ->
                 val withdrawalProof =
                     gson.fromJson(withdrawalProofJson.irohaUnEscape(), WithdrawalProof::class.java)
-                val vrs = extractVRS(withdrawalProof.signature)
-                vv.add(vrs.v)
-                rr.add(vrs.r)
-                ss.add(vrs.s)
-
+                vv.add(withdrawalProof.signature.v)
+                rr.add(Numeric.hexStringToByteArray(withdrawalProof.signature.r))
+                ss.add(Numeric.hexStringToByteArray(withdrawalProof.signature.s))
             }
 
         if (vv.size == 0) {

@@ -12,17 +12,23 @@ import org.web3j.utils.Numeric
 import java.math.BigInteger
 
 /**
+ * Prepare data to sign for Ethereum contract
+ */
+fun prepareDataToSign(toSign: String): ByteArray {
+    // Message from hex to bytes
+    val dat = Numeric.hexStringToByteArray(toSign)
+    // Add ethereum signature format
+    return ("\u0019Ethereum Signed Message:\n" + (dat.size)).toByteArray() + dat
+}
+
+/**
  * Signs user-provided data with predefined account deployed on local Parity node
  * @param ecKeyPair keypair used to sign
  * @param toSign data to sign
  * @return signed data
  */
 fun signUserData(ecKeyPair: ECKeyPair, toSign: String): String {
-
-    // Message from hex to bytes
-    val dat = Numeric.hexStringToByteArray(toSign)
-    // Add ethereum signature format
-    val to_sign = ("\u0019Ethereum Signed Message:\n" + (dat.size)).toByteArray() + dat
+    val to_sign = prepareDataToSign(toSign)
     val signature = Sign.signMessage(to_sign, ecKeyPair)
     // Combine in the signature
     var res = Numeric.toHexString(signature.r)
