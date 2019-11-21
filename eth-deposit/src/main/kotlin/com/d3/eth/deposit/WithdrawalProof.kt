@@ -30,7 +30,7 @@ data class WithdrawalProof(
     val relay: String,
 
     // ethereum notary signature
-    val signature: VRSSignarute
+    val signature: VRSSignature
 )
 
 /**
@@ -39,4 +39,4 @@ data class WithdrawalProof(
  * @param r r component of signature in hex
  * @param s s component of signature in hex
  */
-data class VRSSignarute(val v: BigInteger, val r: String, val s: String)
+data class VRSSignature(val v: BigInteger, val r: String, val s: String)
