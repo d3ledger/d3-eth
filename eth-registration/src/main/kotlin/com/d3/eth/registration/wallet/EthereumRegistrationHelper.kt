@@ -5,10 +5,11 @@
 
 package com.d3.eth.registration.wallet
 
-import org.web3j.crypto.ECKeyPair
-import org.web3j.crypto.Hash
-import org.web3j.crypto.Keys
-import org.web3j.crypto.Sign
+import com.d3.eth.sidechain.util.VRSSignature
+import com.d3.eth.sidechain.util.prepareDataToSign
+import org.apache.commons.codec.binary.Hex
+import org.web3j.crypto.*
+import java.math.BigInteger
 
 /**
  * Create signature proof by signing hash of address generated from public key.
@@ -17,8 +18,14 @@ import org.web3j.crypto.Sign
  */
 fun createRegistrationProof(ecKeyPair: ECKeyPair): EthereumRegistrationProof {
     val address = Keys.getAddress(ecKeyPair.publicKey)
-    val esig = ecKeyPair.sign(Hash.sha3(address.toByteArray()))
-    return EthereumRegistrationProof(esig, ecKeyPair.publicKey)
+
+    val to_sig = prepareDataToSign(address)
+    val sig = Sign.signMessage(to_sig, ecKeyPair)
+    val v = sig.v.toString(16).replace("0x", "")
+    val r = Hex.encodeHexString(sig.r).replace("0x", "")
+    val s = Hex.encodeHexString(sig.s).replace("0x", "")
+    val vrs = VRSSignature(v, r, s)
+    return EthereumRegistrationProof(vrs, ecKeyPair.publicKey)
 }
 
 /**
@@ -32,10 +39,12 @@ fun checkRegistrationProof(proof: EthereumRegistrationProof): Boolean {
     // Iterate recId [0..3] while the correct way not found
     // there are 4 potential outputs including null values, thus we should check output
     // comparing to expecting public key
+    val ecdsaSignature =
+        ECDSASignature(BigInteger(proof.signature.r, 16), BigInteger(proof.signature.s, 16))
     for (i in 0..3) {
         // null is a valid result, skip it
         val res =
-            Sign.recoverFromSignature(i, proof.signature, Hash.sha3(address.toByteArray()))
+            Sign.recoverFromSignature(i, ecdsaSignature, Hash.sha3(prepareDataToSign(address)))
                 ?: continue
         if (Keys.getAddress(res) == address)
             return true

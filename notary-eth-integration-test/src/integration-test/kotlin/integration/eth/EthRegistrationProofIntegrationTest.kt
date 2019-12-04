@@ -11,14 +11,12 @@ import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
 import com.d3.commons.util.irohaEscape
-import com.d3.eth.deposit.endpoint.EthSignature
 import com.d3.eth.provider.ETH_WALLET
 import com.d3.eth.registration.wallet.ETH_FAILED_REGISTRATION_KEY
 import com.d3.eth.registration.wallet.ETH_REGISTRATION_KEY
 import com.d3.eth.registration.wallet.EthereumRegistrationProof
 import com.d3.eth.registration.wallet.createRegistrationProof
 import com.d3.eth.sidechain.util.DeployHelper
-import com.d3.eth.sidechain.util.extractVRS
 import integration.helper.ContractTestHelper
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
@@ -29,10 +27,8 @@ import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.*
 import org.web3j.crypto.Keys
-import org.web3j.utils.Numeric
 import java.math.BigInteger
 import java.time.Duration
-import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

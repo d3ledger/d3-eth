@@ -5,6 +5,7 @@
 
 package com.d3.eth.registration.wallet
 
+import com.d3.eth.sidechain.util.VRSSignature
 import com.google.gson.Gson
 import org.web3j.crypto.*
 import java.math.BigInteger
@@ -16,7 +17,7 @@ const val ETH_REGISTRATION_KEY = "register_wallet"
  * EC Signature of an address generated from public key.
  */
 data class EthereumRegistrationProof(
-    val signature: ECDSASignature,
+    val signature: VRSSignature,
     val publicKey: BigInteger
 ) {
     /**

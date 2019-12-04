@@ -602,7 +602,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             .map { (ethNotaryAddress, withdrawalProofJson) ->
                 val withdrawalProof =
                     gson.fromJson(withdrawalProofJson.irohaUnEscape(), WithdrawalProof::class.java)
-                vv.add(withdrawalProof.signature.v)
+                vv.add(BigInteger(withdrawalProof.signature.v, 16))
                 rr.add(Numeric.hexStringToByteArray(withdrawalProof.signature.r))
                 ss.add(Numeric.hexStringToByteArray(withdrawalProof.signature.s))
             }
@@ -637,6 +637,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         val ethTransaction = contractTestHelper.deployHelper.web3.ethGetTransactionByHash(transactionResponse.transactionHash).send()
         logger.info { "Gas used: ${ethTransaction.transaction.get().gas}" }
         logger.info { "Gas price: ${ethTransaction.transaction.get().gasPrice}" }
+        logger.info { "Tx input hash: ${txHash}" }
+        logger.info { "Tx Input: ${ethTransaction.transaction.get().input}" }
     }
 
     /**
