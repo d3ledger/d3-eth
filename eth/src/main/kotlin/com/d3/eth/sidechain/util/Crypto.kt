@@ -113,6 +113,14 @@ fun hashToMint(
 data class VRS(val v: BigInteger, val r: ByteArray, val s: ByteArray)
 
 /**
+ * Data class which stores signature splitted into components
+ * @param v v component of signature
+ * @param r r component of signature in hex
+ * @param s s component of signature in hex
+ */
+data class VRSSignature(val v: String, val r: String, val s: String)
+
+/**
  * Extracts VRS-signature from string-encoded signature
  * @param signature string-encoded signature
  * @return VRS object

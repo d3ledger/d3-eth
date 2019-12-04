@@ -5,11 +5,16 @@
 
 package com.d3.eth.registration.wallet
 
+import com.d3.eth.sidechain.util.VRSSignature
+import com.d3.eth.sidechain.util.prepareDataToSign
+import org.apache.commons.codec.binary.Hex
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.web3j.crypto.ECDSASignature
-import org.web3j.crypto.Hash
+import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
+import org.web3j.crypto.Sign
+import org.web3j.utils.Numeric
 import java.math.BigInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -54,8 +59,14 @@ class EthereumRegistrationHelperTest {
 
         // generate proof with wrong address
         val address = "0000000000000000000000000000000000000000"
-        val esig = keypair.sign(Hash.sha3(address.toByteArray()))
-        val proof = EthereumRegistrationProof(esig, keypair.publicKey)
+        val to_sig = prepareDataToSign(address)
+        val sig = Sign.signMessage(to_sig, keypair)
+        val v = sig.v.toString(16).replace("0x", "")
+        val r = Hex.encodeHexString(sig.r).replace("0x", "")
+        val s = Hex.encodeHexString(sig.s).replace("0x", "")
+        val vrs = VRSSignature(v, r, s)
+
+        val proof = EthereumRegistrationProof(vrs, keypair.publicKey)
 
         assertFalse { checkRegistrationProof(proof) }
     }
@@ -69,10 +80,7 @@ class EthereumRegistrationHelperTest {
     fun testIncorrectSignature() {
         val keypair = Keys.createEcKeyPair()
         val proof = EthereumRegistrationProof(
-            ECDSASignature(
-                BigInteger.ZERO,
-                BigInteger.ZERO
-            ), keypair.publicKey
+            VRSSignature("0", "0", "0"), keypair.publicKey
         )
 
         assertThrows<IllegalArgumentException> {

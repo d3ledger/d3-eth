@@ -14,10 +14,7 @@ import com.d3.commons.util.hex
 import com.d3.commons.util.irohaEscape
 import com.d3.eth.provider.EthAddressProvider
 import com.d3.eth.provider.EthTokensProvider
-import com.d3.eth.sidechain.util.DeployHelper
-import com.d3.eth.sidechain.util.extractVRS
-import com.d3.eth.sidechain.util.hashToMint
-import com.d3.eth.sidechain.util.hashToWithdraw
+import com.d3.eth.sidechain.util.*
 import integration.eth.config.EthereumPasswords
 import iroha.protocol.BlockOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
@@ -26,7 +23,6 @@ import mu.KLogging
 import org.apache.commons.codec.binary.Hex
 import org.web3j.crypto.WalletUtils
 import java.math.BigDecimal
-import java.math.BigInteger
 
 const val ETH_WITHDRAWAL_PROOF_DOMAIN = "ethWithdrawalProof"
 const val WITHDRAWAL_ACCOUNT_PUBLIC_KEY =
@@ -156,7 +152,10 @@ class WithdrawalProofHandler(
             )
         val signatureString = deployHelper.signUserData(hash)
         val vrs = extractVRS(signatureString)
-        val signature = VRSSignature(vrs.v, Hex.encodeHexString(vrs.r), Hex.encodeHexString(vrs.s))
+        val v = vrs.v.toString(16).replace("0x", "")
+        val r = Hex.encodeHexString(vrs.r).replace("0x", "")
+        val s = Hex.encodeHexString(vrs.s).replace("0x", "")
+        val signature = VRSSignature(v, r, s)
 
         val withdrawalProof = WithdrawalProof(
             accountId,
