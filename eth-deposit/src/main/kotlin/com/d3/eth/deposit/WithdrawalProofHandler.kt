@@ -42,7 +42,7 @@ class WithdrawalProofHandler(
     private val gson = GsonInstance.get()
 
     init {
-        logger.info { "Initialization of WithdrawalProofHandler withrdawalTriggerAccountId=$withrdawalTriggerAccountId" }
+        logger.info { "Wallet Withdrawal: Initialization of WithdrawalProofHandler withrdawalTriggerAccountId=$withrdawalTriggerAccountId" }
     }
 
     private val deployHelper = DeployHelper(ethDepositConfig.ethereum, passwordsConfig)
@@ -84,7 +84,7 @@ class WithdrawalProofHandler(
                         walletsProvider.getAddressByAccountId(transfer.srcAccountId).get().isPresent
                     }
                     .map { transfer ->
-                        logger.info { "Withdrawal event from=${transfer.srcAccountId}, to=${transfer.destAccountId}, descr=${transfer.description}, asset=${transfer.assetId}, amount=${transfer.amount}" }
+                        logger.info { "Wallet Withdrawal: Withdrawal event from=${transfer.srcAccountId}, to=${transfer.destAccountId}, descr=${transfer.description}, asset=${transfer.assetId}, amount=${transfer.amount}" }
 
                         // create account if not exists
                         val proofAccountName = txHash.take(32).toLowerCase()
@@ -119,7 +119,10 @@ class WithdrawalProofHandler(
                 ETH_WITHDRAWAL_PROOF_DOMAIN,
                 Utils.parseHexPublicKey(WITHDRAWAL_ACCOUNT_PUBLIC_KEY),
                 emptyList()
-            ).get()
+            ).fold(
+                { logger.info { "Wallet Withdrawal: create account \"$proofAccountName@$ETH_WITHDRAWAL_PROOF_DOMAIN\" for proofs" } },
+                { logger.info { "Wallet Withdrawal: account \"$proofAccountName@$ETH_WITHDRAWAL_PROOF_DOMAIN\" exists: ${it.message}" } }
+            )
         }
     }
 
