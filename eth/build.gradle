@@ -13,6 +13,23 @@ dependencies {
 
 apply plugin: 'kotlin'
 
+/*
+ * Call master contract method isPeer()
+ */
+task runCallMasterIsPeer(type: JavaExec) {
+    main = 'com.d3.eth.util.CallMasterIsPeer'
+    classpath = sourceSets.main.runtimeClasspath
+    setWorkingDir("$rootDir/")
+}
+
+/*
+ * Call master contract method withdraw()
+ */
+task runCallMasterWithdrawToWallet(type: JavaExec) {
+    main = 'com.d3.eth.util.CallMasterWithdrawToWallet'
+    classpath = sourceSets.main.runtimeClasspath
+    setWorkingDir("$rootDir/")
+}
 
 /*
  * Send Ether from contract with internal transaction
