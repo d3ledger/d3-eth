@@ -110,7 +110,7 @@ fun main() {
             ).send()
         }
         .failure { ex ->
-            logger.error(ex.toString())
+            logger.error("Master contract call exception", ex)
             System.exit(1)
         }
 }

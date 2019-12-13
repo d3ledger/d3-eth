@@ -8,20 +8,13 @@
 package com.d3.eth.util
 
 import com.d3.commons.config.loadLocalConfigs
-import com.d3.commons.util.GsonInstance
-import com.d3.commons.util.irohaUnEscape
 import com.d3.eth.sidechain.util.DeployHelper
-import com.d3.eth.sidechain.util.VRSSignature
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.fanout
 import com.github.kittinunf.result.map
 import integration.eth.config.EthereumConfig
 import integration.eth.config.loadEthPasswords
 import mu.KLogging
-import org.web3j.utils.Numeric
-import java.math.BigInteger
-import java.util.ArrayList
-
 
 private val logger = KLogging().logger
 
@@ -55,12 +48,12 @@ fun main() {
             logger.info { "Load master contract at $masterContractAddress" }
             val master = deployHelper.loadMasterContract(masterContractAddress)
             peers.forEach {
-                println("$it is peer: ${master.isPeer(it).send()}");
+                logger.info { "$it is peer: ${master.isPeer(it).send()}" }
             }
             logger.info { "xor ${master.xorTokenInstance().send()}" }
         }
         .failure { ex ->
-            logger.error(ex.toString())
+            logger.error("Master contract call exception", ex)
             System.exit(1)
         }
 }
