@@ -46,6 +46,7 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.JsonRpc2_0Web3j
 import org.web3j.protocol.http.HttpService
 import java.math.BigInteger
+import kotlin.system.exitProcess
 
 /**
  * Class for deposit instantiation
@@ -131,7 +132,7 @@ class EthDepositInitialization(
                             withdrawalProofHandler.proceedBlock(block)
                         }, { ex ->
                             logger.error("Withdrawal observable error", ex)
-                            System.exit(1)
+                            exitProcess(1)
                         }
                     )
                 irohaChainListener.listen()
@@ -166,7 +167,8 @@ class EthDepositInitialization(
             web3,
             BigInteger.valueOf(ethDepositConfig.ethereum.confirmationPeriod),
             ethDepositConfig.startEthereumBlock,
-            FileBasedLastReadBlockProvider(ethDepositConfig.lastEthereumReadBlockFilePath)
+            FileBasedLastReadBlockProvider(ethDepositConfig.lastEthereumReadBlockFilePath),
+            ethDepositConfig.ignoreStartBlock
         ).getBlockObservable()
             .map { observable ->
                 observable.flatMapIterable { ethHandler.parseBlock(it) }

@@ -28,13 +28,10 @@ import com.d3.eth.registration.EthRegistrationStrategyImpl
 import com.d3.eth.registration.executeRegistration
 import com.d3.eth.registration.relay.RelayRegistration
 import com.d3.eth.registration.wallet.ETH_REGISTRATION_KEY
-import com.d3.eth.registration.wallet.EthereumRegistrationProof
 import com.d3.eth.registration.wallet.createRegistrationProof
 import com.d3.eth.sidechain.EthChainListener
-import com.d3.eth.sidechain.util.extractVRS
 import com.d3.eth.token.EthTokenInfo
 import com.d3.eth.vacuum.RelayVacuumConfig
-import com.d3.eth.withdrawal.withdrawalservice.WITHDRAWAL_OPERATION
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.success
@@ -122,7 +119,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         contractTestHelper.deployHelper.web3,
         BigInteger.valueOf(ethTestConfig.ethereum.confirmationPeriod),
         BigInteger.ZERO,
-        FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath)
+        FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath),
+        true
     )
 
     /** Provider that is used to store/fetch tokens*/
@@ -473,7 +471,11 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             RMQConfig::class.java, "rmq.properties"
         ),
         registrationConfig: EthRegistrationConfig = configHelper.createEthRegistrationConfig(),
-        withdrawalConfig: WithdrawalServiceConfig = configHelper.createWithdrawalConfig(String.getRandomString(5))
+        withdrawalConfig: WithdrawalServiceConfig = configHelper.createWithdrawalConfig(
+            String.getRandomString(
+                5
+            )
+        )
 
     ) {
         val name = String.getRandomString(9)
@@ -634,7 +636,9 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
                     beneficiary
                 ).send()
 
-        val ethTransaction = contractTestHelper.deployHelper.web3.ethGetTransactionByHash(transactionResponse.transactionHash).send()
+        val ethTransaction =
+            contractTestHelper.deployHelper.web3.ethGetTransactionByHash(transactionResponse.transactionHash)
+                .send()
         logger.info { "Gas used: ${ethTransaction.transaction.get().gas}" }
         logger.info { "Gas price: ${ethTransaction.transaction.get().gasPrice}" }
         logger.info { "Tx input hash: ${txHash}" }
