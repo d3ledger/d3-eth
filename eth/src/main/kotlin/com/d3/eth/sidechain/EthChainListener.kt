@@ -49,11 +49,8 @@ class EthChainListener(
         }
     }
 
-    override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
-        return Result.of {
-            ethBlocksObservable
-        }
-    }
+    override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> =
+        Result.of { ethBlocksObservable }
 
     private fun runBlockSubjectProducer() {
         getEthBlockObservable()
