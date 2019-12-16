@@ -17,7 +17,6 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.methods.response.EthBlock
 import java.math.BigInteger
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Implementation of [ChainListener] for Ethereum sidechain
@@ -27,19 +26,20 @@ import java.util.concurrent.atomic.AtomicBoolean
 class EthChainListener(
     private val web3: Web3j,
     private val confirmationPeriod: BigInteger,
-    private val startBlock: BigInteger,
+    startBlock: BigInteger,
     private val lastReadBlockProvider: LastReadBlockProvider,
     private val ignoreStartBlock: Boolean
 ) : ChainListener<EthBlock> {
 
     /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
-    var lastBlockNumber: BigInteger = determineLastBlockNumber()
+    var lastBlockNumber: BigInteger = maxOf(lastReadBlockProvider.getLastBlockHeight(), startBlock)
         private set
 
     private val scheduler = Schedulers.from(createPrettySingleThreadPool("eth-deposit", "eth-event-handler"))
     private val ethBlocksSubject: PublishSubject<EthBlock> = PublishSubject.create()
-    private val ethBlocksObservable = ethBlocksSubject.share().subscribeOn(scheduler)
-    private val isRunning = AtomicBoolean()
+    private val ethBlocksObservable = ethBlocksSubject.share().subscribeOn(scheduler).doOnSubscribe {
+        runBlockSubjectProducer()
+    }
 
     init {
         logger.info {
@@ -49,9 +49,6 @@ class EthChainListener(
     }
 
     override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
-        if (isRunning.compareAndSet(false, true)) {
-            runBlockSubjectProducer()
-        }
         return Result.of {
             ethBlocksObservable
         }
@@ -66,7 +63,7 @@ class EthChainListener(
                 logger.info { "Ethereum chain listener got block ${topBlock.block.number}" }
 
                 val topBlockNumber = topBlock.block.number.minus(confirmationPeriod)
-                while (lastBlockNumber < topBlockNumber) {
+                while (!ignoreStartBlock && lastBlockNumber < topBlockNumber) {
                     val block = web3.ethGetBlockByNumber(
                         DefaultBlockParameter.valueOf(lastBlockNumber), true
                     ).send()
@@ -103,10 +100,6 @@ class EthChainListener(
             DefaultBlockParameter.valueOf(lastBlockNumber.plus(confirmationPeriod)),
             false
         ).toObservable()
-
-    private fun determineLastBlockNumber() =
-        if (ignoreStartBlock) web3.blockFlowable(false).blockingFirst().block.number.dec()
-        else maxOf(lastReadBlockProvider.getLastBlockHeight(), startBlock)
 
     /**
      * Logger

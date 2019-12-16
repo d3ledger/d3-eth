@@ -470,12 +470,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             "rmq",
             RMQConfig::class.java, "rmq.properties"
         ),
-        registrationConfig: EthRegistrationConfig = configHelper.createEthRegistrationConfig(),
-        withdrawalConfig: WithdrawalServiceConfig = configHelper.createWithdrawalConfig(
-            String.getRandomString(
-                5
-            )
-        )
+        registrationConfig: EthRegistrationConfig = configHelper.createEthRegistrationConfig()
 
     ) {
         val name = String.getRandomString(9)

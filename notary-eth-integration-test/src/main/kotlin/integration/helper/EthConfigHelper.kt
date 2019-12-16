@@ -131,7 +131,7 @@ open class EthConfigHelper(
             override val lastEthereumReadBlockFilePath =
                 this@EthConfigHelper.lastEthereumReadBlockFilePath
             override val startEthereumBlock = BigInteger.ZERO
-            override val ignoreStartBlock = false
+            override val ignoreStartBlock = true
             override val ethereum = ethereumConfig
             override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName

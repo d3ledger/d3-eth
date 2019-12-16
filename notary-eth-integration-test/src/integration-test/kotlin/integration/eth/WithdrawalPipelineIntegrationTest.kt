@@ -75,8 +75,7 @@ class WithdrawalPipelineIntegrationTest {
         ethDeposit = GlobalScope.launch {
             integrationHelper.runEthDeposit(
                 ethDepositConfig = depositConfig,
-                registrationConfig = ethRegistrationConfig,
-                withdrawalConfig = withdrwalConfig
+                registrationConfig = ethRegistrationConfig
             )
         }
         withdrawalService = GlobalScope.launch {
