@@ -92,6 +92,9 @@ class EthChainListener(
         web3.shutdown()
     }
 
+    /**
+     * Rethrows an EthBlock into target publish subject and saves last read block value
+     */
     private fun publishEthBlockAndSaveHeight(ethBlock: EthBlock) {
         ethBlocksSubject.onNext(ethBlock)
         val height = ethBlock.block.number
