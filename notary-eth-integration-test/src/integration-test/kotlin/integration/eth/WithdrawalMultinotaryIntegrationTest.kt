@@ -79,8 +79,8 @@ class WithdrawalMultinotaryIntegrationTest {
 
         ethDeposit1 = GlobalScope.launch {
             integrationHelper.runEthDeposit(
-                ethDepositConfig = depositConfig1,
-                ethereumPasswords = ethereumPasswordsConfig1
+                ethereumPasswords = ethereumPasswordsConfig1,
+                ethDepositConfig = depositConfig1
             )
         }
 
@@ -111,8 +111,8 @@ class WithdrawalMultinotaryIntegrationTest {
         // run 2nd instance of deposit
         ethDeposit2 = GlobalScope.launch {
             integrationHelper.runEthDeposit(
-                ethDepositConfig = depositConfig2,
-                ethereumPasswords = ethereumPasswordsConfig2
+                ethereumPasswords = ethereumPasswordsConfig2,
+                ethDepositConfig = depositConfig2
             )
         }
 

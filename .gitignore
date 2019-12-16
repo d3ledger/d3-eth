@@ -113,3 +113,4 @@ deploy/ethereum/cache
 deploy/ethereum/data
 deploy/ethereum/network
 deploy/ethereum/keys/test
+deploy/eth-deposit/last_eth_read_block.txt

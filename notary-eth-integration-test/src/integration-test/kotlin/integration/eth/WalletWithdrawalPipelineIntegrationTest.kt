@@ -66,8 +66,7 @@ class WalletWithdrawalPipelineIntegrationTest {
         ethDeposit = GlobalScope.launch {
             integrationHelper.runEthDeposit(
                 ethDepositConfig = depositConfig,
-                registrationConfig = ethRegistrationConfig,
-                withdrawalConfig = withdrwalConfig
+                registrationConfig = ethRegistrationConfig
             )
         }
     }

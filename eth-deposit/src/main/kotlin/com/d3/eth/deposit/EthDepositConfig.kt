@@ -48,6 +48,9 @@ interface EthDepositConfig {
     /** Ethereum block number to start listen for */
     val startEthereumBlock: BigInteger
 
+    /** Property indicating if the service should care about last block on start */
+    val ignoreStartBlock: Boolean
+
     val ethereum: EthereumConfig
 
     /** Iroha withdrawal account grant permission to */
