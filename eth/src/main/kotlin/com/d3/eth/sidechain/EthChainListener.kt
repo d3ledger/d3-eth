@@ -17,6 +17,7 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.methods.response.EthBlock
 import java.math.BigInteger
+import kotlin.system.exitProcess
 
 /**
  * Implementation of [ChainListener] for Ethereum sidechain
@@ -59,7 +60,7 @@ class EthChainListener(
             .observeOn(scheduler)
             // skip up to confirmationPeriod blocks in case of chain reorganisation
             .filter { lastBlockNumber <= it.block.number }
-            .map { topBlock ->
+            .subscribe({ topBlock ->
                 logger.info { "Ethereum chain listener got block ${topBlock.block.number}" }
 
                 val topBlockNumber = topBlock.block.number.minus(confirmationPeriod)
@@ -73,7 +74,10 @@ class EthChainListener(
                     publishEthBlockAndSaveHeight(block)
                 }
                 publishEthBlockAndSaveHeight(topBlock)
-            }
+            }, { ex ->
+                logger.error("Ethereum blocks observable error", ex)
+                exitProcess(1)
+            })
     }
 
     /**
