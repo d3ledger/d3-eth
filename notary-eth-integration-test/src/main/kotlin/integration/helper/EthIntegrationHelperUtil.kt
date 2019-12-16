@@ -631,9 +631,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
                     beneficiary
                 ).send()
 
-        val ethTransaction =
-            contractTestHelper.deployHelper.web3.ethGetTransactionByHash(transactionResponse.transactionHash)
-                .send()
+        val ethTransaction = contractTestHelper.deployHelper.web3
+            .ethGetTransactionByHash(transactionResponse.transactionHash).send()
         logger.info { "Gas used: ${ethTransaction.transaction.get().gas}" }
         logger.info { "Gas price: ${ethTransaction.transaction.get().gasPrice}" }
         logger.info { "Tx input hash: ${txHash}" }

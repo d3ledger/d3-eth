@@ -32,7 +32,7 @@ class EthChainListener(
 ) : ChainListener<EthBlock> {
 
     /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
-    var lastBlockNumber: BigInteger = maxOf(lastReadBlockProvider.getLastBlockHeight(), startBlock)
+    var lastBlockNumber = maxOf(lastReadBlockProvider.getLastBlockHeight(), startBlock)
         private set
 
     private val scheduler = Schedulers.from(createPrettySingleThreadPool("eth-deposit", "eth-event-handler"))
