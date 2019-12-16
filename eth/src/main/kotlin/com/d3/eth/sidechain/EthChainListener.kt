@@ -17,7 +17,7 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.methods.response.EthBlock
 import java.math.BigInteger
-import kotlin.system.exitProcess
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Implementation of [ChainListener] for Ethereum sidechain
@@ -36,18 +36,22 @@ class EthChainListener(
     var lastBlockNumber: BigInteger = determineLastBlockNumber()
         private set
 
+    private val scheduler = Schedulers.from(createPrettySingleThreadPool("eth-deposit", "eth-event-handler"))
     private val ethBlocksSubject: PublishSubject<EthBlock> = PublishSubject.create()
-    private val ethBlocksObservable = ethBlocksSubject.share()
+    private val ethBlocksObservable = ethBlocksSubject.share().subscribeOn(scheduler)
+    private val isRunning = AtomicBoolean()
 
     init {
         logger.info {
             "Init EthChainListener. Start with block number $lastBlockNumber, " +
                     "confirmation period $confirmationPeriod"
         }
-        runBlockSubjectProducer()
     }
 
     override fun getBlockObservable(): Result<Observable<EthBlock>, Exception> {
+        if (isRunning.compareAndSet(false, true)) {
+            runBlockSubjectProducer()
+        }
         return Result.of {
             ethBlocksObservable
         }
@@ -55,11 +59,7 @@ class EthChainListener(
 
     private fun runBlockSubjectProducer() {
         getEthBlockObservable()
-            .observeOn(
-                Schedulers.from(
-                    createPrettySingleThreadPool("eth-deposit", "eth-event-handler")
-                )
-            )
+            .observeOn(scheduler)
             // skip up to confirmationPeriod blocks in case of chain reorganisation
             .filter { lastBlockNumber <= it.block.number }
             .map { topBlock ->
@@ -77,10 +77,6 @@ class EthChainListener(
                 }
                 publishEthBlockAndSaveHeight(topBlock)
             }
-            .subscribe({}, { ex ->
-                logger.error("Ethereum blocks observable error", ex)
-                exitProcess(1)
-            })
     }
 
     /**
@@ -91,6 +87,7 @@ class EthChainListener(
     }
 
     override fun close() {
+        scheduler.shutdown()
         web3.shutdown()
     }
 

@@ -120,7 +120,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         BigInteger.valueOf(ethTestConfig.ethereum.confirmationPeriod),
         BigInteger.ZERO,
         FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath),
-        true
+        false
     )
 
     /** Provider that is used to store/fetch tokens*/
