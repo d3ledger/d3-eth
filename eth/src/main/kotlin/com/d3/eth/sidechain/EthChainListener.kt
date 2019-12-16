@@ -55,6 +55,7 @@ class EthChainListener(
     private fun runBlockSubjectProducer() {
         getEthBlockObservable()
             .observeOn(scheduler)
+            .subscribeOn(scheduler)
             // skip up to confirmationPeriod blocks in case of chain reorganisation
             .filter { lastBlockNumber <= it.block.number }
             .subscribe({ topBlock ->
@@ -102,7 +103,7 @@ class EthChainListener(
     private fun getEthBlockObservable(): Observable<EthBlock> =
         web3.replayPastAndFutureBlocksFlowable(
             DefaultBlockParameter.valueOf(lastBlockNumber.plus(confirmationPeriod)),
-            false
+            true
         ).toObservable()
 
     /**
