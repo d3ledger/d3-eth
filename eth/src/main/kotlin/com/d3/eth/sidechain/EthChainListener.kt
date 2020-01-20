@@ -60,7 +60,7 @@ class EthChainListener(
             .observeOn(scheduler)
             .subscribeOn(scheduler)
             // skip up to confirmationPeriod blocks in case of chain reorganisation
-            .filter { lastBlockNumber < it.block.number }
+            .filter { lastBlockNumber <= it.block.number }
             .subscribe({ topBlock ->
                 logger.info { "Ethereum chain listener got block ${topBlock.block.number}" }
 
@@ -103,12 +103,11 @@ class EthChainListener(
         lastBlockNumber = height
     }
 
-    private fun getEthBlockObservable(): Observable<EthBlock> {
-        return web3.replayPastAndFutureBlocksFlowable(
+    private fun getEthBlockObservable(): Observable<EthBlock> =
+        web3.replayPastAndFutureBlocksFlowable(
             DefaultBlockParameter.valueOf(lastBlockNumber.plus(confirmationPeriod)),
             true
         ).toObservable()
-    }
 
     /**
      * Logger
