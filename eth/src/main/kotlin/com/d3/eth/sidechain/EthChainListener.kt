@@ -45,7 +45,7 @@ class EthChainListener(
     init {
         logger.info {
             "Init EthChainListener. Start with block number $lastBlockNumber, " +
-                    "confirmation period $confirmationPeriod"
+                    "confirmation period $confirmationPeriod" + " and ignorance of first block: $ignoreStartBlock"
         }
     }
 
@@ -53,6 +53,9 @@ class EthChainListener(
         Result.of { ethBlocksObservable }
 
     private fun runBlockSubjectProducer() {
+        if (ignoreStartBlock) {
+            lastBlockNumber = web3.blockFlowable(true).toObservable().blockingFirst().block.number
+        }
         getEthBlockObservable()
             .observeOn(scheduler)
             .subscribeOn(scheduler)
@@ -62,7 +65,7 @@ class EthChainListener(
                 logger.info { "Ethereum chain listener got block ${topBlock.block.number}" }
 
                 val topBlockNumber = topBlock.block.number.minus(confirmationPeriod)
-                while (!ignoreStartBlock && lastBlockNumber < topBlockNumber) {
+                while (lastBlockNumber < topBlockNumber) {
                     val block = web3.ethGetBlockByNumber(
                         DefaultBlockParameter.valueOf(lastBlockNumber), true
                     ).send()
@@ -95,7 +98,7 @@ class EthChainListener(
      */
     private fun publishEthBlockAndSaveHeight(ethBlock: EthBlock) {
         ethBlocksSubject.onNext(ethBlock)
-        val height = ethBlock.block.number
+        val height = ethBlock.block.number.inc()
         lastReadBlockProvider.saveLastBlockHeight(height)
         lastBlockNumber = height
     }
