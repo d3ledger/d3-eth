@@ -98,7 +98,7 @@ class EthChainListener(
      */
     private fun publishEthBlockAndSaveHeight(ethBlock: EthBlock) {
         ethBlocksSubject.onNext(ethBlock)
-        val height = ethBlock.block.number.add(bigIntOne)
+        val height = ethBlock.block.number.inc()
         lastReadBlockProvider.saveLastBlockHeight(height)
         lastBlockNumber = height
     }
@@ -112,7 +112,5 @@ class EthChainListener(
     /**
      * Logger
      */
-    companion object : KLogging() {
-        val bigIntOne: BigInteger = BigInteger.ONE
-    }
+    companion object : KLogging()
 }
