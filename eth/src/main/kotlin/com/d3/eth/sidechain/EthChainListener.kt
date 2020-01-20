@@ -45,7 +45,7 @@ class EthChainListener(
     init {
         logger.info {
             "Init EthChainListener. Start with block number $lastBlockNumber, " +
-                    "confirmation period $confirmationPeriod"
+                    "confirmation period $confirmationPeriod" + " and ignorance of first block: $ignoreStartBlock"
         }
     }
 
@@ -53,16 +53,19 @@ class EthChainListener(
         Result.of { ethBlocksObservable }
 
     private fun runBlockSubjectProducer() {
+        if (ignoreStartBlock) {
+            lastBlockNumber = web3.blockFlowable(true).toObservable().blockingFirst().block.number
+        }
         getEthBlockObservable()
             .observeOn(scheduler)
             .subscribeOn(scheduler)
             // skip up to confirmationPeriod blocks in case of chain reorganisation
-            .filter { lastBlockNumber <= it.block.number }
+            .filter { lastBlockNumber < it.block.number }
             .subscribe({ topBlock ->
                 logger.info { "Ethereum chain listener got block ${topBlock.block.number}" }
 
                 val topBlockNumber = topBlock.block.number.minus(confirmationPeriod)
-                while (!ignoreStartBlock && lastBlockNumber < topBlockNumber) {
+                while (lastBlockNumber < topBlockNumber) {
                     val block = web3.ethGetBlockByNumber(
                         DefaultBlockParameter.valueOf(lastBlockNumber), true
                     ).send()
@@ -95,19 +98,22 @@ class EthChainListener(
      */
     private fun publishEthBlockAndSaveHeight(ethBlock: EthBlock) {
         ethBlocksSubject.onNext(ethBlock)
-        val height = ethBlock.block.number
+        val height = ethBlock.block.number.add(bigIntOne)
         lastReadBlockProvider.saveLastBlockHeight(height)
         lastBlockNumber = height
     }
 
-    private fun getEthBlockObservable(): Observable<EthBlock> =
-        web3.replayPastAndFutureBlocksFlowable(
+    private fun getEthBlockObservable(): Observable<EthBlock> {
+        return web3.replayPastAndFutureBlocksFlowable(
             DefaultBlockParameter.valueOf(lastBlockNumber.plus(confirmationPeriod)),
             true
         ).toObservable()
+    }
 
     /**
      * Logger
      */
-    companion object : KLogging()
+    companion object : KLogging() {
+        val bigIntOne: BigInteger = BigInteger.ONE
+    }
 }
