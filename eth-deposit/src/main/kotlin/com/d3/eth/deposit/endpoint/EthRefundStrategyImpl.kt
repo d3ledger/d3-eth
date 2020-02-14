@@ -47,7 +47,7 @@ class EthRefundStrategyImpl(
         ETH_RELAY
     )
 
-    private val withdrawalAccountId = depositConfig.withdrawalAccountId
+    private val withdrawalAccountId = depositConfig.withdrawalCredential.accountId
 
     private val deployHelper = DeployHelper(ethereumConfig, ethereumPasswords)
 

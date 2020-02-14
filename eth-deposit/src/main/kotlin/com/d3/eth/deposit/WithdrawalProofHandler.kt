@@ -67,9 +67,10 @@ class WithdrawalProofHandler(
     fun proceedBlock(block: BlockOuterClass.Block) {
         block.blockV1.payload.transactionsList
             // Get commands
-            .flatMap { tx ->
+            .forEach { tx ->
                 val txHash = String.hex(Utils.hash(tx))
                 tx.payload.reducedPayload.commandsList
+                    .asSequence()
                     .filter { command -> command.hasTransferAsset() }
                     .map { command -> command.transferAsset }
                     .filter { transfer -> transfer.destAccountId == withrdawalTriggerAccountId }
@@ -100,8 +101,7 @@ class WithdrawalProofHandler(
                             transfer.description,
                             txHash
                         )
-                        ModelUtil.setAccountDetail(irohaConsumer, proofAccountId, key, proof)
-                            .get()
+                        ModelUtil.setAccountDetail(irohaConsumer, proofAccountId, key, proof).get()
                     }
             }
     }
@@ -136,23 +136,23 @@ class WithdrawalProofHandler(
         val ethTokenAddress = tokensProvider.getTokenAddress(assetId).get()
         val tokenPrecision = tokensProvider.getTokenPrecision(assetId).get()
         val decimalAmount = BigDecimal(amount).scaleByPowerOfTen(tokenPrecision).toPlainString()
-        val hash: String
-        if (tokensProvider.isIrohaAnchored(assetId).get())
-            hash = hashToMint(
-                ethTokenAddress,
-                decimalAmount,
-                beneficiary,
-                txHash,
-                beneficiary
-            )
-        else
-            hash = hashToWithdraw(
-                ethTokenAddress,
-                decimalAmount,
-                beneficiary,
-                txHash,
-                beneficiary
-            )
+        val hash =
+            if (tokensProvider.isIrohaAnchored(assetId).get())
+                hashToMint(
+                    ethTokenAddress,
+                    decimalAmount,
+                    beneficiary,
+                    txHash,
+                    beneficiary
+                )
+            else
+                hashToWithdraw(
+                    ethTokenAddress,
+                    decimalAmount,
+                    beneficiary,
+                    txHash,
+                    beneficiary
+                )
         val signatureString = deployHelper.signUserData(hash)
         val vrs = extractVRS(signatureString)
         val v = vrs.v.toString(16).replace("0x", "")

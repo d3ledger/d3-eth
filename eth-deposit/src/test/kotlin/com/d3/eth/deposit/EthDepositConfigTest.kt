@@ -146,7 +146,7 @@ class EthDepositConfigTest {
             etehereumConfirmationPeriod.toLong(),
             depositConfig.ethereum.confirmationPeriod
         )
-        assertEquals(withdrawalAccountId, depositConfig.withdrawalAccountId)
+        assertEquals(withdrawalAccountId, depositConfig.withdrawalCredential.accountId)
         assertEquals(expansionTriggerAccount, depositConfig.expansionTriggerAccount)
         assertEquals(
             expansionTriggerCreatorAccountId,

@@ -27,7 +27,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTimeoutPreemptively
 import org.junit.jupiter.api.Test
@@ -88,7 +87,7 @@ class WithdrawalIntegrationTest {
     fun testRefund() {
         assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
-            val withdrawalAccountId = depositConfig.withdrawalAccountId
+            val withdrawalAccountId = depositConfig.notaryCredential.accountId
             val amount = "64203"
             val decimalAmount = BigDecimal(amount).scaleByPowerOfTen(ETH_PRECISION)
             val assetId = "ether#ethereum"
@@ -102,7 +101,7 @@ class WithdrawalIntegrationTest {
                 ModelUtil.generateKeypair().public.toHexString(),
                 registrationTestEnvironment.registrationConfig.port
             )
-            Assertions.assertEquals(200, res.statusCode)
+            assertEquals(200, res.statusCode)
             val clientId = "$client@$D3_DOMAIN"
             integrationHelper.registerClientInEth(
                 client,
