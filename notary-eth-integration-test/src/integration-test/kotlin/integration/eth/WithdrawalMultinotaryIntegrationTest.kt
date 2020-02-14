@@ -56,7 +56,7 @@ class WithdrawalMultinotaryIntegrationTest {
     private val ethereumPasswords =
         loadEthPasswords("eth-deposit", "/eth/ethereum_password.properties").get()
 
-    private val withdrawalAccountId = integrationHelper.accountHelper.notaryAccount.accountId
+    private val withdrawalAccountId = integrationHelper.accountHelper.withdrawalAccount.accountId
 
     private val timeoutDuration = Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)
 

@@ -44,7 +44,7 @@ class WithdrawalRollbackIntegrationTest {
     private val toAddress = integrationHelper.ethTestConfig.ethTestAccount
 
     /** Withdrawal trigger account */
-    private val withdrawalAccountId = integrationHelper.accountHelper.notaryAccount.accountId
+    private val withdrawalAccountId = integrationHelper.accountHelper.withdrawalAccount.accountId
 
     private val ethRegistrationService: Job
     private val withdrawalService: Job
