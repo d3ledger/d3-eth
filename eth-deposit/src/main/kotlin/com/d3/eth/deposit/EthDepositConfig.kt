@@ -53,9 +53,6 @@ interface EthDepositConfig {
 
     val ethereum: EthereumConfig
 
-    /** Iroha withdrawal account grant permission to */
-    val withdrawalAccountId: String
-
     /** Account that trigger expansion */
     val expansionTriggerAccount: String
 

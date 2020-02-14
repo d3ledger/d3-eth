@@ -579,8 +579,8 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         val tx = queryHelper.getSingleTransaction(txHash).get()
             .payload.reducedPayload.commandsList
             .filter { it.hasTransferAsset() }
-            .filter { WalletUtils.isValidAddress(it.transferAsset.description) }
-            .get(0).transferAsset
+            .first { WalletUtils.isValidAddress(it.transferAsset.description) }
+            .transferAsset
         val assetId = tx.assetId
         val amount = tx.amount
         val beneficiary = tx.description

@@ -39,10 +39,6 @@ class WalletWithdrawalPipelineIntegrationTest {
     /** Test Deposit configuration */
     private val depositConfig = integrationHelper.configHelper.createEthDepositConfig()
 
-    /** Test withrdawal service configuration */
-    private val withdrwalConfig =
-        integrationHelper.configHelper.createWithdrawalConfig(String.getRandomString(9))
-
     private val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
 
     /** Test Registration configuration */
@@ -55,7 +51,7 @@ class WalletWithdrawalPipelineIntegrationTest {
     private val toAddress = integrationHelper.ethTestConfig.ethTestAccount
 
     /** Notary account in Iroha */
-    private val withdrawalAccountId = integrationHelper.accountHelper.withdrawalAccount.accountId
+    private val withdrawalAccountId = integrationHelper.accountHelper.notaryAccount.accountId
 
     private val timeoutDuration = Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)
 

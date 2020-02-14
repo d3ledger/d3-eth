@@ -8,6 +8,7 @@ package com.d3.eth.deposit.endpoint
 import com.d3.commons.model.D3ErrorException
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.FEE_DESCRIPTION
+import com.d3.commons.sidechain.iroha.util.getWithdrawalCommands
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.iroha.util.isWithdrawalTransaction
 import com.d3.eth.deposit.EthDepositConfig
@@ -47,7 +48,7 @@ class EthRefundStrategyImpl(
         ETH_RELAY
     )
 
-    private val withdrawalAccountId = depositConfig.withdrawalAccountId
+    private val withdrawalAccountId = depositConfig.notaryCredential.accountId
 
     private val deployHelper = DeployHelper(ethereumConfig, ethereumPasswords)
 
@@ -75,20 +76,16 @@ class EthRefundStrategyImpl(
         request: EthRefundRequest
     ): Result<EthRefund, Exception> {
         return Result.of {
-            val commands = appearedTx.payload.reducedPayload.getCommands(0)
             when {
                 // withdrawal case
                 isWithdrawalTransaction(
                     appearedTx,
                     withdrawalAccountId
                 ) -> {
-                    // pick withdrawal transfer
-                    val withdrawalCommand = appearedTx.payload.reducedPayload.commandsList
-                        .filter { cmd -> cmd.hasTransferAsset() }
+                    // pick withdrawal transfers
+                    val withdrawalCommand = getWithdrawalCommands(appearedTx, withdrawalAccountId)
                         .map { cmd -> cmd.transferAsset }
-                        .filter { cmd -> cmd.destAccountId == withdrawalAccountId }
                         .first { cmd -> cmd.description != FEE_DESCRIPTION }
-
                     val amount = withdrawalCommand.amount
                     val assetId = withdrawalCommand.assetId
                     val destEthAddress = withdrawalCommand.description
