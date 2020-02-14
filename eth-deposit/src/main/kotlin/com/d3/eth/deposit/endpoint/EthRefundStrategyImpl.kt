@@ -83,10 +83,9 @@ class EthRefundStrategyImpl(
                     withdrawalAccountId
                 ) -> {
                     // pick withdrawal transfers
-                    val withdrawalCommands = getWithdrawalCommands(appearedTx, withdrawalAccountId)
-                        .map {cmd -> cmd.transferAsset}
-                        .filter { cmd -> cmd.description != FEE_DESCRIPTION }
-                    withdrawalCommands.forEach { withdrawalCommand -> }
+                    val withdrawalCommand = getWithdrawalCommands(appearedTx, withdrawalAccountId)
+                        .map { cmd -> cmd.transferAsset }
+                        .first { cmd -> cmd.description != FEE_DESCRIPTION }
                     val amount = withdrawalCommand.amount
                     val assetId = withdrawalCommand.assetId
                     val destEthAddress = withdrawalCommand.description
