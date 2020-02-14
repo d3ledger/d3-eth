@@ -70,7 +70,6 @@ class WithdrawalProofHandler(
             .forEach { tx ->
                 val txHash = String.hex(Utils.hash(tx))
                 tx.payload.reducedPayload.commandsList
-                    .asSequence()
                     .filter { command -> command.hasTransferAsset() }
                     .map { command -> command.transferAsset }
                     .filter { transfer -> transfer.destAccountId == withrdawalTriggerAccountId }

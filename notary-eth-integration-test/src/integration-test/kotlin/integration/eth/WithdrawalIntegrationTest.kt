@@ -87,7 +87,7 @@ class WithdrawalIntegrationTest {
     fun testRefund() {
         assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
-            val withdrawalAccountId = depositConfig.withdrawalCredential.accountId
+            val withdrawalAccountId = depositConfig.notaryCredential.accountId
             val amount = "64203"
             val decimalAmount = BigDecimal(amount).scaleByPowerOfTen(ETH_PRECISION)
             val assetId = "ether#ethereum"
