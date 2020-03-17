@@ -1,4 +1,4 @@
-rootProject.name = 'd3-eth'
+rootProject.name = 'soranet-eth'
 
 include 'eth'
 project(':eth').projectDir = 'eth' as File
