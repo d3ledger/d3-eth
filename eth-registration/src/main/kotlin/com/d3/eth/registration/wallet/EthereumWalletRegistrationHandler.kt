@@ -8,12 +8,9 @@ package com.d3.eth.registration.wallet
 import com.d3.commons.registration.SideChainRegistrator
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
 import com.d3.commons.util.GsonInstance
-import com.d3.commons.util.hex
 import com.d3.commons.util.irohaUnEscape
 import com.d3.eth.provider.ETH_WALLET
 import com.d3.eth.provider.EthAddressProvider
-import com.d3.eth.registration.wallet.ETH_REGISTRATION_KEY
-import com.d3.eth.registration.wallet.EthereumRegistrationProof
 import iroha.protocol.BlockOuterClass
 import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.iroha.java.Utils
@@ -25,8 +22,8 @@ const val ETH_FAILED_REGISTRATION_KEY = "failed_registration"
  * Handles ethereum wallet registration events from Iroha blocks
  */
 class EthereumWalletRegistrationHandler(
-    val irohaConsumer: IrohaConsumer,
-    val registrationTriggerAccountId: String,
+    private val irohaConsumer: IrohaConsumer,
+    private val registrationTriggerAccountId: String,
     walletStorageIrohaAccountId: String,
     private val ethWalletProvider: EthAddressProvider,
     private val ethRelayProvider: EthAddressProvider
@@ -47,7 +44,7 @@ class EthereumWalletRegistrationHandler(
         block.blockV1.payload.transactionsList
             // Get commands
             .flatMap { tx ->
-                val txHash = String.hex(Utils.hash(tx))
+                val txHash = Utils.toHexHash(tx)
                 val clientId = tx.payload.reducedPayload.creatorAccountId
                 val time = tx.payload.reducedPayload.createdTime
                 tx.payload.reducedPayload.commandsList
@@ -80,7 +77,7 @@ class EthereumWalletRegistrationHandler(
                                     clientId,
                                     time
                                 ) { clientId }.get()
-                                logger.info { "Registration with Ethereum wallet $ethAddress triggered for $clientId completed with tx $registrationTxHash" }
+                                logger.info { "Registration request with Ethereum wallet $ethAddress triggered for $clientId submitted with tx $registrationTxHash" }
 
                             } else {
                                 throw IllegalArgumentException("Registration triggered with wrong proof for ${setAccountDetail.accountId} with wallet $ethAddress")
@@ -90,14 +87,14 @@ class EthereumWalletRegistrationHandler(
                                 "Ethereum registration for client $clientId failed",
                                 ex
                             )
-                            saveFailedRegistration(clientId, txHash, ex.message!!)
+                            saveFailedRegistration(clientId, txHash, ex.message!!, time)
                         }
                     }
             }
     }
 
-    private fun saveFailedRegistration(accountId: String, hash: String, reason: String) {
-        val tx = Transaction.builder(irohaConsumer.creator)
+    private fun saveFailedRegistration(accountId: String, hash: String, reason: String, time: Long) {
+        val tx = Transaction.builder(irohaConsumer.creator, time)
             .setAccountDetail(
                 accountId,
                 ETH_FAILED_REGISTRATION_KEY,

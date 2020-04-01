@@ -12,6 +12,7 @@ import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.config.loadRawLocalConfigs
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
+import com.d3.commons.sidechain.iroha.consumer.MultiSigIrohaConsumer
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.eth.provider.ETH_RELAY
 import com.d3.eth.provider.ETH_WALLET
@@ -131,7 +132,7 @@ fun executeDeposit(
     )
 
     val registrationHandler = EthereumWalletRegistrationHandler(
-        IrohaConsumerImpl(irohaCredential, irohaAPI),
+        MultiSigIrohaConsumer(irohaCredential, irohaAPI),
         registrationConfig.registrationCredential.accountId,
         depositConfig.ethereumWalletStorageAccount,
         ethWalletProvider,
