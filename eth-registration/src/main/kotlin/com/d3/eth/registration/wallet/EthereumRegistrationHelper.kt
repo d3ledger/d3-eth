@@ -19,9 +19,9 @@ import java.math.BigInteger
 fun createRegistrationProof(ecKeyPair: ECKeyPair): EthereumRegistrationProof {
     val address = Keys.getAddress(ecKeyPair.publicKey)
 
-    val to_sig = prepareDataToSign(address)
-    val sig = Sign.signMessage(to_sig, ecKeyPair)
-    val v = sig.v.toString(16).replace("0x", "")
+    val dataToSign = prepareDataToSign(address)
+    val sig = Sign.signMessage(dataToSign, ecKeyPair)
+    val v = BigInteger(sig.v).toString(16).replace("0x", "")
     val r = Hex.encodeHexString(sig.r).replace("0x", "")
     val s = Hex.encodeHexString(sig.s).replace("0x", "")
     val vrs = VRSSignature(v, r, s)

@@ -61,7 +61,7 @@ class EthereumRegistrationHelperTest {
         val address = "0000000000000000000000000000000000000000"
         val to_sig = prepareDataToSign(address)
         val sig = Sign.signMessage(to_sig, keypair)
-        val v = sig.v.toString(16).replace("0x", "")
+        val v = BigInteger(sig.v).toString(16).replace("0x", "")
         val r = Hex.encodeHexString(sig.r).replace("0x", "")
         val s = Hex.encodeHexString(sig.s).replace("0x", "")
         val vrs = VRSSignature(v, r, s)

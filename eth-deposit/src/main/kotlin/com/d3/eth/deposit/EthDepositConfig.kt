@@ -75,4 +75,7 @@ interface EthDepositConfig {
 
     /** Ethereum relay list setter account id */
     val ethereumRelaySetterAccount: String
+
+    /** Ethereum master contract compiled abi file path**/
+    val masterContractAbiPath: String
 }

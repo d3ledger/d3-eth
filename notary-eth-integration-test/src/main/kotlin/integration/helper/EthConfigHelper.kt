@@ -139,6 +139,7 @@ open class EthConfigHelper(
             override val ethereumWalletSetterAccount = accountHelper.notaryAccount.accountId
             override val ethereumRelayStorageAccount = accountHelper.ethereumRelayStorageAccount.accountId
             override val ethereumRelaySetterAccount = accountHelper.registrationAccount.accountId
+            override val masterContractAbiPath = "deploy/ethereum/contract/abi/Master.abi"
         }
     }
 

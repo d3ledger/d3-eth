@@ -22,6 +22,7 @@ import com.d3.eth.deposit.ETH_WITHDRAWAL_PROOF_DOMAIN
 import com.d3.eth.deposit.EthDepositConfig
 import com.d3.eth.deposit.WithdrawalProof
 import com.d3.eth.deposit.executeDeposit
+import com.d3.eth.mq.EthNotificationMqProducer.Companion.EVENTS_QUEUE_NAME
 import com.d3.eth.provider.*
 import com.d3.eth.registration.EthRegistrationConfig
 import com.d3.eth.registration.EthRegistrationStrategyImpl
@@ -35,9 +36,14 @@ import com.d3.eth.vacuum.RelayVacuumConfig
 import com.d3.eth.withdrawal.withdrawalservice.WithdrawalServiceConfig
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.success
+import com.rabbitmq.client.Channel
+import com.rabbitmq.client.Connection
+import com.rabbitmq.client.ConnectionFactory
+import com.rabbitmq.client.Delivery
 import integration.eth.config.EthereumPasswords
 import kotlinx.coroutines.runBlocking
 import mu.KLogging
+import org.json.JSONObject
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.WalletUtils
@@ -52,7 +58,7 @@ import java.util.*
  * Class lazily creates new master contract in Ethereum and master account in Iroha.
  */
 class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
-    private val gson = GsonInstance.get()
+    val gson = GsonInstance.get()
 
     val ethTestConfig =
         loadConfigs("test", TestEthereumConfig::class.java, "/test.properties").get()
@@ -179,6 +185,18 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             configHelper.ethPasswordConfig
         )
     }
+
+    private val rmqEvents = Collections.synchronizedList(ArrayList<JSONObject>())
+
+    private val consumerTags = ArrayList<String>()
+    private val connectionFactory = ConnectionFactory()
+    private var connection: Connection? = null
+    private var channel: Channel? = null
+
+    /**
+     * Returns the last posted RMQ event
+     */
+    fun getLastRmqEvent(): JSONObject = rmqEvents[rmqEvents.size - 1]
 
     /**
      * Get address of first free relay.
@@ -512,6 +530,40 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     }
 
     /**
+     * Run RMQ notifications consumer
+     */
+    fun runEthNotificationRmqConsumer(
+        rmqConfig: RMQConfig = loadRawLocalConfigs(
+            "rmq",
+            RMQConfig::class.java, "rmq.properties"
+        )
+    ) {
+        connectionFactory.host = rmqConfig.host
+        connectionFactory.port = rmqConfig.port
+        connection = connectionFactory.newConnection()
+        channel = connection!!.createChannel()
+        val arguments = hashMapOf(
+            // enable deduplication
+            Pair("x-message-deduplication", true),
+            // save deduplication data on disk rather that memory
+            Pair("x-cache-persistence", "disk"),
+            // save deduplication data 1 day
+            Pair("x-cache-ttl", 60_000 * 60 * 24)
+        )
+        channel!!.queueDeclare(EVENTS_QUEUE_NAME, true, false, false, arguments)
+        consumerTags.add(
+            channel!!.basicConsume(
+                EVENTS_QUEUE_NAME,
+                true,
+                { _: String, delivery: Delivery ->
+                    rmqEvents.add(JSONObject(String(delivery.body)))
+                },
+                { _ -> }
+            )
+        )
+    }
+
+    /**
      * Get list of all notary endpoints
      */
     fun getNotaries(): Map<String, String> {
@@ -635,7 +687,7 @@ class EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             .ethGetTransactionByHash(transactionResponse.transactionHash).send()
         logger.info { "Gas used: ${ethTransaction.transaction.get().gas}" }
         logger.info { "Gas price: ${ethTransaction.transaction.get().gasPrice}" }
-        logger.info { "Tx input hash: ${txHash}" }
+        logger.info { "Tx input hash: $txHash" }
         logger.info { "Tx Input: ${ethTransaction.transaction.get().input}" }
     }
 

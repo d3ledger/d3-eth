@@ -28,13 +28,13 @@ fun prepareDataToSign(toSign: String): ByteArray {
  * @return signed data
  */
 fun signUserData(ecKeyPair: ECKeyPair, toSign: String): String {
-    val to_sign = prepareDataToSign(toSign)
-    val signature = Sign.signMessage(to_sign, ecKeyPair)
+    val dataToSign = prepareDataToSign(toSign)
+    val signature = Sign.signMessage(dataToSign, ecKeyPair)
     // Combine in the signature
     var res = Numeric.toHexString(signature.r)
     res = res.plus(Numeric.toHexString(signature.s).substring(2))
     //  The v is always either 27, or 28 - need to convert to 00 or 01
-    res = res.plus("0" + Integer.toString(signature.v.toInt() - 27))
+    res = res.plus("0" + (BigInteger(signature.v).toInt() - 27).toString())
     return res
 }
 

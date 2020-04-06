@@ -20,6 +20,7 @@ import com.d3.commons.util.createPrettySingleThreadPool
 import com.d3.eth.deposit.endpoint.EthAddPeerStrategyImpl
 import com.d3.eth.deposit.endpoint.EthRefundStrategyImpl
 import com.d3.eth.deposit.endpoint.RefundServerEndpoint
+import com.d3.eth.mq.EthNotificationMqProducer
 import com.d3.eth.provider.EthAddressProvider
 import com.d3.eth.provider.EthTokensProvider
 import com.d3.eth.registration.wallet.EthereumWalletRegistrationHandler
@@ -41,6 +42,8 @@ import org.web3j.crypto.WalletUtils
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.JsonRpc2_0Web3j
 import org.web3j.protocol.http.HttpService
+import org.web3j.utils.Files
+import java.io.File
 import java.math.BigInteger
 import kotlin.system.exitProcess
 
@@ -78,6 +81,8 @@ class EthDepositInitialization(
         )
     )
 
+    private val ethNotificationMqProducer = EthNotificationMqProducer(rmqConfig)
+
     private val expansionStrategy = EthereumDepositExpansionStrategy(
         notaryCredential,
         irohaAPI,
@@ -92,6 +97,8 @@ class EthDepositInitialization(
         passwordsConfig,
         irohaAPI
     )
+
+    private val masterContractAbi = Files.readString(File(ethDepositConfig.masterContractAbiPath))
 
     init {
         logger.info {
@@ -157,7 +164,9 @@ class EthDepositInitialization(
             ethDepositConfig.ethMasterAddress,
             ethWalletProvider,
             ethRelayProvider,
-            ethTokensProvider
+            ethTokensProvider,
+            ethNotificationMqProducer,
+            masterContractAbi
         )
         return EthChainListener(
             web3,

@@ -5,11 +5,12 @@
 
 package com.d3.eth.provider
 
-import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
-import com.github.kittinunf.result.Result
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.mock
+import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
+import com.d3.commons.util.GsonInstance
+import com.nhaarman.mockitokotlin2.*
+import iroha.protocol.Primitive
+import iroha.protocol.QryResponses
+import jp.co.soramitsu.iroha.java.QueryAPI
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -17,6 +18,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class EthTokensProviderImplTest {
+
+    private val gson = GsonInstance.get()
 
     private val ethAnchored = mapOf(
         "0x0001" to "token_1#ethereum",
@@ -38,21 +41,33 @@ class EthTokensProviderImplTest {
     private val irohaAnchoredTokenStorageAccount = "iroha_anchored_token_storage@notary"
     private val irohaAnchoredTokenSetterAccount = "iroha_anchored_token_setter@notary"
 
-    private val irohaQueryHelper = mock<IrohaQueryHelper> {
+    private val mockEthAnchoredResponse = buildDetailsResponse(ethAnchoredTokenSetterAccount, ethAnchored)
+    private val mockIrohaAnchoredResponse =
+        buildDetailsResponse(irohaAnchoredTokenSetterAccount, irohaAnchored)
+    private val queryAPI = mock<QueryAPI> {
         on {
             getAccountDetails(
                 eq(ethAnchoredTokenStorageAccount),
-                eq(ethAnchoredTokenSetterAccount)
+                eq(ethAnchoredTokenSetterAccount),
+                isNull(),
+                any(),
+                anyOrNull(),
+                anyOrNull()
             )
-        } doReturn Result.of { ethAnchored }
-
+        } doReturn mockEthAnchoredResponse
         on {
             getAccountDetails(
                 eq(irohaAnchoredTokenStorageAccount),
-                eq(irohaAnchoredTokenSetterAccount)
+                eq(irohaAnchoredTokenSetterAccount),
+                isNull(),
+                any(),
+                anyOrNull(),
+                anyOrNull()
             )
-        } doReturn Result.of { irohaAnchored }
+        } doReturn mockIrohaAnchoredResponse
     }
+
+    private val irohaQueryHelper = IrohaQueryHelperImpl(queryAPI)
 
     private val ethTokenProvider = EthTokensProviderImpl(
         irohaQueryHelper,
@@ -133,6 +148,21 @@ class EthTokensProviderImplTest {
     fun wrongAssetIsIrohaAnchoredTest() {
         assertThrows<IllegalArgumentException> {
             ethTokenProvider.isIrohaAnchored(wrongAssetId).get()
+        }
+    }
+
+    private fun buildDetailsResponse(
+        writer: String,
+        map: Map<String, String>
+    ): QryResponses.AccountDetailResponse {
+        val builder = QryResponses.AccountDetailResponse.newBuilder()
+        builder.clearNextRecordId()
+        builder.nextRecordId = Primitive.AccountDetailRecordId.getDefaultInstance()
+        builder.detail = "{\"$writer\":${gson.toJson(map)}}"
+        return spy(builder.build()) {
+            on {
+                hasNextRecordId()
+            } doReturn false
         }
     }
 }

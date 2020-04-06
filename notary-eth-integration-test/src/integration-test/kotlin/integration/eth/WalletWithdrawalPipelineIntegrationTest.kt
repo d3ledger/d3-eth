@@ -11,6 +11,7 @@ import com.d3.commons.util.getRandomString
 import com.d3.commons.util.toHexString
 import com.d3.eth.provider.ETH_PRECISION
 import com.d3.eth.token.EthTokenInfo
+import com.d3.notifications.event.SoraAckEthWithdrawalProofEvent
 import integration.helper.D3_DOMAIN
 import integration.helper.EthIntegrationHelperUtil
 import integration.helper.IrohaConfigHelper
@@ -65,6 +66,7 @@ class WalletWithdrawalPipelineIntegrationTest {
                 registrationConfig = ethRegistrationConfig
             )
         }
+        integrationHelper.runEthNotificationRmqConsumer()
     }
 
     lateinit var clientName: String
@@ -164,6 +166,15 @@ class WalletWithdrawalPipelineIntegrationTest {
                 masterBalanceInitial.subtract(amount),
                 masterBalanceActual
             )
+
+            Thread.sleep(15_000)
+
+            // check notification published
+            val notification = integrationHelper.gson.fromJson(
+                integrationHelper.getLastRmqEvent().toString(),
+                SoraAckEthWithdrawalProofEvent::class.java
+            )
+            assertEquals(txHash, notification.irohaTxHash)
         }
     }
 
@@ -229,6 +240,15 @@ class WalletWithdrawalPipelineIntegrationTest {
                 masterBalanceInitial.subtract(bigIntegerValue),
                 masterBalanceActual
             )
+
+            Thread.sleep(15_000)
+
+            // check notification published
+            val notification = integrationHelper.gson.fromJson(
+                integrationHelper.getLastRmqEvent().toString(),
+                SoraAckEthWithdrawalProofEvent::class.java
+            )
+            assertEquals(txHash, notification.irohaTxHash)
         }
     }
 
@@ -249,7 +269,7 @@ class WalletWithdrawalPipelineIntegrationTest {
         integrationHelper.addIrohaAssetTo(clientId, assetId, amount)
 
         val initialWithdrawalBalance = integrationHelper.getIrohaAccountBalance(withdrawalAccountId, assetId)
-        val initialClietnIrohaBalance = integrationHelper.getIrohaAccountBalance(clientId, assetId)
+        val initialClientIrohaBalance = integrationHelper.getIrohaAccountBalance(clientId, assetId)
         val initialEthereumBalance = integrationHelper.getERC20TokenBalance(tokenAddress, toAddress)
 
         // transfer assets from user to notary master account
@@ -269,7 +289,7 @@ class WalletWithdrawalPipelineIntegrationTest {
 
         // check balance of client in Iroha
         assertEquals(
-            initialClietnIrohaBalance.toDouble() - amount.toDouble(),
+            initialClientIrohaBalance.toDouble() - amount.toDouble(),
             integrationHelper.getIrohaAccountBalance(clientId, assetId).toDouble()
         )
 
@@ -295,6 +315,15 @@ class WalletWithdrawalPipelineIntegrationTest {
             initialWithdrawalBalance.toBigDecimal() + amount.toBigDecimal(),
             integrationHelper.getIrohaAccountBalance(withdrawalAccountId, assetId).toBigDecimal()
         )
+
+        Thread.sleep(15_000)
+
+        // check notification published
+        val notification = integrationHelper.gson.fromJson(
+            integrationHelper.getLastRmqEvent().toString(),
+            SoraAckEthWithdrawalProofEvent::class.java
+        )
+        assertEquals(txHash, notification.irohaTxHash)
     }
 
     /**
@@ -379,6 +408,15 @@ class WalletWithdrawalPipelineIntegrationTest {
                 initialWithdrawalBalance.toBigDecimal() + decimalAmount,
                 integrationHelper.getIrohaAccountBalance(withdrawalAccountId, assetId).toBigDecimal()
             )
+
+            Thread.sleep(15_000)
+
+            // check notification published
+            val notification = integrationHelper.gson.fromJson(
+                integrationHelper.getLastRmqEvent().toString(),
+                SoraAckEthWithdrawalProofEvent::class.java
+            )
+            assertEquals(txHash, notification.irohaTxHash)
         }
     }
 }

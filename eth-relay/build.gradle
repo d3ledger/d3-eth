@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    id 'jp.co.soramitsu.sora-plugin' version '0.1.2'
+    id 'jp.co.soramitsu.sora-plugin' version '0.2.0'
 }
 
 dependencies {
@@ -14,7 +14,7 @@ dependencies {
     implementation project(":eth-registration")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
+    implementation "com.github.soramitsu.soranet-validator:notary-commons:$notary_version"
 
     implementation "org.web3j:core:$web3j_version"
 }
