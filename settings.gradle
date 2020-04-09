@@ -1,31 +1,18 @@
+/*
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 rootProject.name = 'soranet-eth'
 
-include 'eth'
-project(':eth').projectDir = 'eth' as File
+include 'eth-core'
+project(':eth-core').projectDir = 'eth-core' as File
 
-include 'eth-deposit'
-project(':eth-deposit').projectDir = 'eth-deposit' as File
-
-include 'eth-erc20-registration'
-project(':eth-erc20-registration').projectDir = 'eth-erc20-registration' as File
-
-include 'eth-registration'
-project(':eth-registration').projectDir = 'eth-registration' as File
-
-include 'eth-relay'
-project(':eth-relay').projectDir = 'eth-relay' as File
+include 'eth-bridge'
+project(':eth-bridge').projectDir = 'eth-bridge' as File
 
 include 'eth-testing-endpoints'
 project(':eth-testing-endpoints').projectDir = 'eth-testing-endpoints' as File
 
-include 'eth-vacuum'
-project(':eth-vacuum').projectDir = 'eth-vacuum' as File
-
-include 'eth-withdrawal'
-project(':eth-withdrawal').projectDir = 'eth-withdrawal' as File
-
 include 'notary-eth-integration-test'
 project(':notary-eth-integration-test').projectDir = 'notary-eth-integration-test' as File
-
-include 'test-longevity'
-project(':test-longevity').projectDir = 'test-longevity' as File

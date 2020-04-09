@@ -1,8 +1,13 @@
+/*
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 buildscript {
     ext.kotlin_version = '1.3.61'
     ext.ktor_version = '1.0.0'
     ext.notary_version = '299ce7f44dd77915b1cedaec3ba9b2f6f78af59b'
-    ext.chain_adapter_client_version= '9e65b4e38dd82d9a2ddc1065326050d4dc296075'
+    ext.chain_adapter_client_version = '9e65b4e38dd82d9a2ddc1065326050d4dc296075'
     ext.web3j_version = '4.4.1'
 
     repositories {
@@ -47,7 +52,7 @@ allprojects {
     }
 }
 
-allprojects{
+allprojects {
     sonarqube {
         properties {
             property "sonar.github.repository", "soramitsu/soranet-eth"
@@ -73,7 +78,7 @@ allprojects {
         testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.3.3'
         testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
         // for setting env variables in tests
-        testImplementation ('com.github.stefanbirkner:system-rules:1.18.0'){
+        testImplementation('com.github.stefanbirkner:system-rules:1.18.0') {
             exclude group: 'junit'
         }
         // to run both junit4 and junit5 tests

@@ -37,9 +37,7 @@ pipeline {
             sh "./gradlew dependencies"
             sh "./gradlew test --info"
             // We need this to test containers
-            sh "./gradlew eth-withdrawal:shadowJar"
             sh "./gradlew dockerfileCreate"
-
             sh "./gradlew compileIntegrationTestKotlin --info"
             sh "./gradlew integrationTest --info"
             sh "./gradlew d3TestReport"

@@ -25,15 +25,9 @@ hs_err_pid*
 ### Gradle template
 .gradle
 /build/
-/test-longevity/build/
-/eth/build/
-/eth-erc20-registration/build/
-/eth-deposit/build/
+/eth-core/build/
+/eth-bridge/build/
 /eth-testing-endpoints/build/
-/eth-registration/build/
-/eth-vacuum/build/
-/eth-withdrawal/build/
-/eth-relay/build/
 /notary-eth-integration-test/build/
 /notary-eth-integration-test/gradle/
 /notary-eth-integration-test/gradlew

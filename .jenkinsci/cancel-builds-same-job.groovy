@@ -1,3 +1,8 @@
+/*
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #!/usr/bin/env groovy
 
 def cancelSameJobBuilds() {
@@ -7,10 +12,15 @@ def cancelSameJobBuilds() {
 
     if (jobname =~ /^.*\/${job.name}$/) {
         for (build in job.builds) {
-            if (!build.isBuilding()) { continue; }
-            if (buildnum == build.getNumber().toInteger()) { continue; }
+            if (!build.isBuilding()) {
+                continue;
+            }
+            if (buildnum == build.getNumber().toInteger()) {
+                continue;
+            }
             build.doStop();
         }
     }
 }
+
 return this
