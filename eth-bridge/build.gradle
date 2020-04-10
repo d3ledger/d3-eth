@@ -28,7 +28,7 @@ apply plugin: 'application'
 apply plugin: 'kotlin'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-mainClassName = "com.d3.eth.deposit.EthDepositMain"
+mainClassName = "jp.co.soramitsu.soranet.eth.bridge.EthDepositMain"
 shadowDistZip.classifier = 'shadow'
 shadowDistTar.classifier = 'shadow'
 // name of jar file that the shadowJar plugin generates
