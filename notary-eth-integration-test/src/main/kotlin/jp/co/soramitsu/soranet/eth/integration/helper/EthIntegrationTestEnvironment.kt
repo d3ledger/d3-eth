@@ -5,7 +5,6 @@
 
 package jp.co.soramitsu.soranet.eth.integration.helper
 
-import com.d3.commons.util.getRandomString
 import integration.registration.RegistrationServiceTestEnvironment
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -38,6 +37,7 @@ object EthIntegrationTestEnvironment : Closeable {
         classesExecuted.incrementAndGet()
     }
 
+    // TODO Rework this completely in XNET-82
     fun refresh() {
         if (isInitialized.get()) {
             ethDeposit.cancel()
@@ -60,8 +60,5 @@ object EthIntegrationTestEnvironment : Closeable {
         }
     }
 
-    private fun getNewEthDepositConfig() =
-        EthIntegrationHelperUtil.configHelper.createEthDepositConfig(
-            String.getRandomString(9)
-        )
+    private fun getNewEthDepositConfig() = EthIntegrationHelperUtil.configHelper.createEthDepositConfig()
 }

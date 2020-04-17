@@ -155,6 +155,7 @@ class EthDepositInitialization(
                             irohaExpansionStrategy.filterAndExpand(block)
                             ethExpansionStrategy.filterAndExpand(block)
                             registrationHandler.filterAndRegister(block)
+                            ethTokensProvider.filterAndExpand(block)
                             withdrawalProofHandler.proceedBlock(block)
                         }, { ex ->
                             logger.error("Withdrawal observable error", ex)

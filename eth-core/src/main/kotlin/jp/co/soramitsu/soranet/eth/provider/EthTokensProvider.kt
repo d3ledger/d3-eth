@@ -6,6 +6,7 @@
 package jp.co.soramitsu.soranet.eth.provider
 
 import com.github.kittinunf.result.Result
+import iroha.protocol.BlockOuterClass
 
 /** Interface of an instance that provides with ethereum ERC20 token white list. */
 interface EthTokensProvider {
@@ -35,4 +36,7 @@ interface EthTokensProvider {
 
     /** Return true if asset is Iroha anchored. */
     fun isIrohaAnchored(assetId: String): Result<Boolean, Exception>
+
+    /** Adds new token tiwh its address to the storage **/
+    fun filterAndExpand(block: BlockOuterClass.Block)
 }

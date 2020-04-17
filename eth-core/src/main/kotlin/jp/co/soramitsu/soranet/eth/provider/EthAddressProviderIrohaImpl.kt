@@ -11,6 +11,7 @@ import iroha.protocol.QryResponses
 import jp.co.soramitsu.iroha.java.ErrorResponseException
 import mu.KLogging
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 const val ETH_WALLET = "ethereum_wallet"
 
@@ -27,13 +28,20 @@ class EthAddressProviderIrohaImpl(
     private val setterAccountId: String,
     private val key: String
 ) : EthAddressProvider {
+
+    private val registeredAddresses: MutableMap<String, String>
+
     init {
         logger.info {
             "Init address provider with storage account '$storageAccountId' and setter account '$setterAccountId'"
         }
+        registeredAddresses = ConcurrentHashMap(
+            queryHelper.getAccountDetails(
+                storageAccountId,
+                setterAccountId
+            ).get()
+        )
     }
-
-    private val anyAddressPredicate = { _: String, _: String -> true }
 
     /**
      * Gets all non free relay wallets
@@ -41,14 +49,10 @@ class EthAddressProviderIrohaImpl(
      * @return map<eth_wallet -> iroha_account> in success case or exception otherwise
      */
     override fun getAddresses(): Result<Map<String, String>, Exception> {
-        return queryHelper.getAccountDetailsFilter(
-            storageAccountId,
-            setterAccountId,
-            anyAddressPredicate
-        )
+        return Result.of { registeredAddresses }
     }
 
-    /** Get relay belonging to [irohaAccountId] */
+    /** Get address belonging to [irohaAccountId] */
     override fun getAddressByAccountId(irohaAccountId: String): Result<Optional<String>, Exception> =
         Result.of {
             queryHelper.getAccountDetails(
@@ -56,11 +60,11 @@ class EthAddressProviderIrohaImpl(
                 setterAccountId,
                 key
             ).fold(
-                { relay ->
-                    if (!relay.isPresent) {
+                { address ->
+                    if (!address.isPresent) {
                         Optional.empty()
                     } else {
-                        Optional.of(relay.get())
+                        Optional.of(address.get())
                     }
                 }, { ex ->
                     if (ex is ErrorResponseException && ex.errorResponse.reason == QryResponses.ErrorResponse.Reason.NO_ACCOUNT_DETAIL) {
@@ -72,6 +76,11 @@ class EthAddressProviderIrohaImpl(
                     }
                 })
         }
+
+    override fun addNewAddress(wallet: String, irohaAccountId: String) {
+        registeredAddresses[wallet] = irohaAccountId
+        logger.info("Added new eth address to the storage: $wallet : $irohaAccountId")
+    }
 
     /**
      * Logger

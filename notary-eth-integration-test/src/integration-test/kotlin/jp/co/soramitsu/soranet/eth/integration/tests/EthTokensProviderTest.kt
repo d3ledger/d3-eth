@@ -31,8 +31,6 @@ class EthTokensProviderTest {
 
     private val integrationHelper = ethIntegrationTestEnvironment.integrationHelper
 
-    private val ethTokensProvider = integrationHelper.ethTokensProvider
-
     private val timeoutDuration = Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)
 
     init {
@@ -63,6 +61,7 @@ class EthTokensProviderTest {
                 expectedTokens[ethWallet] = tokenInfo
                 integrationHelper.addEthAnchoredERC20Token(ethWallet, tokenInfo)
             }
+            val ethTokensProvider = integrationHelper.ethTokensProvider()
             ethTokensProvider.getEthAnchoredTokens()
                 .fold(
                     { tokens ->
@@ -100,13 +99,14 @@ class EthTokensProviderTest {
         val nonexistAssetId = "nonexist#token"
         assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
+            val ethTokensProvider = integrationHelper.ethTokensProvider()
             ethTokensProvider.getTokenPrecision(nonexistAssetId)
                 .fold(
                     { fail("Result returned success while failure is expected.") },
                     { Unit }
                 )
 
-            ethTokensProvider.getTokenAddress(nonexistAssetId)
+            integrationHelper.ethTokensProvider().getTokenAddress(nonexistAssetId)
                 .fold(
                     { fail("Result returned success while failure is expected.") },
                     { assertEquals("Token $nonexistAssetId not found", it.message) }
@@ -124,6 +124,7 @@ class EthTokensProviderTest {
     fun getEthereum() {
         assertTimeoutPreemptively(timeoutDuration) {
             integrationHelper.nameCurrentThread(this::class.simpleName!!)
+            val ethTokensProvider = integrationHelper.ethTokensProvider()
             ethTokensProvider.getTokenPrecision("$ETH_NAME#$ETH_DOMAIN")
                 .success { assertEquals(ETH_PRECISION, it) }
 

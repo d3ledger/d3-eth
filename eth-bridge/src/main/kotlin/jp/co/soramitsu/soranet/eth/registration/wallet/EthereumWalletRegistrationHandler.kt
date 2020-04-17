@@ -69,13 +69,13 @@ class EthereumWalletRegistrationHandler(
 
                             // ensure wallet is signed with correct private key
                             if (checkRegistrationProof(registrationProof)) {
-                                val registrationTxHash = registrator.register(
+                                registrator.register(
                                     ethAddress,
                                     clientId,
                                     time
                                 ) { clientId }.get()
-                                logger.info { "Registration request with Ethereum wallet $ethAddress triggered for $clientId submitted with tx $registrationTxHash" }
-
+                                ethWalletProvider.addNewAddress(ethAddress, clientId)
+                                logger.info { "Registration request with Ethereum wallet $ethAddress triggered for $clientId submitted" }
                             } else {
                                 throw IllegalArgumentException("Registration triggered with wrong proof for ${setAccountDetail.accountId} with wallet $ethAddress")
                             }

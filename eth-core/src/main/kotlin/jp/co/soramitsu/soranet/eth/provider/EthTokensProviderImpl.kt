@@ -8,9 +8,10 @@ package jp.co.soramitsu.soranet.eth.provider
 import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.fanout
-import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
+import iroha.protocol.BlockOuterClass
 import mu.KLogging
+import java.util.concurrent.ConcurrentHashMap
 
 const val ETH_NAME = "ether"
 const val ETH_DOMAIN = "ethereum"
@@ -38,6 +39,10 @@ class EthTokensProviderImpl(
     private val irohaAnchoredTokenSetterAccount: String
 ) : EthTokensProvider {
 
+    private val irohaAnchoredTokens: MutableMap<String, String>
+    private val ethAnchoredTokens: MutableMap<String, String>
+    private val tokenPrecisions: MutableMap<String, Int>
+
     init {
         logger.info {
             """
@@ -46,6 +51,19 @@ class EthTokensProviderImpl(
                 Iroha anchored token storage: '$irohaAnchoredTokenStorageAccount', setter: '$irohaAnchoredTokenSetterAccount'
             """.trimIndent()
         }
+        irohaAnchoredTokens = ConcurrentHashMap(
+            irohaQueryHelper.getAccountDetails(
+                irohaAnchoredTokenStorageAccount,
+                irohaAnchoredTokenSetterAccount
+            ).get()
+        )
+        ethAnchoredTokens = ConcurrentHashMap(
+            irohaQueryHelper.getAccountDetails(
+                ethAnchoredTokenStorageAccount,
+                ethAnchoredTokenSetterAccount
+            ).get()
+        )
+        tokenPrecisions = mutableMapOf("$ETH_NAME#$ETH_DOMAIN" to ETH_PRECISION)
     }
 
     /**
@@ -53,17 +71,10 @@ class EthTokensProviderImpl(
      * @returns map (EthreumAddress -> TokenName)
      */
     override fun getEthTokens(): Result<Map<String, String>, Exception> {
-        return irohaQueryHelper.getAccountDetails(
-            ethAnchoredTokenStorageAccount,
-            ethAnchoredTokenSetterAccount
-        ).fanout {
-            irohaQueryHelper.getAccountDetails(
-                irohaAnchoredTokenStorageAccount,
-                irohaAnchoredTokenSetterAccount
-            )
-        }.map { (ethAnchored, irohaAnchored) ->
-            ethAnchored.plus(irohaAnchored).plus(ETH_ADDRESS to "$ETH_NAME#$ETH_DOMAIN")
-        }
+        return getEthAnchoredTokens().fanout { getIrohaAnchoredTokens() }
+            .map { (ethAnchored, irohaAnchored) ->
+                ethAnchored.plus(irohaAnchored).plus(ETH_ADDRESS to "$ETH_NAME#$ETH_DOMAIN")
+            }
     }
 
     /**
@@ -71,10 +82,7 @@ class EthTokensProviderImpl(
      * @returns map (EthreumAddress -> TokenName)
      */
     override fun getEthAnchoredTokens(): Result<Map<String, String>, Exception> {
-        return irohaQueryHelper.getAccountDetails(
-            ethAnchoredTokenStorageAccount,
-            ethAnchoredTokenSetterAccount
-        )
+        return Result.of { ethAnchoredTokens }
     }
 
     /**
@@ -82,70 +90,86 @@ class EthTokensProviderImpl(
      * @returns map (EthreumAddress -> TokenName)
      */
     override fun getIrohaAnchoredTokens(): Result<Map<String, String>, Exception> {
-        return irohaQueryHelper.getAccountDetails(
-            irohaAnchoredTokenStorageAccount,
-            irohaAnchoredTokenSetterAccount
-        )
+        return Result.of { irohaAnchoredTokens }
     }
 
     /**
      * Get precision of [assetId] asset in Iroha.
      */
     override fun getTokenPrecision(assetId: String): Result<Int, Exception> {
-        return if (assetId == "$ETH_NAME#$ETH_DOMAIN")
-            Result.of { ETH_PRECISION }
-        else irohaQueryHelper.getAssetPrecision(assetId)
+        return if (tokenPrecisions.contains(assetId))
+            Result.of { tokenPrecisions[assetId]!! }
+        else irohaQueryHelper.getAssetPrecision(assetId).map { precision ->
+            tokenPrecisions[assetId] = precision
+            logger.info("Got new token precision from Iroha: $assetId : $precision")
+            precision
+        }
     }
 
     /**
      * Get token address of [assetId] asset. For ether returns 0x0000000000000000000000000000000000000000
      */
     override fun getTokenAddress(assetId: String): Result<String, Exception> {
-        return if (assetId == "$ETH_NAME#$ETH_DOMAIN")
-            Result.of { ETH_ADDRESS }
-        else irohaQueryHelper.getAccountDetailsFirst(
-            ethAnchoredTokenStorageAccount,
-            ethAnchoredTokenSetterAccount
-        ) { _, value -> value == assetId }
-            .flatMap { tokenAddress ->
-                if (tokenAddress.isPresent) {
-                    Result.of { tokenAddress }
-                } else {
-                    irohaQueryHelper.getAccountDetailsFirst(
-                        irohaAnchoredTokenStorageAccount,
-                        irohaAnchoredTokenSetterAccount
-                    ) { _, value -> value == assetId }
-                }
+        return Result.of {
+            if (assetId == "$ETH_NAME#$ETH_DOMAIN") {
+                return@of ETH_ADDRESS
             }
-            .map { tokenAddress ->
-                if (!tokenAddress.isPresent) {
-                    throw IllegalArgumentException("Token $assetId not found")
-                } else {
-                    tokenAddress.get().key
-                }
+            val ethAnchoredEntries = ethAnchoredTokens.filter { (_, value) -> value == assetId }.entries
+            if (ethAnchoredEntries.isNotEmpty()) {
+                return@of ethAnchoredEntries.iterator().next().key
             }
+
+            val irohaAnchoredEntries = irohaAnchoredTokens.filter { (_, value) -> value == assetId }.entries
+            if (irohaAnchoredEntries.isNotEmpty()) {
+                return@of irohaAnchoredEntries.iterator().next().key
+            }
+
+            throw IllegalArgumentException("Token $assetId not found")
+        }
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** Return true if asset is Iroha anchored. */
     override fun isIrohaAnchored(assetId: String): Result<Boolean, Exception> {
-        if (assetId == "$ETH_NAME#$ETH_DOMAIN")
-            return Result.of { false }
-        return irohaQueryHelper.getAccountDetailsFirst(
-            ethAnchoredTokenStorageAccount,
-            ethAnchoredTokenSetterAccount
-        ) { _, value -> value == assetId }.fanout {
-            irohaQueryHelper.getAccountDetailsFirst(
-                irohaAnchoredTokenStorageAccount,
-                irohaAnchoredTokenSetterAccount
-            ) { _, value -> value == assetId }
-        }.map { (ethAnchored, irohaAnchored) ->
-            if (irohaAnchored.isPresent)
-                return@map true
-            if (!ethAnchored.isPresent)
-                throw IllegalArgumentException("Token $assetId not found")
-            false
+        return Result.of {
+            if (assetId == "$ETH_NAME#$ETH_DOMAIN")
+                return@of false
+            return@of if (irohaAnchoredTokens.filter { (_, value) -> value == assetId }.isNotEmpty()) {
+                true
+            } else {
+                if (ethAnchoredTokens.filter { (_, value) -> value == assetId }.isEmpty()) {
+                    throw IllegalArgumentException("Token $assetId not found")
+                }
+                false
+            }
+        }
+    }
+
+    override fun filterAndExpand(block: BlockOuterClass.Block) {
+        val map = block.blockV1.payload.transactionsList.filter {
+            val creatorAccountId = it.payload.reducedPayload.creatorAccountId
+            creatorAccountId == ethAnchoredTokenSetterAccount || creatorAccountId == irohaAnchoredTokenSetterAccount
+        }.associate {
+            val reducedPayload = it.payload.reducedPayload
+            reducedPayload.creatorAccountId to reducedPayload.commandsList.filter { command ->
+                command.hasSetAccountDetail()
+            }.map { command ->
+                command.setAccountDetail
+            }.filter { details ->
+                details.accountId == ethAnchoredTokenStorageAccount ||
+                        details.accountId == irohaAnchoredTokenStorageAccount
+            }
+        }
+        map[ethAnchoredTokenSetterAccount]?.forEach {
+            if(it.accountId == ethAnchoredTokenStorageAccount) {
+                ethAnchoredTokens[it.key] = it.value
+                logger.info("Got new token from Iroha: ${it.key} : ${it.value}")
+            }
+        }
+        map[irohaAnchoredTokenSetterAccount]?.forEach {
+            if(it.accountId == irohaAnchoredTokenStorageAccount) {
+                irohaAnchoredTokens[it.key] = it.value
+                logger.info("Got new token from Iroha: ${it.key} : ${it.value}")
+            }
         }
     }
 

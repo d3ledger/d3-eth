@@ -13,7 +13,6 @@ import com.d3.commons.expansion.ExpansionUtils
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.ModelUtil
-import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.GsonInstance
 import com.d3.commons.util.getRandomString
@@ -66,20 +65,12 @@ object EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     val ethTestConfig =
         loadConfigs("test", TestEthereumConfig::class.java, "/test.properties").get()
 
-    override val accountHelper = EthereumAccountHelper(irohaAPI)
-
     /** Ethereum utils */
     private val contractTestHelper = ContractTestHelper()
 
-    private val tokenProviderIrohaConsumer = IrohaConsumerImpl(accountHelper.tokenSetterAccount, irohaAPI)
+    override val accountHelper = EthereumAccountHelper(irohaAPI)
 
-    val tokensProvider = EthTokensProviderImpl(
-        queryHelper,
-        accountHelper.ethAnchoredTokenStorageAccount.accountId,
-        accountHelper.tokenSetterAccount.accountId,
-        accountHelper.irohaAnchoredTokenStorageAccount.accountId,
-        accountHelper.tokenSetterAccount.accountId
-    )
+    private val tokenProviderIrohaConsumer = IrohaConsumerImpl(accountHelper.tokenSetterAccount, irohaAPI)
 
     /** Iroha consumer to set Ethereum contract addresses in Iroha */
     private val ethAddressWriterIrohaConsumer = IrohaConsumerImpl(accountHelper.ethAddressesWriter, irohaAPI)
@@ -102,6 +93,8 @@ object EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         masterContract.contractAddress
     )
 
+    var ethDepositConfig: EthDepositConfig = configHelper.createEthDepositConfig()
+
     val ethRegistrationConfig by lazy { configHelper.createEthRegistrationConfig() }
 
     val ethListener = EthChainListener(
@@ -113,25 +106,19 @@ object EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
     )
 
     /** Provider that is used to store/fetch tokens*/
-    val ethTokensProvider = EthTokensProviderImpl(
+    fun ethTokensProvider() = EthTokensProviderImpl(
         queryHelper,
-        accountHelper.ethAnchoredTokenStorageAccount.accountId,
-        accountHelper.tokenSetterAccount.accountId,
-        accountHelper.irohaAnchoredTokenStorageAccount.accountId,
-        accountHelper.tokenSetterAccount.accountId
-    )
-
-    private val registrationQueryHelper = IrohaQueryHelperImpl(
-        irohaAPI,
-        accountHelper.registrationAccount.accountId,
-        accountHelper.registrationAccount.keyPair
+        ethDepositConfig.ethAnchoredTokenStorageAccount,
+        ethDepositConfig.ethAnchoredTokenSetterAccount,
+        ethDepositConfig.irohaAnchoredTokenStorageAccount,
+        ethDepositConfig.irohaAnchoredTokenSetterAccount
     )
 
     /** Provider of ETH wallets created by registrationAccount*/
-    private val ethWalletsProvider = EthAddressProviderIrohaImpl(
-        registrationQueryHelper,
-        accountHelper.ethAddressesStorage.accountId,
-        accountHelper.notaryAccount.accountId,
+    fun ethWalletsProvider() = EthAddressProviderIrohaImpl(
+        queryHelper,
+        ethDepositConfig.ethereumWalletStorageAccount,
+        ethDepositConfig.ethereumWalletSetterAccount,
         ETH_WALLET
     )
 
@@ -151,7 +138,7 @@ object EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      * Get relay address of an account.
      */
     fun getWalletByAccount(clientId: String): Optional<String> {
-        return ethWalletsProvider.getAddressByAccountId(clientId).get()
+        return ethWalletsProvider().getAddressByAccountId(clientId).get()
     }
 
     /**
@@ -369,9 +356,7 @@ object EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
      */
     fun runEthDeposit(
         ethereumPasswords: EthereumPasswords = configHelper.ethPasswordConfig,
-        ethDepositConfig: EthDepositConfig = configHelper.createEthDepositConfig(
-            String.getRandomString(9)
-        ),
+        ethDepositConfig: EthDepositConfig = this.ethDepositConfig,
         rmqConfig: RMQConfig = loadRawLocalConfigs(
             "rmq",
             RMQConfig::class.java, "rmq.properties"
@@ -501,8 +486,9 @@ object EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         val amount = tx.amount
         val beneficiary = tx.description
 
-        val ethTokenAddress = tokensProvider.getTokenAddress(assetId).get()
-        val tokenPrecision = tokensProvider.getTokenPrecision(assetId).get()
+        val ethTokensProvider = ethTokensProvider()
+        val ethTokenAddress = ethTokensProvider.getTokenAddress(assetId).get()
+        val tokenPrecision = ethTokensProvider.getTokenPrecision(assetId).get()
         val decimalAmount = BigDecimal(amount).scaleByPowerOfTen(tokenPrecision).toBigInteger()
 
         // signatures
@@ -527,7 +513,7 @@ object EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
             throw Exception("No proofs for withdrawal")
         }
         val transactionResponse =
-            if (tokensProvider.isIrohaAnchored(assetId).get())
+            if (ethTokensProvider.isIrohaAnchored(assetId).get())
                 contractTestHelper.master.mintTokensByPeers(
                     ethTokenAddress,
                     decimalAmount,
