@@ -17,7 +17,6 @@ import com.d3.commons.sidechain.SideChainEvent
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.createPrettyFixThreadPool
-import com.d3.commons.util.createPrettyScheduledThreadPool
 import com.d3.commons.util.createPrettySingleThreadPool
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
@@ -46,6 +45,9 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Files
 import java.io.File
 import java.math.BigInteger
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.system.exitProcess
 
 /**
@@ -176,10 +178,16 @@ class EthDepositInitialization(
 
         val builder = OkHttpClient().newBuilder()
         builder.authenticator(BasicAuthenticator(passwordsConfig))
+
+        val web3jExecutorService = Executors.newScheduledThreadPool(
+            Runtime.getRuntime().availableProcessors(),
+            namedWithUnknownExceptionHandlingThreadFactory()
+        )
+
         val web3 = Web3j.build(
             HttpService(ethDepositConfig.ethereum.url, builder.build(), false),
             JsonRpc2_0Web3j.DEFAULT_BLOCK_TIME.toLong(),
-            createPrettyScheduledThreadPool(ETH_DEPOSIT_SERVICE_NAME, "web3j")
+            web3jExecutorService
         )
 
         /** List of all observable wallets */
@@ -235,4 +243,25 @@ class EthDepositInitialization(
      * Logger
      */
     companion object : KLogging()
+
+    // TODO move to validator-commons
+    internal object CriticalUncaughtExceptionHandler : Thread.UncaughtExceptionHandler {
+        override fun uncaughtException(thread: Thread, t: Throwable) {
+            logger.error("Encountered error in critical thread pool", t)
+            exitProcess(1)
+        }
+    }
+
+    private fun namedWithUnknownExceptionHandlingThreadFactory(): ThreadFactory {
+        return object : ThreadFactory {
+            private val threadCounter = AtomicInteger(0)
+            override fun newThread(runnable: Runnable): Thread {
+                val thread = Executors.defaultThreadFactory().newThread(runnable)
+                thread.name =
+                    "$ETH_DEPOSIT_SERVICE_NAME:web3j:th-${threadCounter.getAndIncrement()}:id-${thread.id}"
+                thread.uncaughtExceptionHandler = CriticalUncaughtExceptionHandler
+                return thread
+            }
+        }
+    }
 }

@@ -28,7 +28,6 @@ import kotlin.system.exitProcess
 
 private val logger = KLogging().logger
 
-const val REFUND_OPERATION = "Ethereum refund"
 const val ETH_DEPOSIT_SERVICE_NAME = "eth-deposit"
 
 /**
