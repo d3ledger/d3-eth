@@ -17,6 +17,7 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.methods.response.EthBlock
 import java.math.BigInteger
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
 /**
@@ -29,7 +30,8 @@ class EthChainListener(
     private val confirmationPeriod: BigInteger,
     startBlock: BigInteger,
     private val lastReadBlockProvider: LastReadBlockProvider,
-    private val ignoreStartBlock: Boolean
+    private val ignoreStartBlock: Boolean,
+    private val customHealthIndicator: AtomicBoolean
 ) : ChainListener<EthBlock> {
 
     /** Keep counting blocks to prevent double emitting in case of chain reorganisation */
@@ -63,6 +65,8 @@ class EthChainListener(
             .filter { lastBlockNumber <= it.block.number }
             .subscribe({ topBlock ->
                 logger.info { "Ethereum chain listener got block ${topBlock.block.number}" }
+
+                customHealthIndicator.set(true)
 
                 val topBlockNumber = topBlock.block.number.minus(confirmationPeriod)
                 while (lastBlockNumber < topBlockNumber) {

@@ -53,6 +53,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.KeyPair
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Utility class that makes testing more comfortable.
@@ -102,7 +103,8 @@ object EthIntegrationHelperUtil : IrohaIntegrationHelperUtil() {
         BigInteger.valueOf(ethTestConfig.ethereum.confirmationPeriod),
         BigInteger.ZERO,
         FileBasedLastReadBlockProvider(configHelper.lastEthereumReadBlockFilePath),
-        false
+        false,
+        AtomicBoolean(true)
     )
 
     /** Provider that is used to store/fetch tokens*/

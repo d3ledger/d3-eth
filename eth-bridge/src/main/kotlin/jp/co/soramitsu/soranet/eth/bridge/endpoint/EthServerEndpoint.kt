@@ -32,8 +32,9 @@ data class Response(val code: HttpStatusCode, val message: String)
  */
 class EthServerEndpoint(
     private val serverBundle: ServerInitializationBundle,
-    private val addPeerStrategy: EthAddPeerStrategy
-): Closeable {
+    private val addPeerStrategy: EthAddPeerStrategy,
+    private val customHealthcheck: () -> Boolean = { true }
+) : Closeable {
     private val moshi = Moshi
         .Builder()
         .add(EthNotaryResponseMoshiAdapter())
@@ -63,7 +64,7 @@ class EthServerEndpoint(
                 get("/actuator/health") {
                     call.respond(
                         mapOf(
-                            "status" to "UP"
+                            "status" to if (customHealthcheck()) "UP" else "DOWN"
                         )
                     )
                 }

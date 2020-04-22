@@ -45,7 +45,11 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Files
 import java.io.File
 import java.math.BigInteger
-import java.util.concurrent.*
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.system.exitProcess
 
@@ -123,6 +127,8 @@ class EthDepositInitialization(
 
     private val masterContractAbi = Files.readString(File(ethDepositConfig.masterContractAbiPath))
 
+    private val isHealthy = AtomicBoolean(true)
+
     init {
         logger.info {
             "Init deposit ethAddress=" +
@@ -138,7 +144,7 @@ class EthDepositInitialization(
      */
     fun init(): Result<Unit, Exception> {
         logger.info { "Eth deposit initialization" }
-        return initEthChain()
+        return initEthChain(isHealthy)
             .map { ethEvent -> initNotary(ethEvent) }
             .flatMap { notary -> notary.initIrohaConsumer() }
             .flatMap { irohaChainListener.getBlockObservable() }
@@ -172,13 +178,13 @@ class EthDepositInitialization(
      * Init Ethereum chain listener
      * @return Observable on Ethereum sidechain events
      */
-    private fun initEthChain(): Result<Observable<SideChainEvent.PrimaryBlockChainEvent>, Exception> {
+    private fun initEthChain(customHealthIndicator: AtomicBoolean): Result<Observable<SideChainEvent.PrimaryBlockChainEvent>, Exception> {
         logger.info { "Init Eth chain" }
 
         val builder = OkHttpClient().newBuilder()
         builder.authenticator(BasicAuthenticator(passwordsConfig))
 
-        val web3jExecutorService = UnwrappingExceptionsScheduledThreadPoolExecutor()
+        val web3jExecutorService = UnwrappingExceptionsScheduledThreadPoolExecutor(isHealthy)
 
         val web3 = Web3j.build(
             HttpService(ethDepositConfig.ethereum.url, builder.build(), false),
@@ -200,7 +206,8 @@ class EthDepositInitialization(
             BigInteger.valueOf(ethDepositConfig.ethereum.confirmationPeriod),
             ethDepositConfig.startEthereumBlock,
             FileBasedLastReadBlockProvider(ethDepositConfig.lastEthereumReadBlockFilePath),
-            ethDepositConfig.ignoreStartBlock
+            ethDepositConfig.ignoreStartBlock,
+            customHealthIndicator
         ).getBlockObservable()
             .map { observable ->
                 observable.flatMapIterable { ethHandler.parseBlock(it) }
@@ -232,7 +239,7 @@ class EthDepositInitialization(
                 ethDepositConfig.expansionTriggerAccount,
                 ethDepositConfig.expansionTriggerCreatorAccountId
             )
-        )
+        ) { isHealthy.get() }
     }
 
     /**
@@ -253,11 +260,12 @@ class EthDepositInitialization(
         }
     }
 
-    // TODO move to validator-commons
-    internal class UnwrappingExceptionsScheduledThreadPoolExecutor : ScheduledThreadPoolExecutor(
-        Runtime.getRuntime().availableProcessors(),
-        namedWithUnknownExceptionHandlingThreadFactory()
-    ) {
+    // TODO move to validator-commons ?
+    internal class UnwrappingExceptionsScheduledThreadPoolExecutor(private val health: AtomicBoolean) :
+        ScheduledThreadPoolExecutor(
+            Runtime.getRuntime().availableProcessors(),
+            namedWithUnknownExceptionHandlingThreadFactory()
+        ) {
         override fun afterExecute(r: Runnable?, t: Throwable?) {
             super.afterExecute(r, t)
             var toThrow = t
@@ -270,13 +278,8 @@ class EthDepositInitialization(
                     }
                 }
             }
-            // suppress cancellation exception
             if (toThrow != null) {
-                if (toThrow is CancellationException) {
-                    logger.warn("Execution has been cancelled", toThrow)
-                } else {
-                    throw toThrow
-                }
+                health.set(false)
             }
         }
     }
