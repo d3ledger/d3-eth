@@ -16,10 +16,6 @@ plugins {
 
 dependencies {
     implementation project(":eth-core")
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
-    implementation "com.github.soramitsu.soranet-validator:notary-commons:$notary_version"
-    implementation "com.github.soramitsu.chain-adapter:chain-adapter-client:$chain_adapter_client_version"
 
     implementation "com.squareup.moshi:moshi-kotlin:1.8.0"
 }

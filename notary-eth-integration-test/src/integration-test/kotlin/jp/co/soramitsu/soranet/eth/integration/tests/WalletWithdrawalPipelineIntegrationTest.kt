@@ -240,7 +240,7 @@ class WalletWithdrawalPipelineIntegrationTest {
     fun testIrohaAnchoredWithdrawalPipeline() {
         val amount = "2.34"
         val assetId = "xor#sora"
-        val tokenAddress = integrationHelper.masterContract.xorTokenInstance().send()
+        val tokenAddress = integrationHelper.xorAddress
         val tokenInfo = EthTokenInfo("xor", "sora", 18)
         integrationHelper.addIrohaAnchoredERC20Token(tokenAddress, tokenInfo)
 

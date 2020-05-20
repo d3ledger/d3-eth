@@ -14,6 +14,7 @@ import com.d3.commons.notary.NotaryImpl
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
 import com.d3.commons.provider.NotaryPeerListProviderImpl
 import com.d3.commons.sidechain.SideChainEvent
+import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.createPrettyFixThreadPool
@@ -33,7 +34,9 @@ import jp.co.soramitsu.soranet.eth.provider.EthTokensProvider
 import jp.co.soramitsu.soranet.eth.registration.wallet.EthereumWalletRegistrationHandler
 import jp.co.soramitsu.soranet.eth.sidechain.EthChainHandler
 import jp.co.soramitsu.soranet.eth.sidechain.EthChainListener
+import jp.co.soramitsu.soranet.eth.sidechain.WithdrawalLimitProvider
 import jp.co.soramitsu.soranet.eth.sidechain.util.BasicAuthenticator
+import jp.co.soramitsu.soranet.eth.sidechain.util.DeployHelper
 import jp.co.soramitsu.soranet.eth.sidechain.util.ENDPOINT_ETHEREUM
 import mu.KLogging
 import okhttp3.OkHttpClient
@@ -51,6 +54,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.system.exitProcess
 
 /**
@@ -116,18 +120,30 @@ class EthDepositInitialization(
         proofCollector
     )
 
+    private val deployHelper = DeployHelper(ethDepositConfig.ethereum, passwordsConfig)
+
+    private val withdrawalQueryHelper = IrohaQueryHelperImpl(irohaAPI, ethDepositConfig.withdrawalCredential)
+
+    private val withdrawalIrohaConsumer = IrohaConsumerImpl(
+        IrohaCredential(ethDepositConfig.withdrawalCredential),
+        irohaAPI
+    )
+
     private val withdrawalProofHandler = WithdrawalProofHandler(
         ethDepositConfig.notaryCredential.accountId,
         ethTokensProvider,
         ethWalletProvider,
-        ethDepositConfig,
-        passwordsConfig,
-        irohaAPI
+        deployHelper,
+        withdrawalQueryHelper,
+        withdrawalIrohaConsumer,
+        passwordsConfig
     )
 
     private val masterContractAbi = Files.readString(File(ethDepositConfig.masterContractAbiPath))
 
     private val isHealthy = AtomicBoolean(true)
+
+    private val withdrawalLimitsNextUpdateTimeHolder = AtomicLong()
 
     init {
         logger.info {
@@ -192,6 +208,17 @@ class EthDepositInitialization(
             web3jExecutorService
         )
 
+        val withdrawalLimitProvider = WithdrawalLimitProvider(
+            queryHelper,
+            withdrawalIrohaConsumer,
+            withdrawalLimitsNextUpdateTimeHolder,
+            ethDepositConfig.withdrawalLimitStorageAccount,
+            XOR_LIMITS_TIME_KEY,
+            XOR_LIMITS_VALUE_KEY,
+            deployHelper.loadTokenSmartContract(ethDepositConfig.xorTokenAddress),
+            ethDepositConfig.xorExchangeContractAddress
+        )
+
         /** List of all observable wallets */
         val ethHandler = EthChainHandler(
             web3,
@@ -199,7 +226,8 @@ class EthDepositInitialization(
             ethWalletProvider,
             ethTokensProvider,
             ethNotificationMqProducer,
-            masterContractAbi
+            masterContractAbi,
+            withdrawalLimitProvider
         )
         return EthChainListener(
             web3,

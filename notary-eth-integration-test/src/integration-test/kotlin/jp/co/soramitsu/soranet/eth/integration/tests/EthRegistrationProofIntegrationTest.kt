@@ -34,7 +34,6 @@ import kotlin.test.assertTrue
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EthRegistrationProofIntegrationTest {
     private val ethIntegrationTestEnvironment = EthIntegrationTestEnvironment
-    private lateinit var cth: ContractTestHelper
     private val integrationHelper = ethIntegrationTestEnvironment.integrationHelper
     private val registrationTestEnvironment = ethIntegrationTestEnvironment.registrationTestEnvironment
 
@@ -43,11 +42,6 @@ class EthRegistrationProofIntegrationTest {
     }
 
     private val timeoutDuration = Duration.ofMinutes(IrohaConfigHelper.timeoutMinutes)
-
-    @BeforeEach
-    fun setup() {
-        cth = ContractTestHelper()
-    }
 
     @AfterAll
     fun dropDown() {

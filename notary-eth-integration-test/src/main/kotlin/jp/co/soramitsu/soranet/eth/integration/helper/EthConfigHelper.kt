@@ -10,11 +10,11 @@ import com.d3.commons.config.IrohaCredentialRawConfig
 import com.d3.commons.config.loadLocalConfigs
 import com.d3.commons.util.getRandomString
 import integration.helper.IrohaConfigHelper
+import jp.co.soramitsu.soranet.eth.bridge.EthDepositConfig
+import jp.co.soramitsu.soranet.eth.bridge.RefundConfig
 import jp.co.soramitsu.soranet.eth.config.EthereumConfig
 import jp.co.soramitsu.soranet.eth.config.EthereumPasswords
 import jp.co.soramitsu.soranet.eth.config.loadEthPasswords
-import jp.co.soramitsu.soranet.eth.bridge.EthDepositConfig
-import jp.co.soramitsu.soranet.eth.bridge.RefundConfig
 import jp.co.soramitsu.soranet.eth.registration.EthRegistrationConfig
 import java.math.BigInteger
 
@@ -24,6 +24,7 @@ import java.math.BigInteger
 open class EthConfigHelper(
     private val accountHelper: EthereumAccountHelper,
     open val masterContractAddress: String,
+    open val xorTokenAddress: String,
     val lastEthereumReadBlockFilePath: String = "deploy/eth-deposit/last_eth_read_block.txt"
 ) : IrohaConfigHelper() {
 
@@ -61,7 +62,10 @@ open class EthConfigHelper(
         },
         notaryCredential_: IrohaCredentialRawConfig = accountHelper.createCredentialRawConfig(
             accountHelper.notaryAccount
-        )
+        ),
+        xorTokenAddress: String = this@EthConfigHelper.xorTokenAddress,
+        xorExchangeContractAddress: String = masterContractAddress
+
     ): EthDepositConfig {
         return object : EthDepositConfig {
             override val notaryListStorageAccount = accountHelper.notaryListStorageAccount.accountId
@@ -89,6 +93,9 @@ open class EthConfigHelper(
             override val ethereumWalletStorageAccount = accountHelper.ethereumWalletStorageAccount.accountId
             override val ethereumWalletSetterAccount = accountHelper.notaryAccount.accountId
             override val masterContractAbiPath = "deploy/ethereum/contract/abi/Master.abi"
+            override val withdrawalLimitStorageAccount = accountHelper.xorLimitsStorageAccount.accountId
+            override val xorTokenAddress = xorTokenAddress
+            override val xorExchangeContractAddress = xorExchangeContractAddress
         }
     }
 

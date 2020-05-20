@@ -283,7 +283,7 @@ class DeployHelper(
      * Load Sora token smart contract
      * @return Sora token instance
      */
-    fun loadTokenSmartContract(tokenAddress: String): SoraToken {
+    fun loadSoraTokenSmartContract(tokenAddress: String): SoraToken {
         val soraToken =
             SoraToken.load(
                 tokenAddress,
@@ -293,6 +293,22 @@ class DeployHelper(
             )
         logger.info { "Sora token contract ${soraToken.contractAddress} was loaded" }
         return soraToken
+    }
+
+    /**
+     * Load any token smart contract
+     * @return token contract instance
+     */
+    fun loadTokenSmartContract(tokenAddress: String): BasicCoin {
+        val token =
+            BasicCoin.load(
+                tokenAddress,
+                web3,
+                defaultTransactionManager,
+                StaticGasProvider(gasPrice, gasLimit)
+            )
+        logger.info { "Token contract ${token.contractAddress} was loaded" }
+        return token
     }
 
     fun deployFailerContract(): Failer {

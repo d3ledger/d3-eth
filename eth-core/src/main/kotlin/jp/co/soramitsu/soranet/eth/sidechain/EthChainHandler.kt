@@ -14,12 +14,15 @@ import jp.co.soramitsu.soranet.eth.abi.AbiDecoder
 import jp.co.soramitsu.soranet.eth.abi.AbiGsonHelper.ETH_PREFIX
 import jp.co.soramitsu.soranet.eth.mq.EthNotificationMqProducer
 import jp.co.soramitsu.soranet.eth.provider.*
+import jp.co.soramitsu.soranet.eth.sidechain.WithdrawalLimitProvider.Companion.XOR_PRECISION
+import jp.co.soramitsu.soranet.eth.sidechain.WithdrawalLimitProvider.Companion.XOR_ROUNDING_MODE
 import mu.KLogging
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.methods.response.EthBlock
 import org.web3j.protocol.core.methods.response.Transaction
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.random.Random
 
 /**
  * Implementation of [ChainHandler] for Ethereum side chain.
@@ -38,7 +41,8 @@ class EthChainHandler(
     private val ethWalletProvider: EthAddressProvider,
     private val ethTokensProvider: EthTokensProvider,
     private val ethNotificationMqProducer: EthNotificationMqProducer,
-    masterContractAbi: String
+    masterContractAbi: String,
+    private val withdrawalLimitProvider: WithdrawalLimitProvider
 ) : ChainHandler<EthBlock> {
 
     private val masterContractAbiDecoder = AbiDecoder()
@@ -221,6 +225,9 @@ class EthChainHandler(
      */
     override fun parseBlock(block: EthBlock): List<SideChainEvent.PrimaryBlockChainEvent> {
         logger.info { "Ethereum chain handler for block ${block.block.number}" }
+        // Eth time in seconds, convert ot milliseconds
+        val time = block.block.timestamp.multiply(thousand)
+        checkAndUpdateLimit(time)
         val addresses = ethWalletProvider.getAddresses()
         val tokens = ethTokensProvider.getEthAnchoredTokens().fanout {
             ethTokensProvider.getIrohaAnchoredTokens()
@@ -229,8 +236,6 @@ class EthChainHandler(
             .fold(
                 { (wallets, tokens) ->
                     val (ethAnchoredTokens, irohaAnchoredTokens) = tokens
-                    // Eth time in seconds, convert ot milliseconds
-                    val time = block.block.timestamp.multiply(thousand)
                     block.block.transactions
                         .map { it.get() as Transaction }
                         .flatMap { transaction ->
@@ -276,6 +281,29 @@ class EthChainHandler(
             )
     }
 
+    private fun checkAndUpdateLimit(blockTime: BigInteger) {
+        val longTime = blockTime.toLong()
+        if (longTime >= withdrawalLimitProvider.nextUpdateTime.get()) {
+            logger.info("Triggered XOR withdrawal limit update")
+            withdrawalLimitProvider.updateLimit(
+                generateRandomTimeForTomorrow(longTime),
+                getXorLimit()
+            )
+        }
+    }
+
+    private fun generateRandomTimeForTomorrow(currentTime: Long): Long {
+        return currentTime - (currentTime % MILLIS_IN_DAY) + Random.nextLong(MILLIS_FROM, MILLIS_TO)
+    }
+
+    private fun getXorLimit(): BigDecimal {
+        val xorExchangeLiquidity = withdrawalLimitProvider.getXorExchangeLiquidity()
+        logger.info("Got $xorExchangeLiquidity total supply")
+        return xorExchangeLiquidity
+            .toBigDecimal()
+            .divide(threshold, XOR_PRECISION, XOR_ROUNDING_MODE)
+    }
+
     /**
      * Logger
      */
@@ -286,5 +314,12 @@ class EthChainHandler(
         private const val txHashAbiParameterName = "txHash"
         private const val txHashAbiParameterType = "bytes32"
         private const val withdrawalAckId = "_withdrawal_ack"
+        private const val MILLIS_IN_DAY = 86_400_000L
+        // to prevent updates near midnight
+        private const val MILLIS_DAY_OFFSET = 600_000L
+        private const val MILLIS_FROM = MILLIS_IN_DAY + MILLIS_DAY_OFFSET
+        private const val MILLIS_TO = MILLIS_IN_DAY - MILLIS_DAY_OFFSET + MILLIS_IN_DAY
+        // kinda ok for 0.1 of slippage but not as strict as 1000
+        private val threshold = BigDecimal("905")
     }
 }

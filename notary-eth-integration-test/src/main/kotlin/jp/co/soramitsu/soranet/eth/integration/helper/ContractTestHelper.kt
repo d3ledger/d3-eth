@@ -18,7 +18,8 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt
 import java.math.BigInteger
 import kotlin.test.assertEquals
 
-/** Helper class for Ethereum contracts.
+/**
+ * Helper class for Ethereum contracts.
  * Deploys contracts on demand, contains set of functions to work with ethereum contracts.
  */
 class ContractTestHelper {
@@ -45,7 +46,9 @@ class ContractTestHelper {
             listOf(accMain)
         )
     }
-    val xorAddress = master.xorTokenInstance().send()
+    val xorAddress by lazy {
+        master.xorTokenInstance().send()
+    }
 
     val etherAddress = "0x0000000000000000000000000000000000000000"
     val defaultIrohaHash = Hash.sha3(String.format("%064x", BigInteger.valueOf(12345)))
@@ -228,7 +231,7 @@ class ContractTestHelper {
     }
 
     fun getToken(tokenAddress: String): SoraToken {
-        return deployHelper.loadTokenSmartContract(tokenAddress)
+        return deployHelper.loadSoraTokenSmartContract(tokenAddress)
     }
 
     fun deployFailer(): String {

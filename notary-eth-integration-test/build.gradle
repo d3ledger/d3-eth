@@ -53,8 +53,4 @@ dependencies {
 
     implementation "org.web3j:core:$web3j_version"
     implementation "com.squareup.moshi:moshi-kotlin:1.8.0"
-    // grpc issue workaround
-    api("io.grpc:grpc-netty:1.12.0") {
-        force = true
-    }
 }

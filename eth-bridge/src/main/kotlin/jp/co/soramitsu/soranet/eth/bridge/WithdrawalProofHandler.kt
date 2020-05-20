@@ -5,15 +5,13 @@
 
 package jp.co.soramitsu.soranet.eth.bridge
 
-import com.d3.commons.model.IrohaCredential
-import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
+import com.d3.commons.sidechain.iroha.consumer.IrohaConsumer
+import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
 import com.d3.commons.sidechain.iroha.util.ModelUtil
-import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.util.GsonInstance
 import com.d3.commons.util.hex
 import com.d3.commons.util.irohaEscape
 import iroha.protocol.BlockOuterClass
-import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Utils
 import jp.co.soramitsu.soranet.eth.config.EthereumPasswords
 import jp.co.soramitsu.soranet.eth.provider.EthAddressProvider
@@ -35,25 +33,16 @@ class WithdrawalProofHandler(
     private val withrdawalTriggerAccountId: String,
     private val tokensProvider: EthTokensProvider,
     private val walletsProvider: EthAddressProvider,
-    ethDepositConfig: EthDepositConfig,
-    passwordsConfig: EthereumPasswords,
-    irohaAPI: IrohaAPI
+    private val deployHelper: DeployHelper,
+    private val queryHelper: IrohaQueryHelper,
+    private val irohaConsumer: IrohaConsumer,
+    passwordsConfig: EthereumPasswords
 ) {
     private val gson = GsonInstance.get()
 
     init {
         logger.info { "Wallet Withdrawal: Initialization of WithdrawalProofHandler withrdawalTriggerAccountId=$withrdawalTriggerAccountId" }
     }
-
-    private val deployHelper = DeployHelper(ethDepositConfig.ethereum, passwordsConfig)
-
-    private val queryHelper =
-        IrohaQueryHelperImpl(irohaAPI, ethDepositConfig.withdrawalCredential)
-
-    private val irohaConsumer = IrohaConsumerImpl(
-        IrohaCredential(ethDepositConfig.withdrawalCredential),
-        irohaAPI
-    )
 
     private val ethCredential = WalletUtils.loadCredentials(
         passwordsConfig.credentialsPassword,

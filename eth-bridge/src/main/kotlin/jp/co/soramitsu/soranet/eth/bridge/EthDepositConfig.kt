@@ -72,4 +72,13 @@ interface EthDepositConfig {
 
     /** Ethereum master contract compiled abi file path**/
     val masterContractAbiPath: String
+
+    /** XOR withdrawal limit storage account id */
+    val withdrawalLimitStorageAccount: String
+
+    /** XOR token address in Ethereum */
+    val xorTokenAddress: String
+
+    /** XOR exchange contract address in Ethereum */
+    val xorExchangeContractAddress: String
 }

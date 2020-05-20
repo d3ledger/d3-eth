@@ -428,7 +428,7 @@
                 "createAccount": {
                   "accountName": "registration_service",
                   "domainId": "d3",
-                  "publicKey": "28da166c2c37e302d751ad8442af5ebfab097df522bcf4717f9ef24e722375de"
+                  "publicKey": "092e71b031a51adae924f7cd944f0371ae8b8502469e32693885334dedcc6001"
                 }
               },
               {
@@ -660,6 +660,34 @@
                 "appendRole": {
                   "accountId": "withdrawal_billing@d3",
                   "roleName": "billing"
+                }
+              },
+              {
+                "createRole": {
+                  "roleName": "data_collector",
+                  "permissions": [
+                    "can_get_blocks"
+                  ]
+                }
+              },
+              {
+                "createAccount": {
+                  "accountName": "data_collector",
+                  "domainId": "notary",
+                  "publicKey": "97B888554684FB30F29FAB92991AB7ECEFFFE433AB3AF501E5DEAEE69392518C"
+                }
+              },
+              {
+                "appendRole": {
+                  "accountId": "data_collector@notary",
+                  "roleName": "data_collector"
+                }
+              },
+              {
+                "createAccount": {
+                  "accountName": "xor_limits",
+                  "domainId": "notary",
+                  "publicKey": "092e71b031a51adae924f7cd944f0371ae8b8502469e32693885334dedcc6001"
                 }
               }
             ],

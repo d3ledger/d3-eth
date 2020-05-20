@@ -29,6 +29,8 @@ import kotlin.system.exitProcess
 private val logger = KLogging().logger
 
 const val ETH_DEPOSIT_SERVICE_NAME = "eth-deposit"
+const val XOR_LIMITS_VALUE_KEY = "withdrawal_limit"
+const val XOR_LIMITS_TIME_KEY = "withdrawal_time_update"
 
 /**
  * Application entry point
