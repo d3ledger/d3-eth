@@ -10,7 +10,9 @@ import com.d3.commons.sidechain.iroha.util.IrohaQueryHelper
 import com.github.kittinunf.result.map
 import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.soranet.eth.contract.BasicCoin
+import jp.co.soramitsu.soranet.eth.contract.SoraToken
 import mu.KLogging
+import org.web3j.tx.Contract
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -26,12 +28,21 @@ class WithdrawalLimitProvider(
     private val limitHolderAccount: String,
     private val limitUpdateTimeAccountKey: String,
     private val limitValueAccountKey: String,
-    private val soraTokenContract: BasicCoin,
-    private val xorExchangeAddress: String
+    soraTokenContract: Contract,
+    private val xorExchangeAddress: String,
+    private val xorToken: Boolean
 ) {
     private val creatorAccountId = setterIrohaConsumer.creator
 
+    private var soraTokenContractWrapper: SoraToken? = null
+    private var erc20TokenContractWrapper: BasicCoin? = null
+
     init {
+        if (xorToken) {
+            soraTokenContractWrapper = soraTokenContract as SoraToken
+        } else {
+            erc20TokenContractWrapper = soraTokenContract as BasicCoin
+        }
         queryAndSetUpdateTime()
         logger.info("Initialized withdrawal limit provider with token contract - ${soraTokenContract.contractAddress} and exchange address - $xorExchangeAddress")
     }
@@ -90,7 +101,8 @@ class WithdrawalLimitProvider(
     }
 
     fun getXorExchangeLiquidity(): BigInteger {
-        return soraTokenContract.balanceOf(xorExchangeAddress).send()
+        return if (xorToken) soraTokenContractWrapper!!.balanceOf(xorExchangeAddress).send()
+        else erc20TokenContractWrapper!!.balanceOf(xorExchangeAddress).send()
     }
 
     companion object : KLogging() {

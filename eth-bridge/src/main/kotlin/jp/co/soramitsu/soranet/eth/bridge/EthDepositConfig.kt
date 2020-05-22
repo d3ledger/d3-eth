@@ -81,4 +81,7 @@ interface EthDepositConfig {
 
     /** XOR exchange contract address in Ethereum */
     val xorExchangeContractAddress: String
+
+    /** XOR token indicator **/
+    val isXorToken: Boolean
 }

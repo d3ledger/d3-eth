@@ -96,6 +96,7 @@ open class EthConfigHelper(
             override val withdrawalLimitStorageAccount = accountHelper.xorLimitsStorageAccount.accountId
             override val xorTokenAddress = xorTokenAddress
             override val xorExchangeContractAddress = xorExchangeContractAddress
+            override val isXorToken = false
         }
     }
 
