@@ -15,6 +15,7 @@ import okhttp3.*
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.DynamicArray
 import org.web3j.abi.datatypes.Type
+import org.web3j.contracts.eip20.generated.ERC20
 import org.web3j.crypto.WalletUtils
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
@@ -22,6 +23,7 @@ import org.web3j.protocol.core.JsonRpc2_0Web3j.DEFAULT_BLOCK_TIME
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.RawTransactionManager
 import org.web3j.tx.Transfer
+import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.tx.gas.StaticGasProvider
 import org.web3j.utils.Convert
 import java.io.IOException
@@ -289,7 +291,7 @@ class DeployHelper(
                 tokenAddress,
                 web3,
                 defaultTransactionManager,
-                StaticGasProvider(gasPrice, gasLimit)
+                defaultGasProvider
             )
         logger.info { "Sora token contract ${soraToken.contractAddress} was loaded" }
         return soraToken
@@ -299,15 +301,15 @@ class DeployHelper(
      * Load any token smart contract
      * @return token contract instance
      */
-    fun loadTokenSmartContract(tokenAddress: String): BasicCoin {
+    fun loadTokenSmartContract(tokenAddress: String): ERC20 {
         val token =
-            BasicCoin.load(
+            ERC20.load(
                 tokenAddress,
                 web3,
                 defaultTransactionManager,
-                StaticGasProvider(gasPrice, gasLimit)
+                defaultGasProvider
             )
-        logger.info { "Token contract ${token.contractAddress} was loaded" }
+        logger.info { "ERC20 Token contract ${token.contractAddress} was loaded" }
         return token
     }
 
@@ -385,7 +387,7 @@ class DeployHelper(
         amount: BigInteger,
         transactionManager: RawTransactionManager = defaultTransactionManager
     ) {
-        val token = BasicCoin.load(
+        val token = ERC20.load(
             tokenAddress,
             web3,
             transactionManager,
@@ -428,7 +430,7 @@ class DeployHelper(
      * @return user balance
      */
     fun getERC20Balance(tokenAddress: String, whoAddress: String): BigInteger {
-        val token = BasicCoin.load(
+        val token = ERC20.load(
             tokenAddress,
             web3,
             defaultTransactionManager,
@@ -456,7 +458,9 @@ class DeployHelper(
     /**
      * Logger
      */
-    companion object : KLogging()
+    companion object : KLogging() {
+        private val defaultGasProvider = DefaultGasProvider()
+    }
 }
 
 /**

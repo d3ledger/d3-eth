@@ -145,9 +145,7 @@ class EthDepositInitialization(
 
     private val withdrawalLimitsNextUpdateTimeHolder = AtomicLong()
 
-    private val tokenSmartContract =
-        if (ethDepositConfig.isXorToken) deployHelper.loadSoraTokenSmartContract(ethDepositConfig.xorTokenAddress)
-        else deployHelper.loadTokenSmartContract(ethDepositConfig.xorTokenAddress)
+    private val tokenSmartContract = deployHelper.loadTokenSmartContract(ethDepositConfig.xorTokenAddress)
 
     init {
         logger.info {
@@ -220,8 +218,7 @@ class EthDepositInitialization(
             XOR_LIMITS_TIME_KEY,
             XOR_LIMITS_VALUE_KEY,
             tokenSmartContract,
-            ethDepositConfig.xorExchangeContractAddress,
-            ethDepositConfig.isXorToken
+            ethDepositConfig.xorExchangeContractAddress
         )
 
         /** List of all observable wallets */

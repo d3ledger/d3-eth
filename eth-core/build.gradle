@@ -8,6 +8,7 @@ dependencies {
 
     // Eth library
     api "org.web3j:core:$web3j_version"
+    api "org.web3j:contracts:$web3j_version"
     // couldn't do it with web3j structures
     implementation("org.ethereum:ethereumj-core:1.12.0-RELEASE") {
         exclude group: 'io.netty', module: 'netty-all'

@@ -230,7 +230,7 @@ class ContractTestHelper {
         return Pair(keyPairs, peers)
     }
 
-    fun getToken(tokenAddress: String): SoraToken {
+    fun getSoraToken(tokenAddress: String): SoraToken {
         return deployHelper.loadSoraTokenSmartContract(tokenAddress)
     }
 

@@ -1116,7 +1116,7 @@ class MasterTest {
 
             Assertions.assertEquals(
                 amountToSend,
-                cth.getToken(master.xorTokenInstance().send()).balanceOf(beneficiary).send().toInt()
+                cth.getSoraToken(master.xorTokenInstance().send()).balanceOf(beneficiary).send().toInt()
             )
         }
     }
@@ -1167,7 +1167,7 @@ class MasterTest {
 
             Assertions.assertEquals(
                 amountToSend,
-                cth.getToken(master.xorTokenInstance().send()).balanceOf(beneficiary).send().toInt()
+                cth.getSoraToken(master.xorTokenInstance().send()).balanceOf(beneficiary).send().toInt()
             )
         }
     }
@@ -1188,7 +1188,7 @@ class MasterTest {
             Assertions.assertTrue(result)
             Assertions.assertEquals(
                 amountToSend,
-                cth.getToken(master.xorTokenInstance().send()).balanceOf(beneficiary).send().toLong()
+                cth.getSoraToken(master.xorTokenInstance().send()).balanceOf(beneficiary).send().toLong()
             )
 
             Assertions.assertThrows(TransactionException::class.java) {
@@ -1196,7 +1196,7 @@ class MasterTest {
             }
             Assertions.assertEquals(
                 amountToSend,
-                cth.getToken(master.xorTokenInstance().send()).balanceOf(beneficiary).send().toLong()
+                cth.getSoraToken(master.xorTokenInstance().send()).balanceOf(beneficiary).send().toLong()
             )
         }
     }
@@ -1211,7 +1211,7 @@ class MasterTest {
         Assertions.assertTimeoutPreemptively(timeoutDuration) {
             assertEquals(
                 BigInteger("0"),
-                cth.getToken(master.xorTokenInstance().send()).balanceOf(master.contractAddress).send()
+                cth.getSoraToken(master.xorTokenInstance().send()).balanceOf(master.contractAddress).send()
             )
         }
     }
