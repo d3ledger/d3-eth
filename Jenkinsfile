@@ -20,8 +20,8 @@ pipeline {
 
           DOCKER_NETWORK = "${env.CHANGE_ID}-${env.GIT_COMMIT}-${BUILD_NUMBER}"
           writeFile file: ".env", text: "SUBNET=${DOCKER_NETWORK}"
-          withCredentials([usernamePassword(credentialsId: 'nexus-soramitsu-ro', usernameVariable: 'login', passwordVariable: 'password')]) {
-                      sh "docker login nexus.iroha.tech:19004 -u ${login} -p '${password}'"
+          withCredentials([usernamePassword(credentialsId: 'bot-soranet-ro', usernameVariable: 'login', passwordVariable: 'password')]) {
+            sh "docker login docker.soramitsu.co.jp -u ${login} -p '${password}'"
           }
 
           withCredentials([usernamePassword(credentialsId: 'nexus-d3-docker', usernameVariable: 'login', passwordVariable: 'password')]) {
@@ -100,12 +100,12 @@ pipeline {
       steps {
         script {
           if (env.BRANCH_NAME ==~ /(master|develop|reserved)/ || env.TAG_NAME) {
-                withCredentials([usernamePassword(credentialsId: 'nexus-soramitsu-rw', usernameVariable: 'login', passwordVariable: 'password')]) {
+                withCredentials([usernamePassword(credentialsId: 'bot-soranet-rw', usernameVariable: 'login', passwordVariable: 'password')]) {
                   TAG = env.TAG_NAME ? env.TAG_NAME : env.BRANCH_NAME
                   iC = docker.image("gradle:4.10.2-jdk8-slim")
                   iC.inside(" -e JVM_OPTS='-Xmx3200m' -e TERM='dumb'"+
                   " -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp"+
-                  " -e DOCKER_REGISTRY_URL='https://nexus.iroha.tech:19004'"+
+                  " -e DOCKER_REGISTRY_URL='https://docker.soramitsu.co.jp'"+
                   " -e DOCKER_REGISTRY_USERNAME='${login}'"+
                   " -e DOCKER_REGISTRY_PASSWORD='${password}'"+
                   " -e TAG='${TAG}'") {

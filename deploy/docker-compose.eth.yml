@@ -17,7 +17,7 @@ services:
       - d3-network
 
   d3-eth-deposit:
-    image: nexus.iroha.tech:19004/soranet/eth-deposit:develop
+    image: docker.soramitsu.co.jp/soranet/eth-deposit:develop
     container_name: d3-eth-deposit
     restart: on-failure
     env_file:
@@ -32,7 +32,7 @@ services:
       - d3-network
 
   d3-eth-testing:
-    image: nexus.iroha.tech:19004/soranet/eth-testing-endpoints:develop
+    image: docker.soramitsu.co.jp/soranet/eth-testing-endpoints:develop
     container_name: d3-eth-testing
     restart: on-failure
     volumes:
