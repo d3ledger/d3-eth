@@ -8,6 +8,7 @@ package jp.co.soramitsu.soranet.eth.integration.tests
 import jp.co.soramitsu.soranet.eth.bridge.XOR_LIMITS_TIME_KEY
 import jp.co.soramitsu.soranet.eth.bridge.XOR_LIMITS_VALUE_KEY
 import jp.co.soramitsu.soranet.eth.integration.helper.EthIntegrationTestEnvironment
+import jp.co.soramitsu.soranet.eth.sidechain.EthChainHandler.Companion.threshold
 import jp.co.soramitsu.soranet.eth.sidechain.WithdrawalLimitProvider.Companion.XOR_PRECISION
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -58,11 +59,11 @@ class XorWithdrawalLimitsIntegrationTest {
         ).get().get().toLong()
         assertEquals(
             amount.toBigDecimal().divide(
-                BigDecimal("905"),
+                threshold,
                 XOR_PRECISION,
                 RoundingMode.HALF_UP
-            ).toPlainString(),
-            limit.get().toBigDecimal().toPlainString()
+            ).stripTrailingZeros().toPlainString(),
+            limit.get().toBigDecimal().stripTrailingZeros().toPlainString()
         )
         assertTrue(timeToLong > System.currentTimeMillis())
     }

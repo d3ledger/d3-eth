@@ -25,7 +25,7 @@ object EthIntegrationTestEnvironment : Closeable {
     val registrationTestEnvironment = RegistrationServiceTestEnvironment(integrationHelper)
     var ethDepositConfig = getNewEthDepositConfig()
     lateinit var relevantTokenAddress: String
-    val amount = BigInteger("500000")
+    val amount = BigInteger("12345000")
 
     private lateinit var ethDeposit: Job
 

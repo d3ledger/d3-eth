@@ -320,6 +320,6 @@ class EthChainHandler(
         private const val MILLIS_FROM = MILLIS_IN_DAY + MILLIS_DAY_OFFSET
         private const val MILLIS_TO = MILLIS_IN_DAY - MILLIS_DAY_OFFSET + MILLIS_IN_DAY
         // kinda ok for 0.1 of slippage but not as strict as 1000
-        private val threshold = BigDecimal("905")
+        val threshold = BigDecimal("905000000000000000000")
     }
 }
