@@ -105,9 +105,10 @@ class EthChainHandler(
 
                                 val clientId = wallets[from]!!
 
+                                val hashToSave = tx.hash.replace(ETH_PREFIX, "")
                                 if (isIrohaAnchored)
                                     SideChainEvent.PrimaryBlockChainEvent.IrohaAnchoredOnPrimaryChainDeposit(
-                                        tx.hash,
+                                        hashToSave,
                                         time,
                                         clientId,
                                         tokenName,
@@ -116,7 +117,7 @@ class EthChainHandler(
                                     )
                                 else
                                     SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
-                                        tx.hash,
+                                        hashToSave,
                                         time,
                                         clientId,
                                         tokenName,
@@ -156,7 +157,7 @@ class EthChainHandler(
             // if tx amount > 0 and is committed successfully
             listOf(
                 SideChainEvent.PrimaryBlockChainEvent.ChainAnchoredOnPrimaryChainDeposit(
-                    tx.hash,
+                    tx.hash.replace(ETH_PREFIX, ""),
                     time,
                     // all non-existent keys were filtered out in parseBlock
                     clientId,

@@ -45,7 +45,7 @@ class NotaryTest {
         expectedAmount: String,
         expectedAssetId: String,
         expectedUserId: String,
-        expectedFrom: String,
+        expectedHash: String,
         expectedTime: BigInteger,
         result: Observable<IrohaTransaction>
     ) {
@@ -71,7 +71,7 @@ class NotaryTest {
                 assertEquals(creatorId, cmd.srcAccountId)
                 assertEquals(expectedUserId, cmd.destAccountId)
                 assertEquals(expectedAssetId, cmd.assetId)
-                assertEquals(expectedFrom, cmd.description)
+                assertEquals(expectedHash, cmd.description)
                 assertEquals(expectedAmount, cmd.amount)
             } else {
                 fail { "Wrong IrohaCommand type" }
@@ -116,7 +116,7 @@ class NotaryTest {
             expectedAmount,
             expectedAssetId,
             expectedUserId,
-            expectedFrom,
+            expectedHash,
             expectedTime,
             res
         )
@@ -156,7 +156,7 @@ class NotaryTest {
             expectedAmount,
             expectedAssetId,
             expectedUserId,
-            expectedFrom,
+            expectedHash,
             expectedTime,
             res
         )

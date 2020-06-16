@@ -6,7 +6,7 @@
 buildscript {
     ext.kotlin_version = '1.3.61'
     ext.ktor_version = '1.0.0'
-    ext.notary_version = '8b581ba5136b5bc26ae48b94412863bf105e0a51'
+    ext.notary_version = 'e24bbd67347d2f6d3601d29c7dd5149405e16033'
     ext.chain_adapter_client_version = '9e65b4e38dd82d9a2ddc1065326050d4dc296075'
     ext.web3j_version = '4.4.1'
 
