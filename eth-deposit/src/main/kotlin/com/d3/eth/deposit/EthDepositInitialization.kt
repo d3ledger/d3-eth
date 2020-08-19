@@ -12,6 +12,8 @@ import com.d3.commons.notary.Notary
 import com.d3.commons.notary.NotaryImpl
 import com.d3.commons.notary.endpoint.ServerInitializationBundle
 import com.d3.commons.sidechain.SideChainEvent
+import com.d3.commons.sidechain.iroha.consumer.MultiSigIrohaConsumer
+import com.d3.commons.sidechain.iroha.util.ModelUtil
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
 import com.d3.commons.sidechain.provider.FileBasedLastReadBlockProvider
 import com.d3.commons.util.createPrettyFixThreadPool
@@ -33,7 +35,9 @@ import com.github.kittinunf.result.map
 import integration.eth.config.EthereumPasswords
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
+import iroha.protocol.Primitive
 import jp.co.soramitsu.iroha.java.IrohaAPI
+import jp.co.soramitsu.iroha.java.Transaction
 import mu.KLogging
 import okhttp3.OkHttpClient
 import org.web3j.crypto.ECKeyPair
@@ -85,7 +89,7 @@ class EthDepositInitialization(
     )
 
     private val withdrawalProofHandler = WithdrawalProofHandler(
-        ethDepositConfig.notaryCredential.accountId,
+        ethDepositConfig.withdrawalAccountId,
         ethTokensProvider,
         ethWalletProvider,
         ethDepositConfig,
@@ -178,6 +182,22 @@ class EthDepositInitialization(
         ethEvents: Observable<SideChainEvent.PrimaryBlockChainEvent>
     ): Notary {
         logger.info { "Init ethereum notary" }
+
+        val adjustedTime = ModelUtil.getCurrentTime().divide(BigInteger.valueOf(86400000))
+            .multiply(BigInteger.valueOf(86400000)).toLong()
+        val consumer = MultiSigIrohaConsumer(notaryCredential, irohaAPI)
+        consumer
+            .send(
+                Transaction.builder(notaryCredential.accountId, adjustedTime)
+                    .grantPermission(
+                        ethDepositConfig.withdrawalAccountId,
+                        Primitive.GrantablePermission.can_transfer_my_assets
+                    )
+                    .setQuorum(consumer.getConsumerQuorum().get())
+                    .sign(notaryCredential.keyPair)
+                    .build()
+            )
+
         return NotaryImpl(notaryCredential, irohaAPI, ethEvents)
     }
 

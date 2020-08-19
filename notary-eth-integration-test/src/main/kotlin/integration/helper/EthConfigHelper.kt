@@ -133,6 +133,7 @@ open class EthConfigHelper(
             override val startEthereumBlock = BigInteger.ZERO
             override val ignoreStartBlock = true
             override val ethereum = ethereumConfig
+            override val withdrawalAccountId = accountHelper.withdrawalAccount.accountId
             override val ethIrohaDepositQueue = testName
             override val ethMasterAddress = masterContractAddress
             override val ethereumWalletStorageAccount = accountHelper.ethereumWalletStorageAccount.accountId
