@@ -27,7 +27,6 @@ import java.time.Duration
  * Integration tests for withdrawal rollback service.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Disabled
 class WithdrawalRollbackIntegrationTest {
 
     /** Integration tests util */

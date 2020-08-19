@@ -75,9 +75,9 @@ fun executeDeposit(
             depositConfig.notaryCredential.privkey
         )
         IrohaCredential(depositConfig.notaryCredential.accountId, keypair)
-    }.flatMap { notaryIrohaCredential ->
+    }.flatMap { irohaCredential ->
         executeDeposit(
-            notaryIrohaCredential,
+            irohaCredential,
             ethereumPasswords,
             depositConfig,
             rmqConfig,
@@ -85,7 +85,7 @@ fun executeDeposit(
         )
     }.failure { ex ->
         logger.error("Cannot run eth deposit", ex)
-        exitProcess(1)
+        System.exit(1)
     }
 }
 

@@ -104,6 +104,8 @@ class EthDepositConfigTest {
             "ETH-DEPOSIT_ETHEREUM_CONFIRMATIONPERIOD",
             etehereumConfirmationPeriod
         )
+        val withdrawalAccountId = "withdrawal@account"
+        environmentVariables.set("ETH-DEPOSIT_WITHDRAWALACCOUNTID", withdrawalAccountId)
         val expansionTriggerAccount = "expansion@account"
         environmentVariables.set("ETH-DEPOSIT_EXPANSIONTRIGGERACCOUNT", expansionTriggerAccount)
         val expansionTriggerCreatorAccountId = "expansion_trigger@account"
@@ -144,6 +146,7 @@ class EthDepositConfigTest {
             etehereumConfirmationPeriod.toLong(),
             depositConfig.ethereum.confirmationPeriod
         )
+        assertEquals(withdrawalAccountId, depositConfig.withdrawalAccountId)
         assertEquals(expansionTriggerAccount, depositConfig.expansionTriggerAccount)
         assertEquals(
             expansionTriggerCreatorAccountId,
